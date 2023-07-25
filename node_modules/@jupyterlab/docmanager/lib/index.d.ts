@@ -1,0 +1,11 @@
+/**
+ * @packageDocumentation
+ * @module docmanager
+ */
+export * from './dialogs';
+export * from './manager';
+export * from './pathstatus';
+export * from './savehandler';
+export * from './savingstatus';
+export * from './tokens';
+export * from './widgetmanager';
