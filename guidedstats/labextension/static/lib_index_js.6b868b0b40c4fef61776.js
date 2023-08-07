@@ -1,4 +1,12 @@
-/*
+(self["webpackChunkguidedstats"] = self["webpackChunkguidedstats"] || []).push([["lib_index_js"],{
+
+/***/ "./lib/index.js":
+/*!**********************!*\
+  !*** ./lib/index.js ***!
+  \**********************/
+/***/ ((module, exports, __webpack_require__) => {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
  * ATTENTION: The "eval" devtool has been used (maybe by default in mode: "development").
  * This devtool is neither made for production nor for readable output files.
  * It uses "eval()" calls to create a separate source file in the browser devtools.
@@ -6,7 +14,7 @@
  * or disable the default devtool with "devtool: false".
  * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
  */
-define(["@jupyter-widgets/base"], (__WEBPACK_EXTERNAL_MODULE__jupyter_widgets_base__) => { return /******/ (() => { // webpackBootstrap
+!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(/*! @jupyter-widgets/base */ "webpack/sharing/consume/default/@jupyter-widgets/base")], __WEBPACK_AMD_DEFINE_RESULT__ = ((__WEBPACK_EXTERNAL_MODULE__jupyter_widgets_base__) => { return /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
@@ -40,23 +48,13 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 
 /***/ }),
 
-/***/ "./src/extension.ts":
-/*!**************************!*\
-  !*** ./src/extension.ts ***!
-  \**************************/
+/***/ "./src/plugin.ts":
+/*!***********************!*\
+  !*** ./src/plugin.ts ***!
+  \***********************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"MODULE_NAME\": () => (/* reexport safe */ _index__WEBPACK_IMPORTED_MODULE_0__.MODULE_NAME),\n/* harmony export */   \"MODULE_VERSION\": () => (/* reexport safe */ _index__WEBPACK_IMPORTED_MODULE_0__.MODULE_VERSION),\n/* harmony export */   \"VizualizerModel\": () => (/* reexport safe */ _index__WEBPACK_IMPORTED_MODULE_0__.VizualizerModel),\n/* harmony export */   \"VizualizerView\": () => (/* reexport safe */ _index__WEBPACK_IMPORTED_MODULE_0__.VizualizerView)\n/* harmony export */ });\n/* harmony import */ var _index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./index */ \"./src/index.ts\");\n// Copyright (c) Jupyter Development Team.\n// Distributed under the terms of the Modified BSD License.\n// Entry point for the notebook bundle containing custom model definitions.\n//\n// Setup notebook base URL\n//\n// Some static assets may be required by the custom widget javascript. The base\n// url for the notebook is not known at build time and is therefore computed\n// dynamically.\n// eslint-disable-next-line @typescript-eslint/no-non-null-assertion\nwindow.__webpack_public_path__ =\n    document.querySelector('body').getAttribute('data-base-url') +\n        'nbextensions/guidedstats';\n\n\n\n//# sourceURL=webpack://guidedstats/./src/extension.ts?");
-
-/***/ }),
-
-/***/ "./src/index.ts":
-/*!**********************!*\
-  !*** ./src/index.ts ***!
-  \**********************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"MODULE_NAME\": () => (/* reexport safe */ _version__WEBPACK_IMPORTED_MODULE_0__.MODULE_NAME),\n/* harmony export */   \"MODULE_VERSION\": () => (/* reexport safe */ _version__WEBPACK_IMPORTED_MODULE_0__.MODULE_VERSION),\n/* harmony export */   \"VizualizerModel\": () => (/* reexport safe */ _widget__WEBPACK_IMPORTED_MODULE_1__.VizualizerModel),\n/* harmony export */   \"VizualizerView\": () => (/* reexport safe */ _widget__WEBPACK_IMPORTED_MODULE_1__.VizualizerView)\n/* harmony export */ });\n/* harmony import */ var _version__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./version */ \"./src/version.ts\");\n/* harmony import */ var _widget__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./widget */ \"./src/widget.ts\");\n// Copyright (c) Yuqi(Adam) Zhang\n// Distributed under the terms of the Modified BSD License.\n\n\n\n\n//# sourceURL=webpack://guidedstats/./src/index.ts?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\n/* harmony import */ var _jupyter_widgets_base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @jupyter-widgets/base */ \"@jupyter-widgets/base\");\n/* harmony import */ var _jupyter_widgets_base__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_jupyter_widgets_base__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _widget__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./widget */ \"./src/widget.ts\");\n/* harmony import */ var _version__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./version */ \"./src/version.ts\");\n// Copyright (c) Yuqi(Adam) Zhang\n// Distributed under the terms of the Modified BSD License.\n\n\n\n// import { INotebookTracker } from '@jupyterlab/notebook';\nconst EXTENSION_ID = 'guidedstats:plugin';\n/**\n * The example plugin.\n */\nconst extension = {\n    id: EXTENSION_ID,\n    requires: [_jupyter_widgets_base__WEBPACK_IMPORTED_MODULE_0__.IJupyterWidgetRegistry],\n    activate: (app, registry) => {\n        console.log(\"activating extension\");\n        registry.registerWidget({\n            name: _version__WEBPACK_IMPORTED_MODULE_2__.MODULE_NAME,\n            version: _version__WEBPACK_IMPORTED_MODULE_2__.MODULE_VERSION,\n            exports: _widget__WEBPACK_IMPORTED_MODULE_1__,\n        });\n        // emitted when the user's notebook changes I think...\n        // notebookTracker.currentChanged.connect((_, widget) => {\n        //   console.log(\">>>>>>>>Notebook changed>>>>>>>>\")\n        //   const notebook = new NotebookAPI(widget);\n        //   notebook.ready.then(async () => {\n        //     logger.setNoteook(notebook);\n        //   });\n        // });\n    },\n    autoStart: true,\n};\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (extension);\n\n\n//# sourceURL=webpack://guidedstats/./src/plugin.ts?");
 
 /***/ }),
 
@@ -136,7 +134,7 @@ eval("module.exports = JSON.parse('{\"name\":\"guidedstats\",\"version\":\"0.1.0
 /******/ 	var __webpack_module_cache__ = {};
 /******/ 	
 /******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
+/******/ 	function __nested_webpack_require_129522__(moduleId) {
 /******/ 		// Check if module is in cache
 /******/ 		var cachedModule = __webpack_module_cache__[moduleId];
 /******/ 		if (cachedModule !== undefined) {
@@ -150,7 +148,7 @@ eval("module.exports = JSON.parse('{\"name\":\"guidedstats\",\"version\":\"0.1.0
 /******/ 		};
 /******/ 	
 /******/ 		// Execute the module function
-/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __nested_webpack_require_129522__);
 /******/ 	
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
@@ -160,11 +158,11 @@ eval("module.exports = JSON.parse('{\"name\":\"guidedstats\",\"version\":\"0.1.0
 /******/ 	/* webpack/runtime/compat get default export */
 /******/ 	(() => {
 /******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__webpack_require__.n = (module) => {
+/******/ 		__nested_webpack_require_129522__.n = (module) => {
 /******/ 			var getter = module && module.__esModule ?
 /******/ 				() => (module['default']) :
 /******/ 				() => (module);
-/******/ 			__webpack_require__.d(getter, { a: getter });
+/******/ 			__nested_webpack_require_129522__.d(getter, { a: getter });
 /******/ 			return getter;
 /******/ 		};
 /******/ 	})();
@@ -172,9 +170,9 @@ eval("module.exports = JSON.parse('{\"name\":\"guidedstats\",\"version\":\"0.1.0
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter functions for harmony exports
-/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 		__nested_webpack_require_129522__.d = (exports, definition) => {
 /******/ 			for(var key in definition) {
-/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 				if(__nested_webpack_require_129522__.o(definition, key) && !__nested_webpack_require_129522__.o(exports, key)) {
 /******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
 /******/ 				}
 /******/ 			}
@@ -183,13 +181,13 @@ eval("module.exports = JSON.parse('{\"name\":\"guidedstats\",\"version\":\"0.1.0
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
-/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 		__nested_webpack_require_129522__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
-/******/ 		__webpack_require__.r = (exports) => {
+/******/ 		__nested_webpack_require_129522__.r = (exports) => {
 /******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
 /******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
 /******/ 			}
@@ -202,9 +200,15 @@ eval("module.exports = JSON.parse('{\"name\":\"guidedstats\",\"version\":\"0.1.0
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module can't be inlined because the eval devtool is used.
-/******/ 	var __webpack_exports__ = __webpack_require__("./src/extension.ts");
+/******/ 	var __webpack_exports__ = __nested_webpack_require_129522__("./src/plugin.ts");
 /******/ 	
 /******/ 	return __webpack_exports__;
 /******/ })()
 ;
-});;
+}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+		__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));;
+
+/***/ })
+
+}]);
+//# sourceMappingURL=lib_index_js.6b868b0b40c4fef61776.js.map

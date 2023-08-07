@@ -19,6 +19,7 @@ export class VizualizerModel extends DOMWidgetModel {
       _view_name: VizualizerModel.view_name,
       _view_module: VizualizerModel.view_module,
       _view_module_version: VizualizerModel.view_module_version,
+      builtinWorkflows: [],
       dfProfile: {},
       exportedCode: '',
     };

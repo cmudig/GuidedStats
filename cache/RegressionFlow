@@ -1,0 +1,176 @@
+[
+    {
+        "id": 1,
+        "stepType": "VariableSelectionStep",
+        "stepConfig": {
+            "stepName": "Select Dependent Variable",
+            "variableType": "dependent variable",
+            "variableNum": 1,
+            "candidateNum": 4,
+            "compare": false,
+            "previousStepsConfigs": [
+                {
+                    "id": 0,
+                    "mapping": [
+                        {
+                            "output": "__dataset",
+                            "input": "dataset"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "id": 2,
+        "stepType": "AssumptionCheckingStep",
+        "stepConfig": {
+            "stepName": "Check Outliers",
+            "assumptionName": "outlier",
+            "isRelaxed": true,
+            "previousStepsConfigs": [
+                {
+                    "id": 1,
+                    "mapping": [
+                        {
+                            "output": "dataset",
+                            "input": "X"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "id": 3,
+        "stepType": "VariableSelectionStep",
+        "stepConfig": {
+            "stepName": "Select Independent Variables",
+            "variableType": "independent variables",
+            "variableNum": 3,
+            "candidateNum": 15,
+            "compare": true,
+            "metricName": "pearson",
+            "previousStepsConfigs": [
+                {
+                    "id": 0,
+                    "mapping": [
+                        {
+                            "output": "__dataset",
+                            "input": "dataset"
+                        }
+                    ]
+                },
+                {
+                    "id": 1,
+                    "mapping": [
+                        {
+                            "output": "dataset",
+                            "input": "referenceDataset"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "id": 4,
+        "stepType": "AssumptionCheckingStep",
+        "stepConfig": {
+            "stepName": "Check Outliers",
+            "assumptionName": "outlier",
+            "isRelaxed": true,
+            "previousStepsConfigs": [
+                {
+                    "id": 3,
+                    "mapping": [
+                        {
+                            "output": "dataset",
+                            "input": "X"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "id": 5,
+        "stepType": "TrainTestSplitStep",
+        "stepConfig": {
+            "stepName": "Do train test split",
+            "previousStepsConfigs": [
+                {
+                    "id": 2,
+                    "mapping": [
+                        {
+                            "output": "dataset",
+                            "input": "Y"
+                        }
+                    ]
+                },
+                {
+                    "id": 4,
+                    "mapping": [
+                        {
+                            "output": "dataset",
+                            "input": "X"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "id": 6,
+        "stepType": "ModelStep",
+        "stepConfig": {
+            "stepName": "Train model",
+            "previousStepsConfigs": [
+                {
+                    "id": 5,
+                    "mapping": [
+                        {
+                            "output": "XTrain",
+                            "input": "X"
+                        },
+                        {
+                            "output": "yTrain",
+                            "input": "Y"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "id": 7,
+        "stepType": "EvaluationStep",
+        "stepConfig": {
+            "stepName": "Evaluate the model",
+            "previousStepsConfigs": [
+                {
+                    "id": 5,
+                    "mapping": [
+                        {
+                            "output": "XTest",
+                            "input": "X"
+                        },
+                        {
+                            "output": "yTest",
+                            "input": "Y"
+                        }
+                    ]
+                },
+                {
+                    "id": 6,
+                    "mapping": [
+                        {
+                            "output": "model",
+                            "input": "model"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+]
