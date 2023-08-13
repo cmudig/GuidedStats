@@ -35,6 +35,5 @@ export function WidgetWritable<T>(name_: string, value_: T, model: DOMWidgetMode
 
 // UI stores
 // NOTE by default all the stores in this file are synced across all widget instances
-export const currentHoveredCol: Writable<string> = writable(undefined);
-export const allowLogs: Writable<boolean> = writable(false);
-export const showIndex: Writable<boolean> = writable(false);
+export const selectedWorkflow: Writable<string> = writable(undefined);
+export const selectedStep: Writable<string> = writable(undefined);

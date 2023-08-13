@@ -7,7 +7,7 @@ import {
   ISerializers,
 } from '@jupyter-widgets/base';
 import { MODULE_NAME, MODULE_VERSION } from './version';
-import Widget from './Widget.svelte'
+import Widget from './Widget.svelte';
 
 export class VizualizerModel extends DOMWidgetModel {
   defaults() {
@@ -20,6 +20,7 @@ export class VizualizerModel extends DOMWidgetModel {
       _view_module: VizualizerModel.view_module,
       _view_module_version: VizualizerModel.view_module_version,
       builtinWorkflows: [],
+      builtinSteps: [],
       dfProfile: {},
       exportedCode: '',
     };
@@ -39,7 +40,8 @@ export class VizualizerModel extends DOMWidgetModel {
 }
 
 export class VizualizerView extends DOMWidgetView {
+
   render() {
     new Widget({ target: this.el, props: { model: this.model } });
-  }
+  };
 }

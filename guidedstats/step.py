@@ -108,8 +108,6 @@ class DataTransformationStep(Step):
             transformationName (str):  the name of transformation
             transformation (Callable): a column-wise transformation applied 
         """
-        if isinstance(transformation,Callable):
-            raise TypeError("transformation is not a function")
         #TBC, should check the output type
         self.selfDefinedTransformations[transformationName] = transformation         
        
@@ -126,30 +124,9 @@ class DataTransformationStep(Step):
         if self._transformation is None:
             raise ValueError("Transformation should be set previously")
         
+        newDataset = self._transformation(dataset)
         
-        self.showBeginning()
-
-        for idx, column in enumerate(dataset.columns):
-            print("  {0}. {1}  ".format(idx+1,column))
-        
-        
-        selectedVariableIdx = set()
-        selectedIdx = None
-        while selectedIdx != "STOP" and len(selectedVariableIdx):
-            #the index is linked to candidateColumns
-            
-            selectedIdx = input("Input the number of column for {}, type STOP to stop   ".format(self._variableType))
-            #TODO check whether idx is an integer and within the range
-            try:
-                idx = int(selectedIdx) - 1
-                if idx >= 0 and idx < len(dataset.columns):
-                    selectedVariableIdx.add(idx)
-            except:
-                continue
-        
-        selectedColumns = [dataset.columns[idx] for idx in list(selectedVariableIdx)]
-        subset = dataset[selectedColumns]
-        return {"dataset":subset}
+        return {"dataset":newDataset}
         
 class LoadDatasetStep(Step):
     
@@ -216,35 +193,35 @@ class VariableSelectionStep(GuidedStep):
         subset = dataset[selectedColumns]
         return {"dataset":subset}
 
-class DataTransformationStep(Step):
-    """
-        DataTransformationStep applies function on column(s) and return a new one
+# class DataTransformationStep(Step):
+#     """
+#         DataTransformationStep applies function on column(s) and return a new one
     
 
-    Args:
-        Step (_type_): _description_
-    """
+#     Args:
+#         Step (_type_): _description_
+#     """
     
-    def __init__(self, stepId: int = None, stepName="step", previousSteps: list = None):
-        super().__init__(stepId, stepName, previousSteps)
-        self.transformation = None
+#     def __init__(self, stepId: int = None, stepName="step", previousSteps: list = None):
+#         super().__init__(stepId, stepName, previousSteps)
+#         self.transformation = None
         
-    def showBeginning(self):
-        print("Well Done! Now  ")
+#     def showBeginning(self):
+#         print("Well Done! Now  ")
         
-    def defineTransformation(self,transformation:Callable):
-        self.transformation = transformation
+#     def defineTransformation(self,transformation:Callable):
+#         self.transformation = transformation
     
-    def setTransformation(self,name:str):
-        #TBC
-        self.transformation = transformations[name]
+#     def setTransformation(self,name:str):
+#         #TBC
+#         self.transformation = transformations[name]
         
-    def forward(self,dataset:pd.DataFrame):
-        """
+#     def forward(self,dataset:pd.DataFrame):
+#         """
 
-        Returns:
-            _type_: _description_
-        """
+#         Returns:
+#             _type_: _description_
+#         """
         
         
         

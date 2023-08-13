@@ -59,6 +59,7 @@
     "@babel/preset-env": "^7.5.0",
     "@jupyterlab/builder": "^3.0.0",
     "@tsconfig/svelte": "^2.0.1",
+    "@types/dagre-d3": "^0.6.3",
     "@types/lodash": "^4.14.186",
     "@types/webpack-env": "^1.13.6",
     "@typescript-eslint/eslint-plugin": "^3.6.0",
@@ -66,6 +67,10 @@
     "acorn": "^7.2.0",
     "autoprefixer": "^10.4.12",
     "css-loader": "^3.2.0",
+    "cytoscape-dagre": "^2.5.0",
+    "d3": "^7.8.5",
+    "dagre": "^0.8.5",
+    "dagre-d3": "^0.6.4",
     "eslint": "^7.4.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.4",
@@ -111,7 +116,7 @@
       }
     },
     "_build": {
-      "load": "static/remoteEntry.250c5e6aba7bf99baecc.js",
+      "load": "static/remoteEntry.c02b459e4d6fab9762d8.js",
       "extension": "./extension"
     }
   },

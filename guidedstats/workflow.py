@@ -71,6 +71,15 @@ class WorkFlow(object):
         self.currentStep = None
         
         self.loadData()
+        
+        self.workflowInfo = {
+            "workflowName": self.workflowName,
+            "dataset": self.dataset,
+            "currentStepNum": 1,
+            "steps":[],
+            "flows":[]
+        }
+
     
     def loadData(self):
         """
@@ -85,10 +94,14 @@ class WorkFlow(object):
     def addFlow(self, lastStep: Step, newStep: Step):
         # TBC, should check the coupling
         newStep.previousSteps.append(lastStep)
+        currentStep.previousStepsConfigs = config["stepConfig"]["previousStepsConfigs"]
+        self.workflowInfo["flows"].append({"sourceStepId":lastStep.stepId,"targetStepId":newStep.stepId})
 
     def deleteFlow(self, lastStep: Step, newStep: Step):
         # TBC, should check the coupling
         newStep.previousSteps.remove(lastStep)
+        self.workflowInfo["flows"].remove({"sourceStepId":lastStep.stepId,"targetStepId":newStep.stepId})
+        
 
     def topologicalSort(self):
         """
@@ -123,6 +136,7 @@ class WorkFlow(object):
             self.stepList.append(step)
             self.lastStep = step
             
+            
     def constructFlows(self):
         for config in _regressionConfig:
             currentStep = self.stepList[config["id"]]
@@ -130,15 +144,13 @@ class WorkFlow(object):
             for pconfig in config["stepConfig"]["previousStepsConfigs"]:
                 previousSteps.append(self.stepList[pconfig["id"]])
             previousSteps = [self.stepList[pconfig["id"]] for pconfig in config["stepConfig"]["previousStepsConfigs"]]
-            currentStep.previousSteps = previousSteps
+            for previousStep in previousSteps:
+                self.addFlow(previousStep,currentStep)
             currentStep.previousStepsConfigs = config["stepConfig"]["previousStepsConfigs"]
     
     @abstractmethod
     def startGuiding(self):
         pass
-
-    
-
 
 class RegressionFlow(WorkFlow):
 

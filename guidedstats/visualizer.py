@@ -9,6 +9,7 @@ Visualizer module for widgets
 """
 
 import os
+from typing import Callable
 import pandas as pd
 
 from ipywidgets import DOMWidget
@@ -21,9 +22,10 @@ import warnings
 
 from ._frontend import module_name, module_version
 
+from .step import DataTransformationStep, Step
 from .workflow import WorkFlow,RegressionFlow
 
-class Visualizer(DOMWidget):
+class Visualizer(DOMWidget,WorkFlow):
     # boilerplate for ipywidgets syncing
     _model_name = Unicode('VizualizerModel').tag(sync=True)
     _model_module = Unicode(module_name).tag(sync=True)
@@ -31,16 +33,12 @@ class Visualizer(DOMWidget):
     _view_name = Unicode('VizualizerView').tag(sync=True)
     _view_module = Unicode(module_name).tag(sync=True)
     _view_module_version = Unicode(module_version).tag(sync=True)
-
-    workflowListInfo = List([{}]).tag(sync=True) #the traitlets counterpart of python attribute workflowList
     
     # our synced traitlet state
-    dfProfile = Dict({}).tag(sync=True)
-    exportedCode = Unicode('').tag(sync=True)
     builtinWorkflows = List().tag(sync=True)
-    builtinSteps = List(['LoadDatasetStep','VariableSelectionStep','ColumnTransformationStep','AssumptionCheckingStep','TrainTestSplitStep','ModelStep','EvaluationStep']).tag(sync=True)
+    builtinSteps = List(['LoadDatasetStep','VariableSelectionStep','DataTransformationStep','AssumptionCheckingStep','TrainTestSplitStep','ModelStep','EvaluationStep']).tag(sync=True)
     selectedWorkflow = Unicode("").tag(sync=True)
-
+    workflowInfo = Dict({}).tag(sync=True)
     # python only state
     # dataframe = None
     # app = JupyterFrontEnd()
@@ -51,8 +49,6 @@ class Visualizer(DOMWidget):
 
         self.dataset = dataset
         
-        self.workflowList = [] #python attribute
-        
         self.observe(self.addWorkFlow, names='selectedWorkflow')
         
         # try:
@@ -60,7 +56,7 @@ class Visualizer(DOMWidget):
         # except ImproperUseError:
         #     warnings.warn("Export to code will not work if dataframe is not assigned to variable before passing to Visualizer.", stacklevel=2)
         #     dfName = 'UnnamedDataFrame'
-
+        
         self.getBuiltinWorkflow()
     
     def getBuiltinWorkflow(self):
@@ -101,7 +97,13 @@ class Visualizer(DOMWidget):
         #TODO
         pass
         
-    
+    def defineStep(self,transformationName:str,transformation:Callable):
+        #TBC
+        step = DataTransformationStep()
+        step.addTransformation(transformationName,transformation)
+        step.setTransformation(transformationName)
+        
+        self.builtinSteps = [*self.builtinSteps,transformationName]
     # def addNewCell(self, codeText):
     #     if codeText == '':
     #         return
