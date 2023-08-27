@@ -2,6 +2,8 @@
 from abc import abstractmethod
 import pandas as pd
 from .step import *
+import traitlets as tl
+import copy as copy
 
 _regressionConfig = [{"id": 1,
                       "stepType": "VariableSelectionStep",
@@ -58,9 +60,15 @@ _regressionConfig = [{"id": 1,
                      ]
 
 
-class WorkFlow(object):
-
+class WorkFlow(tl.HasTraits):
+    workflowName = tl.Unicode()
+    currentStepId = tl.Int()
+    _steps = tl.List(trait=tl.Instance(Step))
+    flows = tl.List(trait=tl.Dict())
+    workflowInfo = tl.Dict()
+    
     def __init__(self, dataset: pd.DataFrame, workflowName="workflow"):
+        
         self.workflowName = workflowName
         self.dataset = dataset
         self.stepList = []
@@ -68,25 +76,42 @@ class WorkFlow(object):
         #step-related state variable
         self.loadStep = None
         self.lastStep = None
-        self.currentStep = None
         
         self.loadData()
-        
-        self.workflowInfo = {
-            "workflowName": self.workflowName,
-            "dataset": self.dataset,
-            "currentStepNum": 1,
-            "steps":[],
-            "flows":[]
-        }
 
+        #initialize workflowInfo
+        self.workflowInfo = {"workflowName":self.workflowName,
+                             "currentStepId":self.currentStepId,
+                             "steps":[],
+                             "flows":[]}
+        
+        self.observe(self.updateWorkflowInfo,names=["workflowName","currentStepId"])
+    
+    @property
+    def steps(self):
+        return self._steps
+
+    @steps.setter
+    def steps(self, value):
+        # Unobserve old steps
+        for step in self._steps:
+            step.unobserve(self.updateWorkflowInfo)
+        # Set the new steps
+        self._steps = value
+        # Observe new steps
+        for step in self._steps:
+            step.observe(self.updateWorkflowInfo)
+    
+    def add_step(self, step):
+        self._steps.append(step)
+        step.observe(self.updateWorkflowInfo)
     
     def loadData(self):
         """
             Mandatory Step for every workflow, load the dataset by initializing a LoadDatasetStep
         """
         loadStep = LoadDatasetStep(stepId=0)
-        self.stepList.append(loadStep)
+        self.stepList.append(loadStep)        
         self.lastStep = loadStep
         self.currentStep = loadStep
         loadStep.dataset = self.dataset        
@@ -94,13 +119,12 @@ class WorkFlow(object):
     def addFlow(self, lastStep: Step, newStep: Step):
         # TBC, should check the coupling
         newStep.previousSteps.append(lastStep)
-        currentStep.previousStepsConfigs = config["stepConfig"]["previousStepsConfigs"]
-        self.workflowInfo["flows"].append({"sourceStepId":lastStep.stepId,"targetStepId":newStep.stepId})
+        # self.workflowInfo["flows"].append({"sourceStepId":lastStep.stepId,"targetStepId":newStep.stepId})
 
     def deleteFlow(self, lastStep: Step, newStep: Step):
         # TBC, should check the coupling
         newStep.previousSteps.remove(lastStep)
-        self.workflowInfo["flows"].remove({"sourceStepId":lastStep.stepId,"targetStepId":newStep.stepId})
+        # self.workflowInfo["flows"].remove({"sourceStepId":lastStep.stepId,"targetStepId":newStep.stepId})
         
 
     def topologicalSort(self):
@@ -124,8 +148,22 @@ class WorkFlow(object):
             sortedSteps.append(step)
         visit(self.lastStep)
         self.stepList = sortedSteps
+        
+        # initialize workflowInfo
+        self.steps = self.stepList
+    
         self.lastStep = self.stepList[-1]
 
+    def updateWorkflowInfo(self, change):
+        stepInfos = []
+        for step in self.steps:
+            stepInfo = {"stepId":step.stepId,"stepName":step.stepName,"stepType":step.stepType,"done":step.done,"isShown":step.isShown,"config":step.config}
+            stepInfos.append(stepInfo)
+        self.workflowInfo = {"workflowName":self.workflowName,
+                             "currentStepId":self.currentStepId,
+                             "steps":stepInfos,
+                             "flows":[]}
+        
     def constructSteps(self):        
         # construct all Steps
         for config in _regressionConfig:
@@ -136,7 +174,7 @@ class WorkFlow(object):
             self.stepList.append(step)
             self.lastStep = step
             
-            
+                        
     def constructFlows(self):
         for config in _regressionConfig:
             currentStep = self.stepList[config["id"]]
@@ -179,10 +217,7 @@ class RegressionFlow(WorkFlow):
 
             print("------------ Step {} ------------".format(count+1))
             outputs = step.forward(**parameters)
-            outputsStorage[step.stepId] = outputs
-            
-        
-
+            outputsStorage[step.stepId] = outputs     
 
 if __name__ == "__main__":
     df = pd.read_csv("test.csv")

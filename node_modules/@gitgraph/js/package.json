@@ -1,0 +1,65 @@
+{
+  "name": "@gitgraph/js",
+  "version": "1.4.0",
+  "description": "Draw pretty git graphs in the browser",
+  "author": "Nicolas Carlo <nicolascarlo.espeon@gmail.com>",
+  "contributors": [
+    {
+      "name": "Fabien Bernard",
+      "email": "fabien0102@gmail.com"
+    }
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nicoespeon/gitgraph.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nicoespeon/gitgraph.js/issues"
+  },
+  "keywords": [
+    "git",
+    "graph",
+    "javascript"
+  ],
+  "homepage": "https://github.com/nicoespeon/gitgraph.js#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./lib/index.js",
+  "browser": "./lib/gitgraph.umd.js",
+  "module": "./lib/index.js",
+  "jsnext:main": "./lib/index.js",
+  "typings": "./lib/index.d.ts",
+  "directories": {
+    "lib": "lib"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "prewatch": "rimraf ./lib",
+    "watch": "tsc -w",
+    "build": "run-s build:*",
+    "build:clear": "rimraf ./lib",
+    "build:tsc": "tsc",
+    "build:bundle": "rollup -c rollup.config.js",
+    "build:minify": "uglifyjs -c -m -o ./lib/gitgraph.umd.min.js -- ./lib/gitgraph.umd.js",
+    "prepare": "npm run build",
+    "version": "auto-changelog -p -l 0 --tag-prefix @gitgraph/js@ && git add CHANGELOG.md"
+  },
+  "dependencies": {
+    "@gitgraph/core": "1.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "9.4.6",
+    "auto-changelog": "1.12.1",
+    "npm-run-all": "4.1.2",
+    "rimraf": "2.6.2",
+    "rollup": "1.10.1",
+    "rollup-plugin-commonjs": "9.3.4",
+    "rollup-plugin-node-resolve": "4.2.3",
+    "uglify-es": "3.3.9"
+  },
+  "gitHead": "9239bab87f6f00dc4c5da1d1f5b3efec47827748"
+}

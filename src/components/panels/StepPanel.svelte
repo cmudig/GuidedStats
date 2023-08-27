@@ -4,7 +4,7 @@
 
 </script>
 
-<div class="px-1.5 py-2 border-4">
+<div class="h-1/2 px-1.5 py-2 border-4">
     {#each steps as step}
         <button class="border-4" on:click={() => {$selectedStep = step}}>{step}</button>
     {/each}

@@ -1,5 +1,5 @@
 export declare type Option = {
-    colName: string;
+    name: string;
     score?: number;
 };
 export declare type Metric = {
@@ -9,16 +9,36 @@ export declare type Metric = {
 };
 export declare type Step = {
     stepName: string;
+    stepId: number;
+    stepType: string;
     done: boolean;
     isShown: boolean;
+    config: StepConfig;
+};
+export declare type StepConfig = {
+    dataset?: string;
+    metric?: string;
+    transformation?: string;
+    variableName?: string;
+    variableCandidates?: Option[];
+    variableResults?: Option[];
+    assumptionName?: string;
+    modelName?: string;
+    modelCandidates?: Option[];
+    modelResults?: Option[];
+    visualization?: Visualization;
+};
+export declare type Visualization = {};
+export declare type Flow = {
+    sourceStepId: number;
+    targetStepId: number;
 };
 export declare type Workflow = {
     workflowName: string;
-    dataset: string;
+    cuurentStepId: number;
     steps: Step[];
-    currentStep: number;
+    flows: Flow[];
 };
-export declare type ModelConfiguration = {};
 export declare type LoadDatasetStep = Step & {
     dataset: string;
 };

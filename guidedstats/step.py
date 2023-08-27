@@ -2,6 +2,7 @@
 from abc import abstractmethod
 import sys
 from typing import Any, Callable
+import traitlets as tl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -19,22 +20,38 @@ transformations = {
     "log": lambda x:np.log(x+1) 
 }
 
-
-
-class Step(object):
+class Step(tl.HasTraits):
+    stepId = tl.Int()
+    stepName = tl.Unicode()
+    stepType = tl.Unicode()
+    done = tl.Bool(False)
+    isShown = tl.Bool(False)
+    config = tl.Dict({})
+    # stepInfo = tl.Dict({})
     """
     base class
     """
-    def __init__(self,stepId:int= None,stepName="step",previousSteps:list=None):
+    def __init__(self,stepId:int= None,stepName="step",previousSteps:list=None,**kwargs):
+                
+        # state variables of Step
+        if stepId is not None:
+            self.stepId = stepId
         self.stepName = stepName
+        self.stepType = self.__class__.__name__
+        self.done = False
+        self.isShown = False
+        
+        #initialize stepInfo
+        # self.stepInfo = {"stepId":self.stepId,"stepName":self.stepName,"stepType":self.stepType,"done":self.done,"isShown":self.isShown,"config":self.config}
+        # self.observe(self.updateStepInfo,names=["stepId","stepName","stepType","done","isShown","config","config_items"])
+
+        
         if previousSteps is None:
             self._previousSteps = []
         else:
             self._previousSteps = previousSteps
         self.previousStepsConfigs = []
-        
-        self.stepId = stepId
-        
+    
     @property
     def previousSteps(self):
         return self._previousSteps
@@ -56,6 +73,9 @@ class Step(object):
         """
         self.showBeginning()
         pass
+    
+    # def updateStepInfo(self,change):
+    #     self.stepInfo = {"stepId":self.stepId,"stepName":self.stepName,"stepType":self.stepType,"done":self.done,"isShown":self.isShown,"config":self.config}
 
 class GuidedStep(Step):
     """
@@ -67,6 +87,7 @@ class GuidedStep(Step):
         if metricName is not None:
             self.metric = MetricWrapper()
             self.metric.setMetric(metricName)
+            self.config["metric"] = metricName
     
     #Utils function
     def computeMetric(self,dataframe:pd.DataFrame,column:str,*referenceColumns:str):
@@ -116,6 +137,7 @@ class DataTransformationStep(Step):
         if transformationName in temp.keys():
             self._transformation = temp[transformationName]
             self._transformationName = transformationName
+            self.config["transformation"] = transformationName
         else:
             raise KeyError("The transformation does not exist")
     
@@ -126,6 +148,7 @@ class DataTransformationStep(Step):
         
         newDataset = self._transformation(dataset)
         
+        self.done = True
         return {"dataset":newDataset}
         
 class LoadDatasetStep(Step):
@@ -141,12 +164,15 @@ class LoadDatasetStep(Step):
     @dataset.setter
     def dataset(self,dataset:pd.DataFrame):
         self._dataset = dataset
+        #TBC
+        # self.config["dataset"]
     
     def showBeginning(self):
         print("Loading the dataset")
         
     def forward(self):
         self.showBeginning()
+        self.done = True
         return {"__dataset":self.dataset}
     
 class VariableSelectionStep(GuidedStep):
@@ -155,6 +181,7 @@ class VariableSelectionStep(GuidedStep):
         super().__init__(stepId, stepName, previousSteps, compare, metricName)
         #TBC, we should allow undecided number of variables
         self._variableType = variableType
+        self.config["variableName"] = variableType
         self.variableNum = variableNum
         self.candidateNum = candidateNum
     
@@ -169,6 +196,7 @@ class VariableSelectionStep(GuidedStep):
         if self._compare:
             print("We find the following variable(s) have the highest {}".format(self.metric._metricName))
             candidateColumns = self.compare(dataset,dataset.columns,self.candidateNum,*referenceDataset.columns)
+            self.config["variableCandidates"] = [{"name": col} for col in candidateColumns] 
         else:
             print("Please select from below: ")
             candidateColumns = dataset.columns
@@ -190,7 +218,9 @@ class VariableSelectionStep(GuidedStep):
                 continue
         
         selectedColumns = [candidateColumns[idx] for idx in list(selectedVariableIdx)]
+        self.config["variableResults"] = [{"name":col} for col in selectedColumns]
         subset = dataset[selectedColumns]
+        self.done = True
         return {"dataset":subset}
 
 # class DataTransformationStep(Step):
@@ -247,6 +277,7 @@ class AssumptionCheckingStep(Step):
         #4. get return from users
         doProceed = input("Should we proceed or not? Type y or n")
         if doProceed == "y" or doProceed == "Y":
+            self.done = True
             return {"dataset":X}
         else:
             sys.exit()
@@ -284,6 +315,8 @@ class TrainTestSplitStep(Step):
         yVal = Y.iloc[validation_indices]
         yTest = Y.iloc[test_indices]
         
+        self.done = True
+        
         return {"XTrain":XTrain, "XVal":XVal, "XTest":XTest, "yTrain":yTrain, "yVal":yVal, "yTest":yTest}
 
 class ModelStep(GuidedStep):
@@ -304,6 +337,9 @@ class ModelStep(GuidedStep):
 
         self.model = linear_model.LinearRegression()
         self.model.fit(X,Y)
+        
+        self.done = True
+        
         #TBC, the model should be wrapped
         return {"model":self.model}
 
@@ -314,7 +350,7 @@ class EvaluationStep(GuidedStep):
     def forward(self,model,X:pd.DataFrame,Y:pd.DataFrame):
         # TBC, should wrap a model object
         #join test dataset for altair visualization
-        Y_hat = model.predict(X).reshape((-1))
+        Y_hat = model.predict(X).reshape((- 1))
         testDataset = pd.DataFrame({"Predicted":Y_hat,"True":Y.to_numpy().reshape((-1))})
         
         # Scatter plot of Predicted vs True
@@ -343,7 +379,8 @@ class EvaluationStep(GuidedStep):
         #     )
             
         # visualization = (baseline+circles).properties(width=400)
-            
+
+        self.done = True
         # return {"visualization":visualization}
         return {}
         #TBC, should introduce metric here

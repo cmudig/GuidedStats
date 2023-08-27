@@ -1,0 +1,68 @@
+{
+  "name": "@gitgraph/core",
+  "version": "1.5.0",
+  "description": "Core of gitgraph, a JavaScript library to draw pretty git graphs",
+  "author": "Nicolas Carlo <nicolascarlo.espeon@gmail.com>",
+  "contributors": [
+    {
+      "name": "Fabien Bernard",
+      "email": "fabien0102@gmail.com"
+    }
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nicoespeon/gitgraph.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nicoespeon/gitgraph.js/issues"
+  },
+  "keywords": [
+    "git",
+    "graph",
+    "javascript"
+  ],
+  "homepage": "https://github.com/nicoespeon/gitgraph.js#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./lib/bundle.umd.js",
+  "module": "./lib/index.js",
+  "jsnext:main": "./lib/index.js",
+  "typings": "./lib/index.d.ts",
+  "scripts": {
+    "prewatch": "rimraf ./lib",
+    "watch": "tsc -w",
+    "test": "jest",
+    "build": "run-s build:*",
+    "build:clear": "rimraf ./lib",
+    "build:tsc": "tsc",
+    "build:bundle": "rollup -c rollup.config.js",
+    "build:browserify": "browserify ./lib/bundle.umd.js -o ./lib/bundle.js",
+    "build:minify": "uglifyjs -c -m -o ./lib/bundle.min.js -- ./lib/bundle.js",
+    "prepare": "npm run build",
+    "version": "auto-changelog -p -l 0 --tag-prefix @gitgraph/core@ && git add CHANGELOG.md",
+    "prepublishOnly": "npm run test"
+  },
+  "devDependencies": {
+    "@types/node": "9.4.6",
+    "auto-changelog": "1.12.1",
+    "browserify": "14.5.0",
+    "npm-run-all": "4.1.2",
+    "rimraf": "2.6.2",
+    "rollup": "0.51.8",
+    "uglify-es": "3.3.9"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$"
+  },
+  "gitHead": "9239bab87f6f00dc4c5da1d1f5b3efec47827748"
+}
