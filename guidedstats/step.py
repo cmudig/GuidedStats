@@ -114,7 +114,7 @@ class GuidedStep(Step):
         return descendingColumns[0:min(len(columns),k)]
 
 class DataTransformationStep(Step):
-    def __init__(self, stepId: int = None, stepName="step", previousSteps: list = None):
+    def __init__(self, stepId: int = None, stepName="Data Transformation", previousSteps: list = None):
         super().__init__(stepId, stepName, previousSteps)
         self._transformation = None
         self._transformationName = None
@@ -153,7 +153,7 @@ class DataTransformationStep(Step):
         
 class LoadDatasetStep(Step):
     
-    def __init__(self, stepId: int = None, stepName="step", previousSteps: list = None):
+    def __init__(self, stepId: int = None, stepName="Load Dataset", previousSteps: list = None):
         super().__init__(stepId, stepName, previousSteps)
         self._dataset = None
         
@@ -177,7 +177,7 @@ class LoadDatasetStep(Step):
     
 class VariableSelectionStep(GuidedStep):
     
-    def __init__(self, variableType:str, variableNum=1, candidateNum=4, stepId: int = None, stepName="step", previousSteps: list = None, compare: bool = False, metricName: str = None):
+    def __init__(self, variableType:str, variableNum=1, candidateNum=4, stepId: int = None, stepName="Select Variable(s)", previousSteps: list = None, compare: bool = False, metricName: str = None):
         super().__init__(stepId, stepName, previousSteps, compare, metricName)
         #TBC, we should allow undecided number of variables
         self._variableType = variableType
@@ -257,7 +257,7 @@ class VariableSelectionStep(GuidedStep):
         
 class AssumptionCheckingStep(Step):
 
-    def __init__(self, stepId: int = None, stepName="step", previousSteps: list = None, assumptionName:str = None, isRelaxed:bool = True):
+    def __init__(self, stepId: int = None, stepName="Check Assumption", previousSteps: list = None, assumptionName:str = None, isRelaxed:bool = True):
         super().__init__(stepId, stepName, previousSteps)
         self.isRelaxed = isRelaxed
         # TBC, if relaxed is True, then even the assumption does not meet the proess will continue 
@@ -288,7 +288,7 @@ class TrainTestSplitStep(Step):
         temporary class, maybe changed to 
     """
     
-    def __init__(self, stepId: int = None, stepName="step", previousSteps: list = None):
+    def __init__(self, stepId: int = None, stepName="Train Test Split", previousSteps: list = None):
         super().__init__(stepId, stepName, previousSteps)
     
     def showBeginning(self):
@@ -321,7 +321,7 @@ class TrainTestSplitStep(Step):
 
 class ModelStep(GuidedStep):
     
-    def __init__(self, stepId: int = None, stepName="step", previousSteps: list = None, compare: bool = False, metricName: str = None):
+    def __init__(self, stepId: int = None, stepName="Train Model", previousSteps: list = None, compare: bool = False, metricName: str = None):
         super().__init__(stepId, stepName, previousSteps, compare, metricName)
         #TBC, should allow more types of models and hyperparameter search
         self.model = None
@@ -344,7 +344,7 @@ class ModelStep(GuidedStep):
         return {"model":self.model}
 
 class EvaluationStep(GuidedStep):
-    def __init__(self, stepId: int = None, stepName="step", previousSteps: list = None, compare: bool = False, metricName: str = None):
+    def __init__(self, stepId: int = None, stepName="Evaluate Model", previousSteps: list = None, compare: bool = False, metricName: str = None):
         super().__init__(stepId, stepName, previousSteps, compare, metricName)
         
     def forward(self,model,X:pd.DataFrame,Y:pd.DataFrame):

@@ -1,14 +1,21 @@
 <script lang="ts">
+    import { setContext } from 'svelte';
+
     import { WidgetWritable } from './stores';
     import type { Workflow } from './interface/interfaces';
-    import WorkflowPanel from './components/panels/WorkflowPanel.svelte';
-    import StepPanel from './components/panels/StepPanel.svelte';
+    import WorkflowSelectionPanel from './components/panels/WorkflowSelectionPanel.svelte';
+    import StepSelectionPanel from './components/panels/StepSelectionPanel.svelte';
     import Dag from './Dag.svelte';
     import { TemplateName, createGitgraph, templateExtend } from '@gitgraph/js';
     import { onMount } from 'svelte';
 
+    import { Graph } from './gitgraph';
+    import DisplayPanel from './components/panels/DisplayPanel.svelte';
+
     let el: HTMLDivElement;
     export let model;
+
+    let canvas: HTMLCanvasElement;
 
     const builtinWorkflows = WidgetWritable<Array<string>>(
         'builtinWorkflows',
@@ -28,17 +35,44 @@
         model
     );
 
+    
     const workflowInfo = WidgetWritable<Workflow>(
         'workflowInfo',
         {
-            workflowName: "",
+            workflowName: '',
             currentStepId: undefined,
             steps: [],
             flows: []
         },
         model
     );
+    
+    setContext('workflowInfo', workflowInfo);
 
+    $:console.log($workflowInfo);
+    // writable for array of any type
+    const dagdata = WidgetWritable<Array<any>>('dagdata', [], model);
+
+    function check(data) {
+        if (data.length > 0) {
+            canvas.width = 300;
+            canvas.height = 300;
+
+            // let ctx = canvas.getContext('2d');
+            // ctx.beginPath();
+            // ctx.arc(150, 150, 50, 0, 2 * Math.PI);
+            // ctx.fill();
+            let graph = new Graph(canvas, data, {"dotRadius": 10, "y_step": 40,"x_step": 40, "lineWidth": 5});
+            let test_canvas = graph.graphCanvas.toHTML();
+            console.log(test_canvas);
+        }
+    };
+
+    $: console.log($dagdata);
+    $: check($dagdata);
+
+    // $: console.log($workflowInfo);
+    // $: console.log($dagdata);
     // function createWorkflow(workflowInfo: Workflow) {
     //     // Get the graph container HTML element.
     //     const graphContainer = el;
@@ -116,15 +150,20 @@
     }
 </script>
 
-<div class="bg-slate-50 border-4 rounded-xl w-full outlayer">
-    <div class="w-2/5 h-full float-left">
-        <WorkflowPanel workflows={$builtinWorkflows} on:message={getWorkflow} />
-        <StepPanel steps={$builtinSteps} />
+<div class="bg-slate-50 rounded-xl w-full h-1/2 outlayer p-4 flex flex-row">
+    <div class="w-1/4 h-full mr-2 float-left flex flex-col">
+        <WorkflowSelectionPanel workflows={$builtinWorkflows} on:message={getWorkflow} />
+        <div class="grow"></div>
+        <StepSelectionPanel steps={$builtinSteps} />
     </div>
-    <div class="w-3/5 float-right" id="graph-container" bind:this={el}>
+    <div class="w-3/5 h-full ml-2 float-left grow">
+        <DisplayPanel steps={$workflowInfo.steps} />
+    </div>
+    <!-- <div class="w-2/3 h-full float-right" id="graph-container" bind:this={el}>
         Step num: {$workflowInfo?.steps?.length}
-        <!-- <Dag /> -->
-    </div>
+        <canvas bind:this={canvas} />
+        <Dag />
+    </div> -->
 </div>
 
 <style global lang="postcss">
@@ -134,7 +173,7 @@
     @tailwind utilities;
 
     .outlayer {
-        height: 600px;
+        height: 400px;
     }
 
     #graph-container {

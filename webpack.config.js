@@ -6,7 +6,7 @@ const SveltePreprocess = require('svelte-preprocess');
 const rules = [
   { test: /\.ts$/, loader: 'ts-loader' },
   { test: /\.js$/, loader: 'source-map-loader' },
-  { test: /\.css$/, use: ['style-loader', 'css-loader']},
+  { test: /\.css$/, use: ['style-loader', 'css-loader', 'postcss-loader']},
   {
     test: /\.svelte$/,
     loader: 'svelte-loader',

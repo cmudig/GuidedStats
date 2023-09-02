@@ -58,13 +58,19 @@ _regressionConfig = [{"id": 1,
                       {"stepName": "Evaluate the model",
                        "previousStepsConfigs": [{"id": 5, "mapping":[{"output":"XTest","input": "X"},{"output":"yTest","input":"Y"}]}, {"id": 6, "mapping":[{"output":"model","input":"model"}]}]}},
                      ]
-
+class Flow(tl.HasTraits):
+    sourceStepId = tl.Int()
+    targetStepId = tl.Int()
+    
+    def __init__(self, sourceStepId, targetStepId):
+        self.sourceStepId = sourceStepId
+        self.targetStepId = targetStepId
 
 class WorkFlow(tl.HasTraits):
     workflowName = tl.Unicode()
     currentStepId = tl.Int()
     _steps = tl.List(trait=tl.Instance(Step))
-    flows = tl.List(trait=tl.Dict())
+    _flows = tl.List(trait=tl.Instance(Flow))
     workflowInfo = tl.Dict()
     
     def __init__(self, dataset: pd.DataFrame, workflowName="workflow"):
@@ -102,9 +108,44 @@ class WorkFlow(tl.HasTraits):
         for step in self._steps:
             step.observe(self.updateWorkflowInfo)
     
-    def add_step(self, step):
+    def addStep(self, step):
         self._steps.append(step)
         step.observe(self.updateWorkflowInfo)
+    
+    @property
+    def flows(self):
+        return self._flows
+        
+    @flows.setter
+    def flows(self, value):
+        # Unobserve old flows
+        for flow in self._flows:
+            flow.unobserve(self.updateWorkflowInfo)
+        # Set the new flows
+        self._flows = value
+        # Observe new flows
+        for flow in self._flows:
+            flow.observe(self.updateWorkflowInfo)
+    
+    def deleteFlow(self, flow):
+        self._flows.remove(flow)
+        flow.unobserve(self.updateWorkflowInfo)
+        
+    def addFlow(self, lastStep: Step, newStep: Step):
+        # TBC, should check the coupling
+        newStep.previousSteps.append(lastStep)
+        # update workflowInfo
+        flow = Flow(sourceStepId=lastStep.stepId,targetStepId=newStep.stepId)
+        self._flows.append(flow)
+        flow.observe(self.updateWorkflowInfo)
+
+    def deleteFlow(self, lastStep: Step, newStep: Step):
+        # TBC, should check the coupling
+        newStep.previousSteps.remove(lastStep)
+        #update workflowInfo
+        flow = next(filter(lambda flow: flow.sourceStepId == lastStep.stepId and flow.targetStepId == newStep.stepId, self._flows))
+        self._flows.remove(flow)
+        flow.unobserve(self.updateWorkflowInfo)
     
     def loadData(self):
         """
@@ -115,17 +156,7 @@ class WorkFlow(tl.HasTraits):
         self.lastStep = loadStep
         self.currentStep = loadStep
         loadStep.dataset = self.dataset        
-
-    def addFlow(self, lastStep: Step, newStep: Step):
-        # TBC, should check the coupling
-        newStep.previousSteps.append(lastStep)
-        # self.workflowInfo["flows"].append({"sourceStepId":lastStep.stepId,"targetStepId":newStep.stepId})
-
-    def deleteFlow(self, lastStep: Step, newStep: Step):
-        # TBC, should check the coupling
-        newStep.previousSteps.remove(lastStep)
-        # self.workflowInfo["flows"].remove({"sourceStepId":lastStep.stepId,"targetStepId":newStep.stepId})
-        
+ 
 
     def topologicalSort(self):
         """
@@ -149,7 +180,7 @@ class WorkFlow(tl.HasTraits):
         visit(self.lastStep)
         self.stepList = sortedSteps
         
-        # initialize workflowInfo
+        # initialize steps attribute in workflowInfo
         self.steps = self.stepList
     
         self.lastStep = self.stepList[-1]
@@ -159,10 +190,16 @@ class WorkFlow(tl.HasTraits):
         for step in self.steps:
             stepInfo = {"stepId":step.stepId,"stepName":step.stepName,"stepType":step.stepType,"done":step.done,"isShown":step.isShown,"config":step.config}
             stepInfos.append(stepInfo)
+            
+        flowInfos = []
+        for flow in self.flows:
+            flowInfo = {"sourceStepId":flow.sourceStepId,"targetStepId":flow.targetStepId}
+            flowInfos.append(flowInfo)
+            
         self.workflowInfo = {"workflowName":self.workflowName,
                              "currentStepId":self.currentStepId,
                              "steps":stepInfos,
-                             "flows":[]}
+                             "flows":flowInfos}
         
     def constructSteps(self):        
         # construct all Steps
@@ -183,6 +220,7 @@ class WorkFlow(tl.HasTraits):
                 previousSteps.append(self.stepList[pconfig["id"]])
             previousSteps = [self.stepList[pconfig["id"]] for pconfig in config["stepConfig"]["previousStepsConfigs"]]
             for previousStep in previousSteps:
+                #update workflowInfo
                 self.addFlow(previousStep,currentStep)
             currentStep.previousStepsConfigs = config["stepConfig"]["previousStepsConfigs"]
     
