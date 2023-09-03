@@ -25,7 +25,7 @@
                     currentHeight;
                 heights.push(currentHeight);
             }
-        };
+        }
 
         return heights;
     }
@@ -37,14 +37,19 @@
     <svg {height} {width}>
         {#if steps !== undefined}
             {#each heights as height, idx}
-                <circle cx={0.5 * width} cy={height} r="8" fill="#D9D9D9" />
+                <circle
+                    cx={0.5 * width}
+                    cy={height}
+                    r="8"
+                    fill={steps[idx].done ? '#17761D' : '#D9D9D9'}
+                />
                 {#if idx < steps.length - 1}
                     <line
                         x1={0.5 * width}
                         y1={height}
                         x2={0.5 * width}
                         y2={heights[idx + 1]}
-                        stroke="#D9D9D9"
+                        stroke={steps[idx].done ? '#17761D' : '#D9D9D9'}
                         stroke-width="3"
                     />
                 {/if}

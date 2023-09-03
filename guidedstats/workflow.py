@@ -73,10 +73,11 @@ class WorkFlow(tl.HasTraits):
     _flows = tl.List(trait=tl.Instance(Flow))
     workflowInfo = tl.Dict()
     
-    def __init__(self, dataset: pd.DataFrame, workflowName="workflow"):
+    def __init__(self, dataset: pd.DataFrame, workflowName="workflow", datasetName="dataset"):
         
         self.workflowName = workflowName
         self.dataset = dataset
+        self.datasetName = datasetName
         self.stepList = []
         
         #step-related state variable
@@ -155,7 +156,8 @@ class WorkFlow(tl.HasTraits):
         self.stepList.append(loadStep)        
         self.lastStep = loadStep
         self.currentStep = loadStep
-        loadStep.dataset = self.dataset        
+        loadStep.dataset = self.dataset
+        loadStep.datasetName = self.datasetName        
  
 
     def topologicalSort(self):
@@ -230,8 +232,8 @@ class WorkFlow(tl.HasTraits):
 
 class RegressionFlow(WorkFlow):
 
-    def __init__(self, dataset: pd.DataFrame, workflowName="Regression workflow"):
-        super().__init__(dataset, workflowName)
+    def __init__(self, dataset: pd.DataFrame, workflowName="Regression workflow",datasetName="dataset"):
+        super().__init__(dataset, workflowName=workflowName, datasetName=datasetName)
 
     def startGuiding(self):
         #1. construct Steps

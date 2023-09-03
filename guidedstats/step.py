@@ -156,6 +156,7 @@ class LoadDatasetStep(Step):
     def __init__(self, stepId: int = None, stepName="Load Dataset", previousSteps: list = None):
         super().__init__(stepId, stepName, previousSteps)
         self._dataset = None
+        self._datasetName = None
         
     @property
     def dataset(self):
@@ -164,8 +165,15 @@ class LoadDatasetStep(Step):
     @dataset.setter
     def dataset(self,dataset:pd.DataFrame):
         self._dataset = dataset
-        #TBC
-        # self.config["dataset"]
+        
+    @property
+    def datasetName(self):
+        return self._datasetName
+    
+    @datasetName.setter
+    def datasetName(self,datasetName:str):
+        self._datasetName = datasetName
+        self.config = {**self.config,"dataset":datasetName}
     
     def showBeginning(self):
         print("Loading the dataset")

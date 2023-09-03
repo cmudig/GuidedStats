@@ -38,9 +38,9 @@
     >
     {#if isShown}
         <div style="grow bg-slate-200">
-            <!-- {#if step.stepType === 'LoadDatasetStep'}
+            {#if step.stepType === 'LoadDatasetStep'}
                 <LoadDatasetStep {step} />
-            {/if} -->
+            {/if}
         </div>
     {/if}
 </div>

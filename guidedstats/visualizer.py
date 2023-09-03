@@ -44,10 +44,11 @@ class Visualizer(DOMWidget):
     workflowInfo = Dict({}).tag(sync=True)
     dagdata = List([]).tag(sync=True)
     
-    def __init__(self, dataset: pd.DataFrame, *args, **kwargs):
+    def __init__(self, dataset: pd.DataFrame, datasetName: str = "dataset", *args, **kwargs):
         super(Visualizer, self).__init__(*args, **kwargs)
 
         self.dataset = dataset
+        self.datasetName = datasetName
         
         self.observe(self.addWorkFlow, names='selectedWorkflow')
         
@@ -60,7 +61,7 @@ class Visualizer(DOMWidget):
     def addWorkFlow(self,change):
         cls = globals()[change["new"]]
         #TBC, dataset stuff should be refined
-        workflow = cls(dataset=self.dataset)
+        workflow = cls(dataset=self.dataset,datasetName=self.datasetName)
         self.workflow = workflow
         self.workflow.observe(self.updateWorkflowInfo,names=["workflowInfo"])
         # self.observe(self.updateWorkflow,names=["workflowInfo"])
