@@ -1,17 +1,20 @@
 <script lang="ts">
     import { getContext } from 'svelte';
-    import type { Step } from '../../interface/interfaces';
+    import type { Step, Workflow } from '../../interface/interfaces';
     import StepWrapper from '../steps/StepWrapper.svelte';
+    import type { Writable } from 'svelte/store';
 
-    const workflowInfo = getContext('workflowInfo');
+    // const workflowInfo = getContext('workflowInfo');
 
     export let steps: Array<Step>;
+
+    export let workflowInfo: Writable<Workflow>;
 </script>
 
-<div class="grow">
-{#if steps !== undefined}
-{#each steps as step, idx}
-<StepWrapper step={step} stepIndex={idx}/>
-{/each}
-{/if}
+<div class="grow step-container">
+    {#if steps !== undefined}
+        {#each steps as step, idx}
+            <StepWrapper {workflowInfo} {step} stepIndex={idx} />
+        {/each}
+    {/if}
 </div>

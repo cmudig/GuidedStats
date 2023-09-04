@@ -21,7 +21,7 @@ assumptions = {
         "isSingleColumn": True,
         "vis_func": outlier,
         "metric_func": [metrics["outlier"]],
-        "summary": "There are {0} outliers fall outside of the 'interquartile range' (IQR)  ",
+        "prompt": "There are {0} outliers fall outside of the 'interquartile range' (IQR) in variable.",
     }
 }
 
@@ -40,7 +40,7 @@ class AssumptionWrapper(object):
                 "isSingleColumn": bool,
                 "vis_func": function | None,
                 "metric_func": list[function] | None,
-                "summary": str,
+                "prompt": str,
             }       
         """
         #TBC, should check the assumption type
@@ -58,6 +58,7 @@ class AssumptionWrapper(object):
         print("******"+self._assumption["display"]+"******")
         
         #TBC
+        assumptionResults = []
         if self._assumption["isSingleColumn"]:
             for col in X.columns:
                 print("Result of {}".format(col))      
@@ -69,7 +70,12 @@ class AssumptionWrapper(object):
                         outputs = metric_func(X[col])
                         metric = outputs[0]
                         metrics.append(metric)
-                print(self._assumption["summary"].format(*metrics))
+                    
+                prompt = self._assumption["prompt"].format(*metrics)
+                assumptionResults.append({"name":str(col),"prompt":prompt})
+          
+                
+        return assumptionResults
 
 if __name__ == "__main__":
     a = AssumptionWrapper()

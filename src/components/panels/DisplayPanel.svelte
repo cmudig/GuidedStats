@@ -1,19 +1,20 @@
 <script lang="ts">
     import { getContext } from 'svelte';
-    import type { Step } from '../../interface/interfaces';
+    import type { Step, Workflow } from '../../interface/interfaces';
     import StepPanel from './StepPanel.svelte';
     import Dag from '../viz/Dag.svelte';
+    import type { Writable } from 'svelte/store';
     export let steps: Array<Step>;
     let height: number;
 
-    const workflowInfo = getContext('workflowInfo');
+    const workflowInfo:Writable<Workflow> = getContext('workflowInfo');
 </script>
 
 <div 
 class="pnl bg-white h-full w-full border-l-8 rounded-xl flex"
 bind:clientHeight={height}>
 <Dag steps={steps} />
-<StepPanel steps={steps}/>
+<StepPanel workflowInfo={workflowInfo} steps={steps}/>
 </div>
 
 <style>
@@ -22,5 +23,13 @@ bind:clientHeight={height}>
         border-left-width: 8px;
         border-color: #D86465;
         height: 100%;
+        overflow-y: scroll;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
         }
+
+    .pnl::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+    }
 </style>

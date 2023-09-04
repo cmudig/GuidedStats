@@ -57,6 +57,7 @@
   "devDependencies": {
     "@babel/core": "^7.5.0",
     "@babel/preset-env": "^7.5.0",
+    "@bulatdashiev/svelte-slider": "^1.0.3",
     "@gitgraph/js": "^1.4.0",
     "@jupyterlab/builder": "^3.0.0",
     "@tsconfig/svelte": "^2.0.1",
@@ -93,7 +94,7 @@
     "stylelint-config-recommended": "^7.0.0",
     "stylelint-config-standard": "~25.0.0",
     "stylelint-prettier": "^2.0.0",
-    "svelte": "^3.50.1",
+    "svelte": "^3.59.2",
     "svelte-collapse": "^0.1.1",
     "svelte-loader": "^3.1.1",
     "svelte-loading-spinners": "^0.1.7",

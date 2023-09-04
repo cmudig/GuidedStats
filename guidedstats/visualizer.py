@@ -26,7 +26,7 @@ from ._frontend import module_name, module_version
 from .step import DataTransformationStep, Step
 from .workflow import WorkFlow,RegressionFlow
 
-class Visualizer(DOMWidget):
+class GuidedStats(DOMWidget):
     # boilerplate for ipywidgets syncing
     _model_name = Unicode('VizualizerModel').tag(sync=True)
     _model_module = Unicode(module_name).tag(sync=True)
@@ -45,7 +45,7 @@ class Visualizer(DOMWidget):
     dagdata = List([]).tag(sync=True)
     
     def __init__(self, dataset: pd.DataFrame, datasetName: str = "dataset", *args, **kwargs):
-        super(Visualizer, self).__init__(*args, **kwargs)
+        super(GuidedStats, self).__init__(*args, **kwargs)
 
         self.dataset = dataset
         self.datasetName = datasetName
@@ -67,8 +67,20 @@ class Visualizer(DOMWidget):
         # self.observe(self.updateWorkflow,names=["workflowInfo"])
         self.workflow.startGuiding()
     
-    def updateWorkflowInfo(self,change):
-        self.workflowInfo = self.workflow.workflowInfo
+    def updateWorkflowInfo(self, change):
+        # with open("./test.txt", "a+") as f:
+        #     f.write("updateWorkflowInfo onProceeding: " + str(self.workflow.onProceeding) + "\n")
+        # if self.workflow.onProceeding == False:
+        new_info = self.workflow.workflowInfo
+        if new_info != self.workflowInfo:
+            self.workflowInfo = new_info
+
+    @tl.observe("workflowInfo")
+    def onObserveWorkflowInfo(self, change):
+        # if self.workflow.onProceeding == False:
+        new_info = change["new"]
+        if new_info != self.workflow.workflowInfo:
+            self.workflow.workflowInfo = new_info
 
     def deleteFlow(self,workflow:WorkFlow):
         #TODO

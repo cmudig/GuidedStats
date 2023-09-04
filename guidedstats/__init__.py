@@ -4,7 +4,7 @@
 # Copyright (c) Yuqi(Adam) Zhang.
 # Distributed under the terms of the Modified BSD License.
 
-from .visualizer import Visualizer
+from .visualizer import GuidedStats
 from ._version import __version__, version_info
 
 def _jupyter_labextension_paths():
