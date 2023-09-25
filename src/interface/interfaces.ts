@@ -7,6 +7,7 @@ export type Option = {
 export type Parameter = {
     name: string;
     value: number | string;
+    pvalue?: number;
 }
 
 // export type MetricResult = {
@@ -38,17 +39,38 @@ export type StepConfig = {
     variableCandidates?: Option[];
     variableResults?: Option[];
     assumptionName?: string;
+    assumptionCandidates?: Option[];
     assumptionResults?: AssumptionResult[];
+    transformationName?: string;
     trainSize?: number;
     modelName?: string;
     modelParameters?: Parameter[];
     modelCandidates?: Option[];
     modelResults?: Option[];
-    visualization?: Visualization;
+    viz?: Visualization;
 }
 
 export type Visualization = {
     //TBC
+    vizType: string;
+    xLabel?: string;
+    yLabel?: string;
+    vizStats: BoxPlotStats[] | ScatterPlotStats[];
+}
+
+export type BoxPlotStats = {
+    name: string;
+    lower: number;
+    q1: number;
+    median: number;
+    q3: number;
+    upper: number;
+    outliers: number[];
+}
+
+export type ScatterPlotStats = {
+    "x": number;
+    "y": number;
 }
 
 export type Flow = {
@@ -76,8 +98,11 @@ export type VariableSelectionStep = GuidedStep & {
     selectionResults:Option[];
 }
 
-
-
 export type ModelStep = GuidedStep & {
     modelName: string;
+}
+
+export type selectedStepInfo = {
+    stepType: string;
+    stepPos: number;
 }

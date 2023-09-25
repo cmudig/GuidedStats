@@ -3,14 +3,16 @@ module.exports = {
       'eslint:recommended',
       'plugin:@typescript-eslint/eslint-recommended',
       'plugin:@typescript-eslint/recommended',
-      'plugin:prettier/recommended'
+      'plugin:prettier/recommended',
+      'plugin:svelte/recommended'
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
       project: 'tsconfig.json',
+      extraFileExtensions: ['.svelte'],
       sourceType: 'module'
   },
-  plugins: ['@typescript-eslint', 'svelte3'],
+  plugins: ['@typescript-eslint'],
   rules: {
       '@typescript-eslint/no-unused-vars': ['warn', { args: 'none' }],
       '@typescript-eslint/no-explicit-any': 'off',
@@ -28,7 +30,11 @@ module.exports = {
   overrides: [
       {
           files: ['**/*.svelte'],
-          processor: 'svelte3/svelte3'
+          parser: 'svelte-eslint-parser',
+          parserOptions: {
+            parser: '@typescript-eslint/parser'
+      }
+        //   processor: 'svelte-eslint-parser'
       }
   ]
 };

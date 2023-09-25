@@ -1,28 +1,31 @@
 <script lang="ts">
-    // import { selectedWorkflow } from '../../stores';
     import { createEventDispatcher } from 'svelte';
+
+    import { onSelectingStep } from '../../stores';
+
     import DefineIcon from '../icons/DefineIcon.svelte';
     import WorkflowIcon from '../icons/WorkflowIcon.svelte';
     export let workflows: Array<string> = undefined;
 
     const dispatch = createEventDispatcher();
+
 </script>
 
-<div class="pnl grow bg-white w-full mb-2 border-2 rounded-lg">
-    <div class="flex ">
-        <span class="font-bold text-2xl">Workflow</span>
+<div class={"pnl grow bg-white w-full mb-2 border-2 rounded-lg" + (($onSelectingStep)? " opacity-40": "")}>
+    <div class="flex p-2">
+        <span class="font-bold">Workflow</span>
         <div class="grow" />
         <DefineIcon />
     </div>
     <div>
         {#each workflows as workflow}
             <button
-                class="w-full flex px-2 hover:bg-slate-100"
+                class="w-full flex p-0.5 hover:bg-slate-100 overflow-hidden"
                 on:click={() => {
                     dispatch('message', { selectedWorkflow: workflow });
                 }}>
                 <WorkflowIcon width="1.5em" height="1.5em" />
-                <span style="color:#807E7E">{workflow}</span>
+                <span class="px-1" style="color:#807E7E">{workflow}</span>
                 </button
             >
         {/each}
@@ -33,5 +36,12 @@
     .pnl {
         min-height: 45%;
         box-shadow: 6px 6px 12px -3px rgba(0, 0, 0, 0.6);
+        overflow-y: scroll;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .pnl::-webkit-scrollbar {
+        width: 0;
+        height: 0;
     }
 </style>

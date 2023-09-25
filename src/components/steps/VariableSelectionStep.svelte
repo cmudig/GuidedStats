@@ -3,6 +3,7 @@
     import type { Step, Option, Workflow } from '../../interface/interfaces';
     import type { Writable } from 'svelte/store';
     import { getContext } from 'svelte';
+    import { deepCopy } from '../../utils';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
 
@@ -11,20 +12,20 @@
     //javascript set
     let variableResults: Set<Option> = new Set();
 
-    function addVariable(variable: Option) {
-        variableResults.add(variable);
-    }
-
-    function deepCopy(obj) {
-        return JSON.parse(JSON.stringify(obj));
-    }
+    function toggleVariable(variable: Option) {
+        if(variableResults.has(variable)){
+            variableResults.delete(variable);
+        } else {
+            variableResults.add(variable);
+        }
+    };
 
     function updateVariableResults() {
         let results = Array.from(variableResults);
         let info = deepCopy($workflowInfo);
         info.steps[stepIndex].config.variableResults = results;
         workflowInfo.set(info);
-    }
+    };
 
     $: console.log(step);
 </script>
@@ -51,8 +52,8 @@
         >
             {#each step.config.variableCandidates as variable}
                 <button
-                    class="w-full border-2"
-                    on:click={() => addVariable(variable)}
+                    class={"w-full border-2 hover:bg-slate-100"+ (variableResults.has(variable)? " bg-slate-200": "")}
+                    on:click={() => toggleVariable(variable)}
                     >{variable.name}{_.isUndefined(variable.score)? "": `: ${variable.score.toFixed(4)}`}</button
                 >
             {/each}

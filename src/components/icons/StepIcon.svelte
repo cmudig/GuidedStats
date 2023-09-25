@@ -1,11 +1,12 @@
 <!-- Copyright: MPL License https://www.svgrepo.com/svg/448544/node -->
 <script lang="ts">
-    export let width: string = '1em';
-    export let height: string = '1em';
+    export let minWidth: string = '1.5em';
+    export let width: string = '1.5em';
+    export let height: string = '1.5em';
     export let fill: string = '#807E7E';
 </script>
 
-<svg {width} {height} viewBox="0 0 24 24" fill="none" fill-rule="evenodd">
+<svg style="min-width: {minWidth}" {width} {height} viewBox="0 -4 24 24" fill="none" fill-rule="evenodd">
     <path
         {fill}
         fill-rule="evenodd"

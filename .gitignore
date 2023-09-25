@@ -7,5 +7,5 @@ node_modules/
 *.egg-info/
 .ipynb_checkpoints
 *.tsbuildinfo
-
+dist/
 .DS_Store

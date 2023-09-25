@@ -35,7 +35,7 @@ export function WidgetWritable<T>(name_: string, value_: T, model: DOMWidgetMode
   };
 }
 
-// UI stores
-// NOTE by default all the stores in this file are synced across all widget instances
-// export const selectedWorkflow: Writable<string> = writable(undefined);
-export const selectedStep: Writable<string> = writable(undefined);
+// UI stores, used to communicate between components
+export const onSelectingStep = writable(false);
+export const newStepPos = writable(-1);
+export const newStepType = writable("");

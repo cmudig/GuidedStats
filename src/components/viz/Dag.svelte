@@ -24,7 +24,9 @@
                     (step.isShown ? 5 * stepHeight : stepHeight) +
                     currentHeight;
                 heights.push(currentHeight);
-            }
+            };
+            
+            height = heights[heights.length - 1] + ((steps[steps.length - 1].isShown) ? 4.5 * stepHeight : 0.5 * stepHeight);
         }
 
         return heights;

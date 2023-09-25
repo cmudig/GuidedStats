@@ -23,7 +23,7 @@ from ipylab import JupyterFrontEnd
 
 from ._frontend import module_name, module_version
 
-from .step import DataTransformationStep, Step
+from .step import *
 from .workflow import WorkFlow,RegressionFlow
 
 class GuidedStats(DOMWidget):
@@ -39,6 +39,7 @@ class GuidedStats(DOMWidget):
     builtinWorkflows = List().tag(sync=True)
     builtinSteps = List(['LoadDatasetStep','VariableSelectionStep','DataTransformationStep','AssumptionCheckingStep','TrainTestSplitStep','ModelStep','EvaluationStep']).tag(sync=True)
     selectedWorkflow = Unicode("").tag(sync=True)
+    selectedStepInfo = Dict({}).tag(sync=True) # {stepType: the name of step, stepPos: the stepId of its subsequent step}
     
     workflow = Instance(WorkFlow)
     workflowInfo = Dict({}).tag(sync=True)
@@ -63,6 +64,7 @@ class GuidedStats(DOMWidget):
         #TBC, dataset stuff should be refined
         workflow = cls(dataset=self.dataset,datasetName=self.datasetName)
         self.workflow = workflow
+        self.workflow.visualizer = self
         self.workflow.observe(self.updateWorkflowInfo,names=["workflowInfo"])
         # self.observe(self.updateWorkflow,names=["workflowInfo"])
         self.workflow.startGuiding()
@@ -77,14 +79,20 @@ class GuidedStats(DOMWidget):
 
     @tl.observe("workflowInfo")
     def onObserveWorkflowInfo(self, change):
-        # if self.workflow.onProceeding == False:
-        new_info = change["new"]
-        if new_info != self.workflow.workflowInfo:
-            self.workflow.workflowInfo = new_info
+        if self.workflow.isUpdatingWorkflowInfo == False:
+            new_info = change["new"]
+            if new_info != self.workflow.workflowInfo:
+                self.workflow.workflowInfo = new_info
 
     def deleteFlow(self,workflow:WorkFlow):
         #TODO
         pass
+    
+    @tl.observe("selectedStepInfo")
+    def addStep(self,change):
+        stepInfo = change["new"]
+        self.workflow.addStep(stepInfo["stepType"],stepInfo["stepPos"])
+        
         
     def defineStep(self,transformationName:str,transformation:Callable):
         #TBC
@@ -93,75 +101,4 @@ class GuidedStats(DOMWidget):
         step.setTransformation(transformationName)
         
         self.builtinSteps = [*self.builtinSteps,transformationName]
-        
-    def createDAGData(self):
-        step_pos = {}
-        last_steps_in_branch = {} #{branch:stepId}
-        flows = sorted(self.workflowInfo["flows"],key=lambda flow:flow["sourceStepId"])
-        grouped_flows = {source:[flow["targetStepId"] for flow in group] for source,group in groupby(flows, key=lambda flow: flow["sourceStepId"])}# {source:[...targets]}    
 
-        for i,step in enumerate(self.workflowInfo["steps"]):
-            y = i
-
-            branch = None
-            branchFound = False
-
-            if len(last_steps_in_branch) == 0:
-                branch = 0
-                branchFound = True
-            else:
-                for j,last_step_id in last_steps_in_branch.items(): 
-                    branch = j
-                    if step["stepId"] in grouped_flows[last_step_id]:
-                        branch = j
-                        branchFound = True
-                        break                 
-            if branchFound:        
-                step_pos[step["stepId"]] = [branch,y,branch] #[x_pos,y_pos,branch]
-                last_steps_in_branch[branch] = step["stepId"]
-            else:
-                branch += 1
-                step_pos[step["stepId"]] = [branch,y,branch] #[x_pos,y_pos,branch]
-                last_steps_in_branch[branch] = step["stepId"]
-            
-        dagdata = []
-        max_branch = 0 # for current commit, the maximum number of branches horizontally 
-        for source,[x_pos,y_pos,branch] in step_pos.items():
-            dot = [x_pos,branch]
-            routes = []
-            if source in grouped_flows:
-                for target in grouped_flows[source]:
-                    max_branch = max(step_pos[target][2],max_branch)
-                    routes.append([step_pos[source][0],step_pos[target][0],step_pos[target][2]])
-            
-            #TBC
-            merged_branches = []
-            if step_pos[source][2] > step_pos[target][2]: #merge
-                merged_branches.append(step_pos[source][2])
-            print(source)
-            print(merged_branches)
-            print(max_branch)
-            while max_branch in merged_branches:
-                max_branch -= 1
-            
-            for i in range(max_branch+1):
-                if i not in merged_branches:
-                    routes.append([i,i,i])
-                
-            dagdata.append([source,dot,routes])
-        
-        # for source,targets in grouped_flows.items():
-        #     dot = [step_pos[source][0],step_pos[source][2]]
-        #     routes = []
-        #     for target in targets:
-        #         routes.append([step_pos[source][0],step_pos[target][0],step_pos[target][2]])
-        #     dagdata.append([source,dot,routes])
-        
-        self.dagdata = dagdata
-
-
-    # def addNewCell(self, codeText):
-    #     if codeText == '':
-    #         return
-    #     self.app.commands.execute('notebook:insert-cell-below')
-    #     self.app.commands.execute('notebook:replace-selection', {'text': codeText})

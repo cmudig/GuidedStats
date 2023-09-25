@@ -1,6 +1,6 @@
 <script lang="ts">
-    export let width: string = '1em';
-    export let height: string = '1em';
+    export let width: string = '1.5em';
+    export let height: string = '1.5em';
     export let fill: string = '#807E7E';
 </script>
 
