@@ -35,7 +35,7 @@
 
 <div class="dag">
     <svg {height} {width}>
-        {#if steps !== undefined}
+        {#if steps !== undefined && steps.length > 0}
             {#each heights as height, idx}
                 <circle
                     cx={0.5 * width}

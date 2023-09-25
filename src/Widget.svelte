@@ -5,9 +5,6 @@
     import type { Workflow } from './interface/interfaces';
     import WorkflowSelectionPanel from './components/panels/WorkflowSelectionPanel.svelte';
     import StepSelectionPanel from './components/panels/StepSelectionPanel.svelte';
-    import Dag from './Dag.svelte';
-    import { TemplateName, createGitgraph, templateExtend } from '@gitgraph/js';
-    import { onMount } from 'svelte';
 
     import { Graph } from './gitgraph';
     import DisplayPanel from './components/panels/DisplayPanel.svelte';
@@ -35,7 +32,6 @@
         model
     );
 
-    
     const workflowInfo = WidgetWritable<Workflow>(
         'workflowInfo',
         {
@@ -47,9 +43,10 @@
         model
     );
     
+
     setContext('workflowInfo', workflowInfo);
 
-    $:console.log($workflowInfo);
+    $: console.log($workflowInfo);
     // writable for array of any type
     const dagdata = WidgetWritable<Array<any>>('dagdata', [], model);
 
@@ -62,11 +59,16 @@
             // ctx.beginPath();
             // ctx.arc(150, 150, 50, 0, 2 * Math.PI);
             // ctx.fill();
-            let graph = new Graph(canvas, data, {"dotRadius": 10, "y_step": 40,"x_step": 40, "lineWidth": 5});
+            let graph = new Graph(canvas, data, {
+                dotRadius: 10,
+                y_step: 40,
+                x_step: 40,
+                lineWidth: 5
+            });
             let test_canvas = graph.graphCanvas.toHTML();
             console.log(test_canvas);
         }
-    };
+    }
 
     $: console.log($dagdata);
     $: check($dagdata);
@@ -152,8 +154,11 @@
 
 <div class="bg-slate-50 rounded-xl w-full h-1/2 outlayer p-4 flex flex-row">
     <div class="w-1/4 h-full mr-2 float-left flex flex-col">
-        <WorkflowSelectionPanel workflows={$builtinWorkflows} on:message={getWorkflow} />
-        <div class="grow"></div>
+        <WorkflowSelectionPanel
+            workflows={$builtinWorkflows}
+            on:message={getWorkflow}
+        />
+        <div class="grow" />
         <StepSelectionPanel steps={$builtinSteps} />
     </div>
     <div class="w-3/5 h-full ml-2 float-left grow">

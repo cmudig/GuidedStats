@@ -2,6 +2,7 @@
     import _ from 'lodash';
     import type { Step } from '../../interface/interfaces';
     export let step: Step = undefined;
+    export let stepIndex: number = undefined;
 </script>
 
 <div>
