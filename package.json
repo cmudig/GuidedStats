@@ -52,7 +52,8 @@
     "d3-shape": "^3.1.0",
     "d3-time": "^3.0.0",
     "d3-time-format": "^4.1.0",
-    "postcss-loader": "^7.3.3"
+    "postcss-loader": "^7.3.3",
+    "vega-embed": "^6.23.0"
   },
   "devDependencies": {
     "@babel/core": "^7.5.0",
