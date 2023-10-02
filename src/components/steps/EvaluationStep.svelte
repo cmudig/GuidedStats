@@ -1,15 +1,10 @@
 <script lang="ts">
-    import _, { isUndefined } from 'lodash';
-    import DataTable, { Head, Body, Row, Cell } from '@smui/data-table';
-    import type { Step, Workflow } from '../../interface/interfaces';
-    import { getContext } from 'svelte';
-    import type { Writable } from 'svelte/store';
+    import _ from 'lodash';
+    import type { Step } from '../../interface/interfaces';
     import { getScatterPlotStats } from '../viz/action/visualization';
     import embed from 'vega-embed';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
-
-    const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
     //buttons
     if (!_.isUndefined(step?.config?.viz)) {
@@ -33,28 +28,26 @@
                     <span>{modelResult.name} : {modelResult.score}</span>
                 {/each}
             {/if}
-            <DataTable table$aria-label="People list" style="max-width: 100%;">
-                <Head>
-                  <Row>
-                    <Cell>Coefficient</Cell>
-                    <Cell numeric>Value</Cell>
-                    <Cell numeric>P</Cell>
-                  </Row>
-                </Head>
-                <Body>
-                    {#if !_.isUndefined(step?.config?.modelParameters)}
-                    {#each step.config.modelParameters as param}
-                    <Row>
-                        <Cell>{param.name}</Cell>
-                        <Cell numeric>{param.value}</Cell>
-                        {#if !_.isUndefined(param?.pvalue)}
-                        <Cell numeric>{param.pvalue}</Cell>
-                        {/if}
-                      </Row>
-                    {/each}
+            <table>
+                <tr>
+                    <th>Coefficient</th>
+                    <th>Value</th>
+                    <th>P</th>
+                </tr>
+                {#if !_.isUndefined(step?.config?.modelParameters)}
+                {#each step.config.modelParameters as param}
+                <tr>
+                    <td>{param.name}</td>
+                    <td>{param.value}</td>
+                    {#if !_.isUndefined(param?.pvalue)}
+                    <td>{param.pvalue}</td>
+                    {:else}
+                    <td></td>
                     {/if}
-                </Body>
-              </DataTable>           
+                </tr>
+                {/each}
+                {/if}
+            </table>
         </div>
     </div>
 </div>
