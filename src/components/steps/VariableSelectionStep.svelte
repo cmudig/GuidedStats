@@ -4,30 +4,32 @@
     import type { Writable } from 'svelte/store';
     import { getContext } from 'svelte';
     import { deepCopy } from '../../utils';
+    import Done from '../icons/Done.svelte';
+    import Tooltip from '../tooltip/Tooltip.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
     //javascript set
-    let variableResults: Set<Option> = new Set();
+    $: variableResults = new Array<Option>();
 
     function toggleVariable(variable: Option) {
-        if(variableResults.has(variable)){
-            variableResults.delete(variable);
+        if(variableResults.includes(variable)){
+            variableResults.splice(variableResults.indexOf(variable), 1);
         } else {
-            variableResults.add(variable);
-        }
+            variableResults.push(variable);
+        };
+        variableResults = [...variableResults];
     };
 
     function updateVariableResults() {
-        let results = Array.from(variableResults);
+        let results = variableResults;
         let info = deepCopy($workflowInfo);
         info.steps[stepIndex].config.variableResults = results;
         workflowInfo.set(info);
+        console.log("check");
     };
-
-    $: console.log(step);
 </script>
 
 <div class="flex flex-col">
@@ -46,34 +48,32 @@
             > from below:
         {/if}
     </div>
-    <div class="place-content-center flex">
+    <div class="flex">
+        <div class="grow" />
         <div
-            class="variable-container w-1/2 p-2 overflow-hidden bg-white border-2"
+            class="variable-container py-2 m-2 overflow-hidden bg-white border-2 flex flex-col"
         >
             {#each step.config.variableCandidates as variable}
-                <button
-                    class={"w-full border-2 hover:bg-slate-100"+ (variableResults.has(variable)? " bg-slate-200": "")}
+            <button
+                    class="hover:bg-slate-100 {variableResults.map(d => d.name).includes(variable.name)? ' bg-gray-300': ''}"
                     on:click={() => toggleVariable(variable)}
-                    >{variable.name}{_.isUndefined(variable.score)? "": `: ${variable.score.toFixed(4)}`}</button
+                    ><span class="px-2">{variable.name}{_.isUndefined(variable.score)? "": `: ${variable.score.toFixed(4)}`}</span></button
                 >
             {/each}
         </div>
-        <div class="w-1/6 flex flex-col p-2 overflow-hidden bg-white border-2">
-            <button class="border-2">
-                <span class="font-bold">Skip</span>
-            </button>
-            <div class="grow" />
-            <button class="border-2" on:click={updateVariableResults}>
-                <span class="font-bold">Done</span>
-            </button>
-        </div>
+        <div class="grow" />
+    </div>
+    <div class="flex">
+        <div class="grow" />
+        <Tooltip title="Done">
+            <button on:click={updateVariableResults}><Done /></button>
+        </Tooltip>
     </div>
 </div>
 
 <style>
     .variable-container {
         height: 120px;
-        width: 240px;
         overflow-y: scroll;
         scrollbar-width: none;
         -ms-overflow-style: none;

@@ -5,7 +5,11 @@ node_modules/
 .eslintcache
 .stylelintcache
 *.egg-info/
-.ipynb_checkpoints
+examples/.ipynb_checkpoints/
 *.tsbuildinfo
 dist/
 .DS_Store
+.vscode/
+*/__pycache__/
+*/labextension/
+*/nbextension/index.js

@@ -20,7 +20,7 @@ _regressionConfig = [
                       "stepType": "VariableSelectionStep",
                       "stepConfig": # This is for the initialization of Steps
                       {"stepName": "Select Dependent Variable",
-                       "variableType": "dependent",
+                       "variableType": "dependent variable",
                        "variableNum": 1,
                        "candidateNum": 4,
                        "compare":  False,
@@ -38,7 +38,7 @@ _regressionConfig = [
                       "stepType": "VariableSelectionStep",
                       "stepConfig":
                       {"stepName": "Select Independent Variables",
-                       "variableType": "independent",
+                       "variableType": "independent variables",
                        # TBC, should be able to select different number of variables
                        "variableNum": 3,
                        "candidateNum": 15,

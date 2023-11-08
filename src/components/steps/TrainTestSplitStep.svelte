@@ -1,10 +1,12 @@
 <script lang="ts">
     import _ from 'lodash';
     import {deepCopy} from '../../utils';
+    import Tooltip from '../tooltip/Tooltip.svelte';
     import Range from '../bars/Range.svelte';
     import type { Step, Workflow } from '../../interface/interfaces';
     import type { Writable } from 'svelte/store';
     import { getContext } from 'svelte';
+    import Done from '../icons/Done.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
 
@@ -48,15 +50,12 @@
                 >
             </div>
         </div>
-        <div class="w-1/6 flex flex-col p-2 overflow-hidden bg-white border-2">
-            <button class="border-2">
-                <span class="font-bold">Skip</span>
-            </button>
-            <div class="grow" />
-            <button class="border-2" on:click={updateSizeResult}>
-                <span class="font-bold">Done</span>
-            </button>
-        </div>
+    </div>
+    <div class="flex">
+        <div class="grow" />
+        <Tooltip title="Done">
+            <button on:click={updateSizeResult}><Done /></button>
+        </Tooltip>
     </div>
 </div>
 

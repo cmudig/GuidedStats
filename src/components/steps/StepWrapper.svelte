@@ -15,6 +15,7 @@
     import DataTransformationStep from './DataTransformationStep.svelte';
 
     import AddIcon from '../icons/AddIcon.svelte';
+    import Tooltip from '../tooltip/Tooltip.svelte';
 
     export let step: Step;
     export let stepIndex: number;
@@ -46,21 +47,23 @@
 
 {#if !_.isUndefined(step)}
     <div
-        class={'card p-2.5 hover:bg-slate-100' + (isShown ? ' bg-slate-200' : '')}
+        class='card p-2.5 flex-row'
         style="height:{cardHeight}px"
     >
-    <div class="flex">
+    <!-- Card -->
+    <div class="flex hover:bg-slate-100">
         <button on:click={() => unfold()}>
         <span class="inline-block align-middle font-bold"
             >Step {stepIndex + 1} {step.stepName}</span
         ></button>
         <div class="grow"></div>
         <button on:click={addStep}>
-            <AddIcon />
+            <Tooltip title="Add Step Below"><AddIcon /></Tooltip>
         </button>
-    </div>      
+    </div>
+    <!-- The panel -->      
         {#if isShown}
-            <div style="grow bg-slate-200">
+            <div style="grow">
                 {#if step.stepType === 'LoadDatasetStep'}
                     <LoadDatasetStep {step} {stepIndex} />
                 {/if}

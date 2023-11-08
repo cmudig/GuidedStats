@@ -40,7 +40,7 @@ export class VizualizerModel extends DOMWidgetModel {
 }
 
 export class VizualizerView extends DOMWidgetView {
-
+  
   render() {
     new Widget({ target: this.el, props: { model: this.model } });
   };

@@ -124,9 +124,6 @@ class Step(tl.HasTraits):
         pass
         
     
-    # def updateStepInfo(self,change):
-    #     self.stepInfo = {"stepId":self.stepId,"stepName":self.stepName,"stepType":self.stepType,"done":self.done,"isShown":self.isShown,"config":self.config}
-
 class GuidedStep(Step):
     """
         GuidedStep suggests potentially insightful column(s) based on selected metrics
@@ -267,11 +264,10 @@ class LoadDatasetStep(Step):
 class VariableSelectionStep(GuidedStep):
     
     def __init__(self, variableType:str, variableNum=1, candidateNum=4, stepId: int = None, stepName="Select Variable(s)",  succeedLastStepOutput=False, previousSteps: list = None, compare: bool = False, metricName: str = None):
-        if variableType == "independent":
+        if variableType == "independent variables":
             previousSteps = ["dataset","referenceDataset"]
-        elif variableType == "dependent":
+        elif variableType == "dependent variable":
             previousSteps = ["dataset"]
-        print(previousSteps)
         super().__init__(stepId, stepName, succeedLastStepOutput, previousSteps, compare, metricName)
         #TBC, we should allow undecided number of variables
         self._variableType = variableType

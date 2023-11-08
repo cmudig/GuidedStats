@@ -52,6 +52,7 @@
     "d3-shape": "^3.1.0",
     "d3-time": "^3.0.0",
     "d3-time-format": "^4.1.0",
+    "flowbite-svelte-icons": "^0.4.4",
     "postcss-loader": "^7.3.3"
   },
   "devDependencies": {
@@ -96,10 +97,12 @@
     "svelte-loader": "^3.1.9",
     "svelte-loading-spinners": "^0.1.7",
     "svelte-preprocess": "^5.0.4",
+    "svelte-table": "^0.6.1",
     "svg-url-loader": "^8.0.0",
     "tailwindcss": "^3.3.3",
     "ts-loader": "^8.0.0",
     "typescript": "^4.9.5",
+    "vega-embed": "^6.23.0",
     "webpack": "^5.74.0",
     "webpack-cli": "^4.0.0"
   },
@@ -117,7 +120,7 @@
       }
     },
     "_build": {
-      "load": "static/remoteEntry.aef61c10a8828ec33db6.js",
+      "load": "static/remoteEntry.cd7ac8f43f43b0524bc8.js",
       "extension": "./extension"
     }
   },

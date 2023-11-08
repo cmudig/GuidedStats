@@ -20,7 +20,7 @@
     <div>
         {#each workflows as workflow}
             <button
-                class="w-full flex p-0.5 hover:bg-slate-100 overflow-hidden"
+                class="w-full flex px-2 py-1 hover:bg-slate-100 overflow-hidden"
                 on:click={() => {
                     dispatch('message', { selectedWorkflow: workflow });
                 }}>
@@ -35,7 +35,6 @@
 <style>
     .pnl {
         min-height: 45%;
-        box-shadow: 6px 6px 12px -3px rgba(0, 0, 0, 0.6);
         overflow-y: scroll;
         scrollbar-width: none;
         -ms-overflow-style: none;

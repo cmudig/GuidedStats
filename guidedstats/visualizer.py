@@ -15,8 +15,9 @@ import pandas as pd
 from itertools import groupby
 
 from ipywidgets import DOMWidget
+from IPython.display import display, Javascript, HTML
 import traitlets as tl
-from traitlets import Unicode, Dict, List , Instance, observe, link
+from traitlets import Int, Unicode, Dict, List, Bool, Instance, observe, link
 from varname import argname
 from varname.utils import ImproperUseError
 from ipylab import JupyterFrontEnd
@@ -25,6 +26,7 @@ from ._frontend import module_name, module_version
 
 from .step import *
 from .workflow import WorkFlow,RegressionFlow
+from.export import *
 
 class GuidedStats(DOMWidget):
     # boilerplate for ipywidgets syncing
@@ -45,6 +47,10 @@ class GuidedStats(DOMWidget):
     workflowInfo = Dict({}).tag(sync=True)
     dagdata = List([]).tag(sync=True)
     
+    exportTableStepIdx = Int().tag(sync=True)
+    exportVizStepIdx = Int().tag(sync=True)
+    exportCode = Unicode("").tag(sync=True)
+    
     def __init__(self, dataset: pd.DataFrame, datasetName: str = "dataset", *args, **kwargs):
         super(GuidedStats, self).__init__(*args, **kwargs)
 
@@ -54,7 +60,30 @@ class GuidedStats(DOMWidget):
         self.observe(self.addWorkFlow, names='selectedWorkflow')
         
         self.getBuiltinWorkflow()
+        
+        self.observe(self._handle_exportTable, names='exportTableStepIdx')
+        self.observe(self._handle_exportViz, names='exportVizStepIdx')
+        
+    def _handle_exportTable(self, change):
+        idx = change["new"] #evaluation step
+        modelStep = self.workflow.steps[idx-1]
+        results = modelStep.outputs["results"]
+        html_table = exportTable([results])
+        html_table = html_table.replace("\n","").replace('"', '\"')
+        
+        self.exportCode = html_table
     
+    def _handle_exportViz(self, change):
+        idx = change["new"]
+        vizStep = self.workflow.steps[idx]
+        if vizStep.config["viz"]["vizType"] == "boxplot":
+            vizStats = vizStep.config["viz"]["vizStats"]
+            vizCode = exportBoxplot(vizStats)
+        elif vizStep.config["viz"]["vizType"] == "scatter":
+            vizStats = vizStep.config["viz"]["vizStats"]
+            vizCode = exportScatterplot(vizStats)
+        self.exportCode = vizCode
+          
     def getBuiltinWorkflow(self):
         workflows = os.listdir("../cache")
         self.builtinWorkflows = workflows

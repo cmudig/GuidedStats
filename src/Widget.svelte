@@ -1,13 +1,30 @@
 <script lang="ts">
     import { setContext } from 'svelte';
-    import { WidgetWritable, newStepPos, newStepType } from './stores';
+    import { WidgetWritable, newStepPos, newStepType, exportingItem } from './stores';
     import type { Workflow, selectedStepInfo } from './interface/interfaces';
     import WorkflowSelectionPanel from './components/panels/WorkflowSelectionPanel.svelte';
     import StepSelectionPanel from './components/panels/StepSelectionPanel.svelte';
     import DisplayPanel from './components/panels/DisplayPanel.svelte';
 
     export let model;
+    
+    const exportTableStepIdx = WidgetWritable<number>(
+        'exportTableStepIdx',
+        -1,
+        model
+    );
 
+    const exportVizStepIdx = WidgetWritable<number>(
+        'exportVizStepIdx',
+        -1,
+        model
+    );
+
+    const exportCode = WidgetWritable<string>(
+        'exportCode',
+        "",
+        model
+    );
 
     const builtinWorkflows = WidgetWritable<Array<string>>(
         'builtinWorkflows',
@@ -50,6 +67,10 @@
 
     setContext('workflowInfo', workflowInfo);
 
+    setContext('exportTableStepIdx',exportTableStepIdx);
+
+    setContext('exportVizStepIdx',exportVizStepIdx);
+
     function addNewStep(stepType: string, stepPos: number){
         if($builtinSteps.includes(stepType) && stepPos >= 0){
             let pos: number;
@@ -73,6 +94,31 @@
     function getWorkflow(event) {
         selectedWorkflow.set(event.detail.selectedWorkflow);
     }
+
+    function exportCodeToCell(code:string){
+        if($exportingItem == "table"){
+            exportHTMLTable(code);
+        } else if($exportingItem == "viz"){
+            exportCodeViz(code);
+        }
+    }
+
+    function exportHTMLTable(code:string) {
+        if(code !== ""){
+            let cell = Jupyter.notebook.insert_cell_below("markdown");
+            cell.set_text(code);
+            cell.execute();
+        }
+    };
+
+    function exportCodeViz(code:string) {
+        if(code !== ""){
+            let cell = Jupyter.notebook.insert_cell_below("code");
+            cell.set_text(code);
+        }
+    };
+
+    $: exportCodeToCell($exportCode);
 
 </script>
 

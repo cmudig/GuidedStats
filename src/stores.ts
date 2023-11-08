@@ -39,3 +39,4 @@ export function WidgetWritable<T>(name_: string, value_: T, model: DOMWidgetMode
 export const onSelectingStep = writable(false);
 export const newStepPos = writable(-1);
 export const newStepType = writable("");
+export const exportingItem = writable("");
