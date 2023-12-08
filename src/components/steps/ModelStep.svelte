@@ -1,49 +1,95 @@
 <script lang="ts">
-    import type { Writable } from "svelte/store";
-    import type { Step, Workflow } from "../../interface/interfaces";
-    import { getContext } from "svelte";
-    import { deepCopy } from "../../utils";
+    import _ from 'lodash';
+    import type { Writable } from 'svelte/store';
+    import type { Parameter, Step, Workflow } from '../../interface/interfaces';
+    import { getContext } from 'svelte';
+    import { deepCopy } from '../../utils';
+    import Tooltip from '../tooltip/Tooltip.svelte';
+    import Done from '../icons/Done.svelte';
+    import SelectionBoard from '../display/SelectionBoard.svelte';
 
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
+    export let height: number = undefined;
 
     let modelName: string = undefined;
-    let penaltyTerm: number = undefined;
+    let parameterValues: Parameter[] = undefined;
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
-    function updateModelResult(event){
-    let info:Workflow = deepCopy($workflowInfo);
-    info.steps[stepIndex].config.modelName = modelName;
-    info.steps[stepIndex].config.modelParameters = [{"name":"penaltyTerm","value":penaltyTerm}];
-    workflowInfo.set(info);
-}
+    $: if (!_.isUndefined(modelName)) {
+        const foundParameters = step.config.modelCandidates.find(
+            x => x.name == modelName
+        )?.parameters;
+        parameterValues = foundParameters;
+    }
 
+    function handleInputChange(parameterName: string, value: any) {
+        let parameter = parameterValues?.find(
+            parameter => parameter.name == parameterName
+        );
+        if (!_.isUndefined(parameter)) {
+            parameter.value = value;
+        }
+    }
 
+    function updateModelResult(event) {
+        let info: Workflow = deepCopy($workflowInfo);
+        info.steps[stepIndex].config.modelName = modelName;
+        info.steps[stepIndex].config.modelParameters = parameterValues;
+        workflowInfo.set(info);
+    }
 </script>
 
-<div>
-    <div class="place-content-center flex">
-        <div class="w-1/2 flex flex-col p-2 overflow-hidden bg-white border-2">
-            <select bind:value={modelName}>
-                <option value="simple">Simple Linear Regression</option>
-                <option value="ridge">Ridge Regression</option>
-                <option value="lasso">Lasso Regression</option>
-            </select>
-            {#if modelName === "ridge" || modelName === "lasso"}
-                Penalty Term: <input type="number" bind:value={penaltyTerm} />
-            {/if}
+<div class="flex flex-col h-full">
+    <div class="card place-content-center flex" style="height:{height - 30}px">
+        <div class="w-3/4 flex flex-col p-2 overflow-hidden bg-white border-2">
+            <div class="flex">
+                <span class="p-2">Model: </span>
+                <div class="grow" />
+                <select class="m-2" bind:value={modelName}>
+                    {#each step.config.modelCandidates as modelCandidate}
+                        <option value={modelCandidate?.name}
+                            >{modelCandidate?.name}</option
+                        >
+                    {/each}
+                </select>
+            </div>
+            <SelectionBoard parameters={parameterValues} {handleInputChange} />
             <div class="grow" />
-        </div>
-        <!-- toolbar -->
-        <div class="w-1/6 flex flex-col p-2 overflow-hidden bg-white border-2">
-            <button class="border-2" on:click={updateModelResult}>
-                <span class="font-bold">Yes</span>
-            </button>
-            <div class="grow" />
-            <button class="border-2">
-                <span class="font-bold">No</span>
-            </button>
         </div>
     </div>
+    <div class="grow" />
+    <div class="flex">
+        <div class="grow" />
+        <Tooltip title="Done">
+            <button on:click={updateModelResult}><Done /></button>
+        </Tooltip>
+    </div>
 </div>
+
+<style>
+    .card {
+        overflow-y: scroll;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .card span {
+        color: #333; /* Consistent text color */
+        padding: 10px;
+    }
+    .card select {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 5px 10px;
+        background-color: white;
+    }
+    .card select:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+    .card::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+    }
+</style>

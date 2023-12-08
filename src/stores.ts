@@ -13,9 +13,8 @@ export function WidgetWritable<T>(name_: string, value_: T, model: DOMWidgetMode
 
   return {
     set: (v: any) => {
-      console.log("check Widget Writable");
-      console.log(JSON.stringify(v));
       internalWritable.set(v);
+      console.log(v);
       if (model) {
         model.set(name, v);
         model.save_changes();

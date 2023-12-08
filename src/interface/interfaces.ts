@@ -6,15 +6,22 @@ export type Option = {
 
 export type Parameter = {
     name: string;
-    value: number | string;
-    pvalue?: number;
+    displayName?: string;
+    multiple?: boolean;
+    options?: Option[];
+    value?: number | string | number[] | string[];
+    pvalue?: number | number[];
 }
 
-// export type MetricResult = {
-//     name: string;
-//     score?: number;
-//     pvalue?: number;
-// }
+export type Model = {
+    name: string;
+    parameters: Parameter[];
+}
+
+export type Transformation = {
+    name: string;
+    parameters: Parameter[];
+}
 
 export type AssumptionResult = {
     name: string;
@@ -26,8 +33,16 @@ export type Step = {
     stepId: number;
     stepType: string;
     done: boolean;
+    isProceeding: boolean;
     isShown: boolean;
     config: StepConfig;
+    previousConfig?: StepConfig;
+    groupConfig?: GroupConfig;
+}
+
+export type GroupConfig = {
+    groupCandidates?: Option[];
+    groupResults?: Option[];
 }
 
 export type StepConfig = {
@@ -35,19 +50,26 @@ export type StepConfig = {
     metric?: string;
     transformation?: string;
     variableName?: string;
+    variableNum: number;
     referenceVariables?: string[];
     variableCandidates?: Option[];
     variableResults?: Option[];
+    requireVarCategory?: boolean;
+    groupCandidates?: Option[];
+    groupResults?: Option[];
     assumptionName?: string;
     assumptionCandidates?: Option[];
     assumptionResults?: AssumptionResult[];
     transformationName?: string;
+    transformationParameters?: Parameter[];
+    transformationCandidates?: Transformation[];
     trainSize?: number;
     modelName?: string;
     modelParameters?: Parameter[];
-    modelCandidates?: Option[];
+    modelCandidates?: Model[];
     modelResults?: Option[];
-    viz?: Visualization;
+    viz?: Visualization[];
+    evaluationMetricNames?: string[];
 }
 
 export type Visualization = {
@@ -55,7 +77,8 @@ export type Visualization = {
     vizType: string;
     xLabel?: string;
     yLabel?: string;
-    vizStats: BoxPlotStats[] | ScatterPlotStats[];
+    title?: string;
+    vizStats: BoxPlotStats[] | ScatterPlotStats[] | DensityPlotStats[];
 }
 
 export type BoxPlotStats = {
@@ -69,8 +92,13 @@ export type BoxPlotStats = {
 }
 
 export type ScatterPlotStats = {
-    "x": number;
-    "y": number;
+    x: number;
+    y: number;
+}
+
+export type DensityPlotStats = {
+    "group": number | string;
+    "value": number;
 }
 
 export type Flow = {

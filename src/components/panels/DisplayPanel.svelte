@@ -14,7 +14,7 @@
 </script>
 
 <div 
-class={"pnl bg-white h-full w-full border-2 border-l-8 rounded-xl flex p-2" + (($onSelectingStep)? " opacity-40": "") }
+class={"pnl bg-white h-full w-full border-2 border-l-8 rounded-xl flex p-2" + (($onSelectingStep)? " disabled-div": "") }
 bind:clientHeight={height}>
 <Dag steps={steps} />
 <StepPanel workflowInfo={workflowInfo} steps={steps}/>
@@ -32,5 +32,10 @@ bind:clientHeight={height}>
     .pnl::-webkit-scrollbar {
         width: 0;
         height: 0;
+    }
+
+    .disabled-div {
+        pointer-events: none;
+        opacity: 0.4;
     }
 </style>

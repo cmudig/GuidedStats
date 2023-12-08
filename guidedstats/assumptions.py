@@ -1,49 +1,34 @@
 from typing import Iterable
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy import stats
 import pandas as pd
-from .metrics import metrics
-
-def outlier(X:Iterable,max_outlier=10):
+from .metrics import METRICS
+from . import viz as viz
     
-    q1 = np.quantile(X,0.25)
-    median = np.median(X)
-    q3 = np.quantile(X,0.75)
-    iqr = q3 - q1
-
-    lower_bound = q1 - 1.5 * iqr
-    upper_bound = q3 + 1.5 * iqr
-
-    upper_outliers = sorted([x for x in X if x > upper_bound])
-    lower_outliers = sorted([x for x in X if x < lower_bound],reverse=True)
-    
-    outliers = []
-    for i in range(1,min(len(upper_outliers),11)):
-        outliers.append(upper_outliers[-i])
-    for i in range(1,min(len(lower_outliers),11)):
-        outliers.append(lower_outliers[-i])
-    # outliers.extend(np.argsort(upper_outliers)[-min(len(upper_outliers),10):])
-    # outliers.extend(np.argsort(lower_outliers)[:min(len(lower_outliers),10)])
-    
-    stats = {
-        "lower": lower_bound,
-        "q1": q1,
-        "median": median,
-        "q3": q3,
-        "upper": upper_bound,
-        "outliers": outliers
-    }
-    
-    return stats
-    
-assumptions = {
+ASSUMPTIONS = {
     "outlier": {
         "display": "Outliers Checking",
         "isSingleColumn": True,
         "vis_type": "boxplot",
-        "vis_func": outlier,
-        "metric_func": [metrics["outlier"]],
+        "vis_func": viz.outlierVizStats,
+        "metric_func": [METRICS["outlier"]],
+        "fillNum":[[0]],
         "prompt": 'There are {0} outliers fall outside of the "interquartile range" (IQR)',
+    },
+    "levene": {
+        "display": "Levene Test",
+        "isSingleColumn": True,
+        "vis_type": "density",
+        "vis_func": viz.densityVizStats,
+        "metric_func": [METRICS["levene"]],
+        "fillNum":[[1,2]],
+        "prompt": "The p-value of Levene Test is {0}, which {1} the null hypothesis that the variances are equal",
+    },
+    "normality": {
+        "display": "Normality Test",
+        "isSingleColumn": True,
+        
     }
 }
 
@@ -69,7 +54,7 @@ class AssumptionWrapper(object):
         self.selfDefinedAssumptions[assumptionName] = assumption
         
     def setAssumption(self,assumptionName:str):
-        temp = {**assumptions,**self.selfDefinedAssumptions}
+        temp = {**ASSUMPTIONS,**self.selfDefinedAssumptions}
         if assumptionName in temp.keys():
             self._assumption = temp[assumptionName]
             self._assumptionName = assumptionName
@@ -86,23 +71,22 @@ class AssumptionWrapper(object):
             for col in X.columns:
                 print("Result of {}".format(col))      
                 if self._assumption["vis_func"] is not None:
-                    stats = self._assumption["vis_func"](X[col])
-                    stats = {"name":str(col),**stats}
+                    stats = self._assumption["vis_func"](X[col],*referenceXs)
                     vizStats.append(stats)
                     
                 if self._assumption["metric_func"] is not None:
                     metrics = []
-                    for metric_func in self._assumption["metric_func"]:
-                        outputs = metric_func(X[col])
-                        metric = outputs[0]
-                        metrics.append(metric)
+                    for i,metric_func in enumerate(self._assumption["metric_func"]):
+                        outputs = metric_func(X[col],*referenceXs)
+                        metrics += [outputs[num] for num in self._assumption["fillNum"][i]]
                     
                 prompt = self._assumption["prompt"].format(*metrics)
                 assumptionResults.append({"name":str(col),"prompt":prompt})
         
-        viz = {"vizType":"boxplot","vizStats":vizStats}
+        
+        vizs = [{"vizType":self._assumption["vis_type"],"vizStats":vizStat} for vizStat in vizStats]
           
-        return assumptionResults, viz
+        return assumptionResults, vizs
 
 if __name__ == "__main__":
     a = AssumptionWrapper()

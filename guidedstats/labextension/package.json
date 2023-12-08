@@ -52,7 +52,6 @@
     "d3-shape": "^3.1.0",
     "d3-time": "^3.0.0",
     "d3-time-format": "^4.1.0",
-    "flowbite-svelte-icons": "^0.4.4",
     "postcss-loader": "^7.3.3"
   },
   "devDependencies": {
@@ -61,9 +60,10 @@
     "@bulatdashiev/svelte-slider": "^1.0.3",
     "@gitgraph/js": "^1.4.0",
     "@jupyterlab/builder": "^3.0.0",
-    "@tsconfig/svelte": "^2.0.1",
+    "@tsconfig/svelte": "^5.0.2",
     "@types/dagre-d3": "^0.6.3",
     "@types/lodash": "^4.14.186",
+    "@types/node": "^20.10.6",
     "@types/webpack-env": "^1.13.6",
     "@typescript-eslint/eslint-plugin": "^3.6.0",
     "@typescript-eslint/parser": "^3.6.0",
@@ -78,6 +78,7 @@
     "eslint-plugin-svelte": "^2.33.2",
     "fs-extra": "^7.0.0",
     "identity-obj-proxy": "^3.0.0",
+    "layercake": "^8.0.2",
     "lodash": "^4.17.21",
     "mkdirp": "^0.5.1",
     "npm-run-all": "^4.1.3",
@@ -97,11 +98,10 @@
     "svelte-loader": "^3.1.9",
     "svelte-loading-spinners": "^0.1.7",
     "svelte-preprocess": "^5.0.4",
-    "svelte-table": "^0.6.1",
     "svg-url-loader": "^8.0.0",
-    "tailwindcss": "^3.3.3",
+    "tailwindcss": "^3.4.0",
     "ts-loader": "^8.0.0",
-    "typescript": "^4.9.5",
+    "typescript": "^5.3.2",
     "vega-embed": "^6.23.0",
     "webpack": "^5.74.0",
     "webpack-cli": "^4.0.0"
@@ -120,7 +120,7 @@
       }
     },
     "_build": {
-      "load": "static/remoteEntry.cd7ac8f43f43b0524bc8.js",
+      "load": "static/remoteEntry.d4fb586fafebe52c22e9.js",
       "extension": "./extension"
     }
   },

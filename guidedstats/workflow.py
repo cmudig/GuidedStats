@@ -1,74 +1,16 @@
 
 from abc import abstractmethod
+from collections import OrderedDict
 from typing import Iterable
 import pandas as pd
-from .step import *
 import traitlets as tl
 import copy as copy
 import json
 import inspect
 
-_regressionConfig = [
-                    {"id": 0,
-                    "stepType": "LoadDatasetStep",
-                    "stepConfig":
-                        {
-                        "stepName": "Load Dataset",
-                        }
-                    },
-                    {"id": 1,
-                      "stepType": "VariableSelectionStep",
-                      "stepConfig": # This is for the initialization of Steps
-                      {"stepName": "Select Dependent Variable",
-                       "variableType": "dependent variable",
-                       "variableNum": 1,
-                       "candidateNum": 4,
-                       "compare":  False,
-                       }},
-                    {"id": 2,
-                      "stepType": "AssumptionCheckingStep",
-                      "stepConfig":
-                      {"stepName": "Check Outliers",
-                       "assumptionName": "outlier",
-                       "isRelaxed": True,
-                       "succeedLastStepOutput": True,
-                       }
-                      },
-                     {"id": 3,
-                      "stepType": "VariableSelectionStep",
-                      "stepConfig":
-                      {"stepName": "Select Independent Variables",
-                       "variableType": "independent variables",
-                       # TBC, should be able to select different number of variables
-                       "variableNum": 3,
-                       "candidateNum": 15,
-                       "compare": True,
-                       "metricName": "pearson",
-                       }},
-                     {"id": 4,
-                      "stepType": "AssumptionCheckingStep",
-                      "stepConfig":
-                      {"stepName": "Check Outliers",
-                       "assumptionName": "outlier",
-                       "isRelaxed": True,
-                       "succeedLastStepOutput": True}
-                      },
-                     {"id": 5,
-                      "stepType": "TrainTestSplitStep",
-                      "stepConfig":
-                      {"stepName": "Do train test split"}
-                      },
-                     {"id": 6,
-                      "stepType": "ModelStep",
-                      "stepConfig":
-                      {"stepName": "Train model",
-                       }},
-                     {"id": 7,
-                      "stepType": "EvaluationStep",
-                      "stepConfig":
-                      {"stepName": "Evaluate the model",
-                    }},
-                     ]
+from .step import *
+
+from .config import _regressionConfig,_ttestConfig
 
 class Flow(tl.HasTraits):
     sourceStepId = tl.Int().tag(sync=True)
@@ -79,7 +21,7 @@ class Flow(tl.HasTraits):
         self.targetStepId = targetStepId
 
 class WorkFlow(tl.HasTraits):
-    workflowName = tl.Unicode().tag(sync=True)
+    workflowName = tl.Unicode()
     currentStepId = tl.Int().tag(sync=True)
     # onProceeding = tl.Bool().tag(sync=True)
     _steps = tl.List(trait=tl.Instance(Step)).tag(sync=True)
@@ -93,10 +35,18 @@ class WorkFlow(tl.HasTraits):
         self.datasetName = datasetName
         self.stepList = []
         
-        #step-related state variable
+        #export related state variables
+        self.current_dataframe = None
+        self.all_models = []
+        self.current_model = None
+        self.current_model_results = None
+        
+        #step-related state variables
         self.loadStep = None
         self.currentStep = None
         
+        
+        #workflow-related state variables
         self.isObservingWorkflowInfo = False
         self.isUpdatingWorkflowInfo = False
         # self.onProceeding = False
@@ -115,6 +65,11 @@ class WorkFlow(tl.HasTraits):
         self.observe(self.updateWorkflowInfo,names=["workflowName","currentStepId"])
         
         self.visualizer = None
+                
+        if self.workflowName == "Linear Regression":
+            self.configFile = _regressionConfig
+        elif self.workflowName == "T Test":
+            self.configFile = _ttestConfig
     
     @property
     def steps(self):
@@ -124,17 +79,27 @@ class WorkFlow(tl.HasTraits):
     def steps(self, value):
         # Unobserve old steps
         for step in self._steps:
-            step.unobserve(self.updateWorkflowInfo,names=["stepId","stepName","stepType","done","isShown","config"])
+            step.unobserve(self.updateWorkflowInfo,names=["stepId","stepName","stepType","done","isProceeding","isShown","config","previousConfig","groupConfig"])
         # Set the new steps
         self._steps = value
         # Observe new steps
         for step in self._steps:
             step.workflow = self
-            step.observe(self.updateWorkflowInfo,names=["stepId","stepName","stepType","done","isShown","config"])
+            step.observe(self.updateWorkflowInfo,names=["stepId","stepName","stepType","done","isProceeding","isShown","config","previousConfig","groupConfig"])
             
-    def addStep(self, stepType:str, stepPos):
+    def addStep(self, stepName:str, stepPos):
         # find the step in stepList and insert the new step before it
-        cls = globals()[stepType]
+        step_dict = {
+            "Load Dataset":LoadDatasetStep,
+            "Select Variable(s)":VariableSelectionStep,
+            "Transform Data":DataTransformationStep,
+            "Check Assumption":AssumptionCheckingStep,
+            "Split Data":TrainTestSplitStep,
+            "Add Model":ModelStep,
+            "Evaluate Model":EvaluationStep
+        }
+        
+        cls = step_dict[stepName]
         step = cls()
         if stepPos == -1: # add the last step
             self.stepList.append(step)
@@ -146,7 +111,6 @@ class WorkFlow(tl.HasTraits):
         
         # set currentStep back to the inserted step
         self.currentStep = step
-        
         #update step id
         for i,step in enumerate(self.stepList):
             step.stepId = i
@@ -172,6 +136,7 @@ class WorkFlow(tl.HasTraits):
         self.steps = self.stepList
         # update workflowInfo
         self.updateWorkflowInfo(None)
+        self.currentStep.isProceeding = True
         self.callStepForward()
 
             
@@ -250,52 +215,49 @@ class WorkFlow(tl.HasTraits):
 
     def moveToNextStep(self,step: Step):
         #if done, store the current outputs and move to the next step
-        # if change["name"] == "done" and change["old"] == False and change["new"] == True:
-        print("moveToNextStep")
-        #get outputs from currentStep
-        #self.outputsStorage format {stepId: {"param_name": param_value}}}
-        self.outputsStorage[step.stepId] = self.currentStep.outputs
+        self.outputsStorage[step.stepId] = step.outputs
         currentIdx = self.stepList.index(step)
+        
+        step.isProceeding = False
+        
         self.currentStep = self.stepList[currentIdx+1]
+        
+        self.currentStep.isProceeding = True
         
         self.callStepForward()
 
     def callStepForward(self):
-        if self.currentStep.succeedLastStepOutput:
+        if self.currentStep.succeedPreviousStepOutput:
             # let step itself get its parameters from previous steps
             currentIdx = self.stepList.index(self.currentStep)
             parameters = self.outputsStorage[self.stepList[currentIdx - 1].stepId].values()
             
             self.currentStep.forward()
         else:
-            parameters = {}
+            parameters = OrderedDict()
             keys = list(self.outputsStorage.keys())
             keys.sort(reverse=True)
-
-            print(self.outputsStorage)
+            
+            # get parameters from previous steps
             for pconfig in self.currentStep.previousSteps:
                 #format: [string, string]
                 found = False
                 currentIdx = 0
                 while not found:
                     currentObservingOutputs = self.outputsStorage[keys[currentIdx]]
-                    if pconfig in currentObservingOutputs:
+                    if pconfig in currentObservingOutputs:             
                         found = True
                         parameters[pconfig] = currentObservingOutputs[pconfig]
                     currentIdx += 1
-            print(parameters)
+            
             self.currentStep.forward(**parameters)
-        
-        with open("test.txt","a+") as f:
-            f.write("moveToNextStep: " + str(self.currentStep))
-            f.write(str(parameters)) 
              
     def updateWorkflowInfo(self, change):
         self.isUpdatingWorkflowInfo = True
 
         stepInfos = []
         for step in self.steps:
-            stepInfo = {"stepId":step.stepId,"stepName":step.stepName,"stepType":step.stepType,"done":step.done,"isShown":step.isShown,"config":step.config}
+            stepInfo = {"stepId":step.stepId,"stepName":step.stepName,"stepType":step.stepType,"done":step.done,"isProceeding":step.isProceeding,"isShown":step.isShown,"config":step.config,"previousConfig":step.previousConfig,"groupConfig":step.groupConfig}
             stepInfos.append(stepInfo)
         flowInfos = []
         for flow in self.flows:
@@ -317,17 +279,6 @@ class WorkFlow(tl.HasTraits):
         self.isObservingWorkflowInfo = True
         if not self.isUpdatingWorkflowInfo:
             if change["old"] != change["new"]:
-                with open("test.txt","a+") as f:
-                    f.write("onObserveWorkflowInfo: " + str(change))
-                    f.write("\n")
-                    current_frame = inspect.currentframe()
-                    frames = inspect.getouterframes(current_frame)
-                    functions = []
-                    for i, record in enumerate(frames[1:19]):  # Skip the current frame and get the next 5 frames
-                        _, _, _, function, _, _ = record
-                        functions.append(function)
-                    f.write("called by: "+str(",".join(functions)))
-                    f.write("\n")
                 workflowInfo = change["new"]
                 if self.workflowName != workflowInfo["workflowName"]:
                     self.workflowName = workflowInfo["workflowName"]
@@ -350,16 +301,11 @@ class WorkFlow(tl.HasTraits):
                     if step.config != configs:
                         step.config = configs
                         break
-                    # step.onObserveConfig({"new":configs})
-                # for idx,flowInfo in enumerate(workflowInfo["flows"]):
-                #     flow = self.flows[idx]
-                #     flow.sourceStepId = flowInfo["sourceStepId"]
-                #     flow.targetStepId = flowInfo["targetStepId"]
         self.isObservingWorkflowInfo = False
                    
     def constructSteps(self):        
         # construct all Steps
-        for config in _regressionConfig:
+        for config in self.configFile:
             cls = globals()[config["stepType"]]
             parameters = {param:value for param,value in config["stepConfig"].items() if param != "previousStepsConfigs"}
             step = cls(**parameters)
@@ -369,7 +315,7 @@ class WorkFlow(tl.HasTraits):
                 
                         
     def constructFlows(self):
-        for config in _regressionConfig:
+        for config in self.configFile:
             currentStep = self.stepList[config["id"]]
             previousSteps = []
             for pconfig in config["stepConfig"]["previousStepsConfigs"]:
@@ -380,49 +326,21 @@ class WorkFlow(tl.HasTraits):
                 self.addFlow(previousStep,currentStep)
             currentStep.previousStepsConfigs = config["stepConfig"]["previousStepsConfigs"]
     
-    @abstractmethod
     def startGuiding(self):
-        pass
-
-class RegressionFlow(WorkFlow):
-
-    def __init__(self, dataset: pd.DataFrame, workflowName="Regression workflow",datasetName="dataset"):
-        super().__init__(dataset, workflowName=workflowName, datasetName=datasetName)
-
-    def startGuiding(self):
-        #1. construct Steps
         self.constructSteps()
-        # At this stage, all Steps are sorted in the order of their ids
-        #2. construct all flows
-        # self.constructFlows()
-        #3. sort Steps in topological order
-        # self.topologicalSort()   
-        #4. start guiding
         self.steps = self.stepList
         self.currentStep = self.stepList[0]
         
         self.updateWorkflowInfo(None)
         
+        self.currentStep.isProceeding = True
+        
         self.currentStep.forward()
         
         print("Hey, welcome to GuidedStats. In the following parts, we will guide you to perform {}".format(self.workflowName))
 
-        # parameters = {}
-        # for pconfig in self.currentStep.previousStepsConfigs:
-        #     # format: [{"id": 0, "mapping":[{"output":"__dataset","input":"dataset"}]}]
-        #     for mapping in pconfig["mapping"]:
-        #         # format: {"output":"__dataset","input":"dataset"}
-        #         parameters[mapping["input"]] = self.outputsStorage[pconfig["id"]][mapping["output"]]
-    
-        # self.currentStep.forward(**parameters)    
 
 if __name__ == "__main__":
     df = pd.read_csv("test.csv")
-    workflow = RegressionFlow(df,"regression")
+    workflow = WorkFlow(df,"Linear Regression")
     workflow.startGuiding()
-    # workflow.currentStep.config = {**workflow.currentStep.config,"variableResults":[{'name': 'log_usd_pledged'}]}
-    # workflow.currentStep.done = True
-    # workflow.currentStep.config = {**workflow.currentStep.config,"variableResults":[{'name': 'name_len_clean'},{'name': 'launched_at_hr'}]}
-    # workflow.currentStep.done = True
-    # workflow.currentStep.config = {**workflow.currentStep.config,"trainSize":0.8}
-    # workflow.currentStep.config = {**workflow.currentStep.config,"modelName":"simple"}

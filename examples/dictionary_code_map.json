@@ -1,0 +1,854 @@
+[
+    {
+        "id": "150",
+        "label": "compute-covariance-matrix",
+        "method": "compute_covariance_matrix",
+        "user-data": {
+            "tags": [],
+            "method": "compute-covariance-matrix",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "computes the covariance matrix"
+    },
+    {
+        "id": "36",
+        "label": "word-to-vec",
+        "method": "word_to_vec",
+        "user-data": {
+            "tags": [
+                "text-data-formatting"
+            ],
+            "method": "word-to-vec",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "word2vec"
+    },
+    {
+        "id": "183",
+        "label": "conditional-frequence-distribution",
+        "method": "conditional_frequence_distribution",
+        "user-data": {
+            "tags": [
+                "text-data-formatting"
+            ],
+            "method": "conditional-frequence-distribution",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "conditional-frequence-distribution"
+    },
+    {
+        "id": "162",
+        "label": "initialize-kmeans-cluster",
+        "method": "initialize_kmeans_cluster",
+        "user-data": {
+            "tags": [
+                "statistical-sample"
+            ],
+            "method": "initialize-kmeans-cluster",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "initialize-kmeans-cluster"
+    },
+    {
+        "id": "103",
+        "label": "decision-tree-regressor",
+        "method": "decision_tree_regressor",
+        "user-data": {
+            "tags": [
+                "train-model",
+                "test-model"
+            ],
+            "method": "decision-tree-regressor",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "decision-tree-regressor"
+    },
+    {
+        "id": "90",
+        "label": "demo-mat-show",
+        "method": "demo_mat_show",
+        "user-data": {
+            "tags": [
+                "visualization"
+            ],
+            "method": "demo-mat-show",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "plot"
+    },
+    {
+        "id": "43",
+        "label": "plot",
+        "method": "plot",
+        "user-data": {
+            "tags": [
+                "visualization"
+            ],
+            "method": "plot",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "plot"
+    },
+    {
+        "id": "32",
+        "label": "outer-join",
+        "method": "outer_join",
+        "user-data": {
+            "tags": [
+                "data-organization"
+            ],
+            "method": "outer-join",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "outer join"
+    },
+    {
+        "id": "6",
+        "label": "quantitative-bar-plot",
+        "method": "quantitative_bar_plot",
+        "user-data": {
+            "tags": [
+                "visualization"
+            ],
+            "method": "quantitative-bar-plot",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "quantitative bar plot"
+    },
+    {
+        "id": "4",
+        "label": "plot-via-limit",
+        "method": "plot_via_limit",
+        "user-data": {
+            "tags": [
+                "visualization"
+            ],
+            "method": "plot-via-limit",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "plot via limit"
+    },
+    {
+        "id": "83",
+        "label": "probability-density-plot",
+        "method": "probability_density_plot",
+        "user-data": {
+            "tags": [
+                "visualization"
+            ],
+            "method": "probability-density-plot",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "plot of probability density function"
+    },
+    {
+        "id": "72",
+        "label": "demo-log-space",
+        "method": "demo_log_space",
+        "user-data": {
+            "tags": [
+                "data-generation"
+            ],
+            "method": "demo-log-space",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "demonstrate logarithm space"
+    },
+    {
+        "id": "56",
+        "label": "unique-column-values",
+        "method": "unique_column_values",
+        "user-data": {
+            "tags": [
+                "data-cleaning",
+                "data-formatting"
+            ],
+            "method": "unique-column-values",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "find unique columns values for each quantitative attributes"
+    },
+    {
+        "id": "55",
+        "label": "extra-trees-classifier",
+        "method": "extra_trees_classifier",
+        "user-data": {
+            "tags": [
+                "train-model",
+                "test-model"
+            ],
+            "method": "extra-trees-classifier",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "apply extra trees classifier to the data"
+    },
+    {
+        "id": "33",
+        "label": "demo-hstack",
+        "method": "demo_hstack",
+        "user-data": {
+            "tags": [
+                "data-organizing"
+            ],
+            "method": "demo-hstack",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "demonstrate the operation of hstack in numpy/scipy"
+    },
+    {
+        "id": "27",
+        "label": "decision-tree-classifier",
+        "method": "decision_tree_classifier",
+        "user-data": {
+            "tags": [
+                "train-model",
+                "test-model"
+            ],
+            "method": "decision-tree-classifier",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "fit the dataset into decision tree classifier"
+    },
+    {
+        "id": "134",
+        "label": "compute-percentiles-range",
+        "method": "compute_percentiles_range",
+        "user-data": {
+            "tags": [
+                "statistical-summary"
+            ],
+            "method": "compute-percentiles-range",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Compute range (in percentage) for interval 5% - 95%"
+    },
+    {
+        "id": "30",
+        "label": "random-forest-classifier",
+        "method": "random_forest_classifier",
+        "user-data": {
+            "tags": [
+                "train-model",
+                "test-model"
+            ],
+            "method": "random-forest-classifier",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Test random forest classifier"
+    },
+    {
+        "id": "18",
+        "label": "eval-model-predictions",
+        "method": "eval_model_predictions",
+        "user-data": {
+            "tags": [
+                "train-model"
+            ],
+            "method": "eval-model-predictions",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Evaluate the prediction of linear regression"
+    },
+    {
+        "id": "113",
+        "label": "test-linear-regression",
+        "method": "test_linear_regression",
+        "user-data": {
+            "tags": [
+                "train-model",
+                "test-model"
+            ],
+            "method": "test-linear-regression",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Evaluate the prediction of linear regression"
+    },
+    {
+        "id": "10",
+        "label": "matrix-norm",
+        "method": "matrix_norm",
+        "user-data": {
+            "tags": [
+                "data-formatting"
+            ],
+            "method": "matrix-norm",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Compute column norm for each quantitative column"
+    },
+    {
+        "id": "bootstrap",
+        "label": "bootstrap",
+        "method": "bootstrap",
+        "user-data": {
+            "tags": [
+                "statistical-sample"
+            ],
+            "method": "bootstrap",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Resampling technique used to estimate statistics on a population by sampling a dataset with replacement"
+    },
+    {
+        "id": "ANOVA-Variance-Analysis",
+        "label": "ANOVA-Variance-Analysis",
+        "method": "anova_variance",
+        "user-data": {
+            "tags": [
+                "statistical-test"
+            ],
+            "method": "ANOVA-Variance-Analysis",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "One sample test of Analysis of Variance on quantitative attributes, grouped by categorical attributes"
+    },
+    {
+        "id": "drop-NaN-rows",
+        "label": "drop-NaN-rows",
+        "method": "drop_rows",
+        "user-data": {
+            "tags": [
+                "data-cleaning"
+            ],
+            "method": "drop-NaN-rows",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Remove rows with NaN values in any entry"
+    },
+    {
+        "id": "ranksum-test",
+        "label": "ranksum-test",
+        "method": "rank_sum",
+        "user-data": {
+            "tags": [
+                "statistical-test"
+            ],
+            "method": "ranksum-test",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Useful test to determine if two distributions are significantly different or not. \n Unlike the t-test, the RankSum test does not assume that the data are normally distributed."
+    },
+    {
+        "id": "variance",
+        "label": "variance",
+        "method": "variance",
+        "user-data": {
+            "tags": [
+                "statistical-summary"
+            ],
+            "method": "variance",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Variance of quantitative attributes in the dataset"
+    },
+    {
+        "id": "mean",
+        "label": "mean",
+        "method": "mean",
+        "user-data": {
+            "tags": [
+                "statistical-summary"
+            ],
+            "method": "mean",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Average of quantitative attributes in the dataset"
+    },
+    {
+        "id": "predict-test",
+        "label": "predict-test",
+        "method": "predict_test",
+        "user-data": {
+            "tags": [
+                "test-model"
+            ],
+            "method": "predict-test",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Evaluate the model on the test set.\nthe output would show the comparison of predicted and actual values. "
+    },
+    {
+        "id": "fit-decision-tree",
+        "label": "fit-decision-tree",
+        "method": "fit_decision_tree",
+        "user-data": {
+            "tags": [
+                "train-model"
+            ],
+            "method": "fit-decision-tree",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Fit a decision tree model with current training dataset"
+    },
+    {
+        "id": "shuffle-split",
+        "label": "shuffle-split",
+        "method": "shuffle_split",
+        "user-data": {
+            "tags": [
+                "data-organizing"
+            ],
+            "method": "shuffle-split",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Shuffle and split the dataset into training and testing.\nOutput shows the 3 features randomly selected for the model."
+    },
+    {
+        "id": "numerical-boxplot",
+        "label": "numerical-boxplot",
+        "method": "num_boxplot",
+        "user-data": {
+            "tags": [
+                "visualization"
+            ],
+            "method": "numerical-boxplot",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Box plot that shows distribution of quantitative attributes with variance"
+    },
+    {
+        "id": "top5categories",
+        "label": "top5categories",
+        "method": "top5cat",
+        "user-data": {
+            "tags": [
+                "data-formatting"
+            ],
+            "method": "top5categories",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "TODO"
+    },
+    {
+        "id": "48",
+        "label": "drop-NaN-columns",
+        "method": "drop_cols",
+        "user-data": {
+            "tags": [
+                "data-cleaning"
+            ],
+            "method": "drop-NaN-columns",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Drop columns with more than 30% NaN entries"
+    },
+    {
+        "id": "distribution-quantitative-category",
+        "label": "distribution-quantitative-category",
+        "method": "dist_quant_category",
+        "user-data": {
+            "tags": [
+                "visualization"
+            ],
+            "method": "distribution-quantitative-category",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Distribution plot between quantitative and categorical attributes"
+    },
+    {
+        "id": "distribution-two-categories",
+        "label": "distribution-two-categories",
+        "method": "dist_two_categories",
+        "user-data": {
+            "tags": [
+                "statistical-summary"
+            ],
+            "method": "distribution-two-categories",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Distribution across two categorical attributes"
+    },
+    {
+        "id": "category-boxplot",
+        "label": "category-boxplot",
+        "method": "cat_boxplot",
+        "user-data": {
+            "tags": [
+                "visualization"
+            ],
+            "method": "category-boxplot",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Boxplot for categorical attributes"
+    },
+    {
+        "id": "correlation-heatmap",
+        "label": "correlation-heatmap",
+        "method": "corr_heatmap",
+        "user-data": {
+            "tags": [
+                "visualization"
+            ],
+            "method": "correlation-heatmap",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Correlation heatmap across quantitative attributes"
+    },
+    {
+        "id": "stack-facetgrid",
+        "label": "stack-facetgrid",
+        "method": "stack_ftgrid",
+        "user-data": {
+            "tags": [
+                "visualization"
+            ],
+            "method": "stack-facetgrid",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Show how the distribution of quantitative attributes varies for different categorical attributes"
+    },
+    {
+        "id": "scatterplot-regression",
+        "label": "scatterplot-regression",
+        "method": "scatterplot_regression",
+        "user-data": {
+            "tags": [
+                "visualization"
+            ],
+            "method": "scatterplot-regression",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Scatterplot with two quantitative attributes and corresponding regression line"
+    },
+    {
+        "id": "63",
+        "label": "distribution-quantitative",
+        "method": "dist_num",
+        "user-data": {
+            "tags": [
+                "statistical-summary"
+            ],
+            "method": "distribution-quantitative",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "Bin the quantitative attributes and show the distribution within each bin"
+    },
+    {
+        "id": "category-count",
+        "label": "category-count",
+        "method": "cat_count",
+        "user-data": {
+            "tags": [
+                "statistical-summary"
+            ],
+            "method": "category-count",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {},
+            "output-attributes": {}
+        },
+        "description": "The distribution of categorical attributes across different values"
+    },
+    {
+        "id": "corr",
+        "label": "correlation",
+        "method": "corr",
+        "user-data": {
+            "tags": [
+                "statistical-summary"
+            ],
+            "method": "correlation",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {
+                "method": [
+                    {
+                        "method": "string"
+                    }
+                ],
+                "loaded-dataset": [
+                    {
+                        "Model": "string"
+                    },
+                    {
+                        "MPG": "Number"
+                    },
+                    {
+                        "Cylinders": "Number"
+                    },
+                    {
+                        "Engine Disp": "Number"
+                    },
+                    {
+                        "Horsepower": "Number"
+                    },
+                    {
+                        "Weight": "Number"
+                    },
+                    {
+                        "Accelerate": "Number"
+                    },
+                    {
+                        "Year": "Number"
+                    },
+                    {
+                        "Origin": "string"
+                    }
+                ]
+            },
+            "output-attributes": {}
+        },
+        "description": "Pairwise correlation between quantitative attributes"
+    },
+    {
+        "id": "50",
+        "label": "group-statistics",
+        "method": "des",
+        "user-data": {
+            "tags": [
+                "statistical-summary"
+            ],
+            "method": "group-statistics",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {
+                "loaded-dataset": [
+                    {
+                        "Model": "string"
+                    },
+                    {
+                        "MPG": "Number"
+                    },
+                    {
+                        "Cylinders": "Number"
+                    },
+                    {
+                        "Engine Disp": "Number"
+                    },
+                    {
+                        "Horsepower": "Number"
+                    },
+                    {
+                        "Weight": "Number"
+                    },
+                    {
+                        "Accelerate": "Number"
+                    },
+                    {
+                        "Year": "Number"
+                    },
+                    {
+                        "Origin": "string"
+                    }
+                ]
+            },
+            "output-attributes": {}
+        },
+        "description": "Descriptive statistics of the dataset, such as mean, variance, minimum, and maximum."
+    },
+    {
+        "id": "firstTen",
+        "label": "first10samples",
+        "method": "firstTen",
+        "user-data": {
+            "tags": [
+                "data-formatting"
+            ],
+            "method": "first10samples",
+            "description": "human readable"
+        },
+        "metadata": {
+            "input-attributes": {
+                "method": [
+                    {
+                        "method": "string"
+                    }
+                ],
+                "loaded-dataset": [
+                    {
+                        "Model": "string"
+                    },
+                    {
+                        "MPG": "Number"
+                    },
+                    {
+                        "Cylinders": "Number"
+                    },
+                    {
+                        "Engine Disp": "Number"
+                    },
+                    {
+                        "Horsepower": "Number"
+                    },
+                    {
+                        "Weight": "Number"
+                    },
+                    {
+                        "Accelerate": "Number"
+                    },
+                    {
+                        "Year": "Number"
+                    },
+                    {
+                        "Origin": "string"
+                    }
+                ]
+            },
+            "output-attributes": {}
+        },
+        "description": "Show the first 10 rows of the dataframe"
+    }
+]

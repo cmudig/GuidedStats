@@ -27,7 +27,7 @@
     "types": [
       "svelte",
       "node"
-    ]
+    ],
   },
   "include": [
     "src/**/*.ts",

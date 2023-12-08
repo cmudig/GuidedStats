@@ -20,6 +20,12 @@
         model
     );
 
+    const exportVizIdx = WidgetWritable<number>(
+        'exportVizIdx',
+        -1,
+        model
+    );
+
     const exportCode = WidgetWritable<string>(
         'exportCode',
         "",
@@ -34,6 +40,18 @@
 
     const builtinSteps = WidgetWritable<Array<string>>(
         'builtinSteps',
+        [],
+        model
+    );
+
+    const builtinAssumptions = WidgetWritable<Array<string>>(
+        'builtinAssumptions',
+        [],
+        model
+    );
+
+    const builtinTransformations = WidgetWritable<Array<string>>(
+        'builtinTransformations',
         [],
         model
     );
@@ -71,6 +89,12 @@
 
     setContext('exportVizStepIdx',exportVizStepIdx);
 
+    setContext('exportVizIdx',exportVizIdx);
+
+    setContext('builtinAssumptions',builtinAssumptions);
+
+    setContext('builtinTransformations',builtinTransformations);
+
     function addNewStep(stepType: string, stepPos: number){
         if($builtinSteps.includes(stepType) && stepPos >= 0){
             let pos: number;
@@ -89,6 +113,8 @@
     };
 
     $: addNewStep($newStepType, $newStepPos);
+
+    $: console.log($workflowInfo);
 
 
     function getWorkflow(event) {

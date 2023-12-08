@@ -1,16 +1,22 @@
 <script lang="ts">
-    import { getContext } from 'svelte';
-    import type { Step, Workflow } from '../../interface/interfaces';
-    import type { Writable } from 'svelte/store';
+    import type { Step } from '../../interface/interfaces';
 
     export let steps: Array<Step>;
-
-    const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
     let height: number = 380;
     let width: number = 60;
 
     let stepHeight: number = 40;
+
+    function getColor(step: Step) {
+        if (step.done) {
+            return "#1d346e";
+        } else if (step.isProceeding) {
+            return "#05a3da";
+        } else {
+            return '#c3cece';
+        }
+    }
 
     function convertToDag(steps: Array<Step>) {
         let heights: number[] = [];
@@ -43,7 +49,7 @@
                     cx={0.5 * width}
                     cy={height}
                     r="8"
-                    fill={steps[idx].done ? '#17761D' : '#D9D9D9'}
+                    fill={getColor(steps[idx])}
                 />
                 {#if idx < steps.length - 1}
                     <line
@@ -51,7 +57,7 @@
                         y1={height}
                         x2={0.5 * width}
                         y2={heights[idx + 1]}
-                        stroke={steps[idx].done ? '#17761D' : '#D9D9D9'}
+                        stroke={getColor(steps[idx])}
                         stroke-width="3"
                     />
                 {/if}
@@ -59,32 +65,6 @@
         {/if}
     </svg>
 </div>
-
-<!-- <div class="dag">
-<svg height={height} width={width}>
-{#if steps !== undefined}
-{#each steps as _,idx}
-{}
-<circle
-cx={0.5*width}
-cy={0.5*stepHeight+idx*stepHeight}
-r=8
-fill="#D9D9D9"
-/>
-{#if idx < steps.length - 1}
-<line
-x1={0.5*width}
-y1={0.5*stepHeight+idx*stepHeight}
-x2={0.5*width}
-y2={0.5*stepHeight+(idx+1)*stepHeight}
-stroke="#D9D9D9"
-stroke-width=3
-/>
-{/if}
-{/each}
-{/if}
-</svg>
-</div> -->
 <style>
     .dag {
         width: 60px;

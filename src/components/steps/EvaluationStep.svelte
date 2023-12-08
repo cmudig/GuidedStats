@@ -1,17 +1,17 @@
 <script lang="ts">
     import _ from 'lodash';
-    import SvelteTable from 'svelte-table';
-
-    import type { Step } from '../../interface/interfaces';
-    import { getScatterPlotStats } from '../viz/action/visualization';
+    import type { Step, Visualization } from '../../interface/interfaces';
+    import { getScatterPlotStats, getTTestPlotStats } from '../viz/action/visualization';
     import embed from 'vega-embed';
     import Tooltip from '../tooltip/Tooltip.svelte';
     import ExportIcon from '../icons/ExportIcon.svelte';
     import { getContext } from 'svelte';
     import type { Writable } from 'svelte/store';
     import { exportingItem } from '../../stores';
+    import Table from '../display/Table.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
+    export let height: number = undefined;
 
     var exportTableStepIdx: Writable<number> = getContext('exportTableStepIdx');
     var exportVizStepIdx: Writable<number> = getContext('exportVizStepIdx');
@@ -19,88 +19,96 @@
     function exportViz() {
         exportingItem.set('viz');
         exportVizStepIdx.set(stepIndex);
-    };
-    
-    function exportRegressionTable() {
-        exportingItem.set("table");
-        exportTableStepIdx.set(stepIndex);
     }
+
+    // function exportRegressionTable() {
+    //     exportingItem.set('table');
+    //     exportTableStepIdx.set(stepIndex);
+    // }
 
     //buttons
-    if (!_.isUndefined(step?.config?.viz)) {
-        const viz = step.config.viz;
-        const spec = getScatterPlotStats(viz);
-        embed('#vis', spec, { actions: false });
+    function renderViz(vizs: Visualization[], width: number) {
+        if (!_.isUndefined(vizs)) {
+            let viz = vizs[0];
+            let spec;
+            if(viz.vizType === "scatter"){
+            spec = getScatterPlotStats(viz, width * 0.6);
+            }
+            else if(viz.vizType === "ttest"){
+            spec = getTTestPlotStats(viz, width = width * 0.6);
+            }
+            embed(`#vis-${stepIndex}`, spec, { actions: false });
+        }
     }
 
-    const columns = [
-        {
-            key: 'name',
-            title: 'Coefficient',
-            value: v => v.name,
-            sortable: true
-        },
-        {
-            key: 'value',
-            title: 'Value',
-            value: v => v.value,
-            sortable: true
-        },
-        {
-            key: 'pvalue',
-            title: 'P',
-            value: v => v.pvalue.toFixed(4),
-            sortable: true
-        }
-    ];
+    $: renderViz(step?.config?.viz, width);
+
+    let width: number = 450;
 </script>
 
-<div>
-    <div class="place-content-center flex p-4">
-        <div class="flex flex-col">
-            <!-- Visualization -->
-            <div id="vis" />
-            {#if !_.isUndefined(step.config.modelResults)}
-                {#each step.config.modelResults as modelResult}
-                    <span>{modelResult.name} : {modelResult.score}</span>
-                {/each}
+<div class="card overflow-x-scroll" style="height:{height}px">
+    <div class="flex">
+        <div class="grow" />
+        <div class="place-content-center flex p-4" style="width:{width}px">
+            <div class="grow" />
+            <div class="flex flex-col">
+                <!-- Visualization -->
+                <div id="vis-{stepIndex}" />
+            </div>
+            <div>
+                <Tooltip title="Export Visualization">
+                    <button on:click={exportViz}><ExportIcon /></button>
+                </Tooltip>
+            </div>
+            {#if !_.isUndefined(step?.config?.modelResults) && step?.config?.modelResults.length > 0}
+                <div class="flex flex-col">
+                    <div class="p-2">
+                        <Table
+                            headers={['Metric', 'Score']}
+                            keys={['name', 'score']}
+                            data={step?.config?.modelResults}
+                        />
+                    </div>
+                </div>
             {/if}
-        </div>
-        <div>
-            <Tooltip title="Export Visualization">
-                <button on:click={exportViz}><ExportIcon /></button>
-            </Tooltip>
-            <div class="grow"></div>
+            {#if !_.isUndefined(step?.config?.modelParameters) && step?.config?.modelParameters.length > 0}
+                <div class="p-2">
+                    {#if step.config.modelParameters[0].hasOwnProperty("pvalue")}
+                    <Table
+                        headers={['Name', 'Value', 'P']}
+                        keys={['name', 'value', 'pvalue']}
+                        data={step?.config?.modelParameters}
+                    />
+                    {:else}
+                    <Table
+                        headers={['Name', 'Value']}
+                        keys={['name', 'value']}
+                        data={step?.config?.modelParameters}
+                    />
+                    {/if}
+                </div>
+            {/if}
+            <div class="grow" />
         </div>
         <div class="grow" />
-        <div>
-            <!-- <table>
-                <tr>
-                    <th>Coefficient</th>
-                    <th>Value</th>
-                    <th>P</th>
-                </tr>
-                {#if !_.isUndefined(step?.config?.modelParameters)}
-                {#each step.config.modelParameters as param}
-                <tr>
-                    <td>{param.name}</td>
-                    <td>{param.value}</td>
-                    {#if !_.isUndefined(param?.pvalue)}
-                    <td>{param.pvalue}</td>
-                    {:else}
-                    <td></td>
-                    {/if}
-                </tr>
-                {/each}
-                {/if}
-            </table> -->
-            <SvelteTable {columns} rows={step.config.modelParameters} />
-        </div>
     </div>
-    <div class="flex">
+    <!-- <div class="flex">
         <div class="grow" />
         <Tooltip title="Export">
             <button on:click={exportRegressionTable}><ExportIcon /></button>
         </Tooltip>
-    </div>
+    </div> -->
 </div>
+
+<style>
+    .card {
+        overflow-y: scroll;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .card::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+    }
+</style>

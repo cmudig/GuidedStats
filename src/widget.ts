@@ -4,7 +4,7 @@
 import {
   DOMWidgetModel,
   DOMWidgetView,
-  ISerializers,
+  type ISerializers,
 } from '@jupyter-widgets/base';
 import { MODULE_NAME, MODULE_VERSION } from './version';
 import Widget from './Widget.svelte';

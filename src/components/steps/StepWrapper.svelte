@@ -27,6 +27,8 @@
 
     let cardHeight: number = 40;
 
+    let buttonHeight: number = 20;
+
     let isShown: boolean = false;
 
     function unfold() {
@@ -38,67 +40,93 @@
         workflowInfo.set(updatedInfo); // Update with the new object
     }
 
-    function addStep(){
+    function addStep() {
         onSelectingStep.set(true);
         newStepPos.set(stepIndex);
     }
 </script>
 
-
 {#if !_.isUndefined(step)}
-    <div
-        class='card p-2.5 flex-row'
-        style="height:{cardHeight}px"
-    >
-    <!-- Card -->
-    <div class="flex hover:bg-slate-100">
-        <button on:click={() => unfold()}>
-        <span class="inline-block align-middle font-bold"
-            >Step {stepIndex + 1} {step.stepName}</span
-        ></button>
-        <div class="grow"></div>
-        <button on:click={addStep}>
-            <Tooltip title="Add Step Below"><AddIcon /></Tooltip>
-        </button>
-    </div>
-    <!-- The panel -->      
-        {#if isShown}
-            <div style="grow">
-                {#if step.stepType === 'LoadDatasetStep'}
-                    <LoadDatasetStep {step} {stepIndex} />
-                {/if}
-                {#if step.stepType === 'VariableSelectionStep'}
-                    <VariableSelectionStep {step} {stepIndex} />
-                {/if}
-                {#if step.stepType === 'AssumptionCheckingStep'}
-                    <AssumptionCheckingStep {step} {stepIndex} />
-                {/if}
-                {#if step.stepType === 'TrainTestSplitStep'}
-                    <TrainTestSplitStep {step} {stepIndex} />
-                {/if}
-                {#if step.stepType === 'ModelStep'}
-                    <ModelStep {step} {stepIndex} />
-                {/if}
-                {#if step.stepType === 'EvaluationStep'}
-                    <EvaluationStep {step} {stepIndex} />
-                {/if}
-                {#if step.stepType === 'DataTransformationStep'}
-                    <DataTransformationStep {step} {stepIndex} />
-                {/if}
+    <div class="flex-row" style="height:{cardHeight}px">
+        <!-- Card -->
+        <!-- if step.isProceeding is False then the div is disabled-->
+        <div
+            class="px-2 flex hover:bg-slate-100 {step.isProceeding || step.done
+                ? ''
+                : 'not-proceeding'}"
+            style="height:{buttonHeight}px"
+        >
+            <button on:click={() => unfold()}>
+                <span class="inline-block align-top font-bold"
+                    >Step {stepIndex + 1} {step.stepName}</span
+                ></button
+            >
+            <div class="grow" />
+            <button on:click={addStep}>
+                <Tooltip title="Add Step Below"><AddIcon /></Tooltip>
+            </button>
+        </div>
+        <!-- The panel -->
+        {#if step.done || step.isProceeding}
+            <div
+                class="grow {isShown ? '' : ' hidden'}"
+                style="height:{cardHeight - buttonHeight}px"
+            >
+                <div class="px-6 py-2">
+                    {#if step.stepType === 'LoadDatasetStep'}
+                        <LoadDatasetStep {step} {stepIndex} />
+                    {/if}
+                    {#if step.stepType === 'VariableSelectionStep'}
+                        <VariableSelectionStep
+                            {step}
+                            {stepIndex}
+                            height={cardHeight - buttonHeight}
+                        />
+                    {/if}
+                    {#if step.stepType === 'AssumptionCheckingStep'}
+                        <AssumptionCheckingStep
+                            {step}
+                            {stepIndex}
+                            height={cardHeight - buttonHeight}
+                        />
+                    {/if}
+                    {#if step.stepType === 'TrainTestSplitStep'}
+                        <TrainTestSplitStep
+                            {step}
+                            {stepIndex}
+                            height={cardHeight - buttonHeight}
+                        />
+                    {/if}
+                    {#if step.stepType === 'ModelStep'}
+                        <ModelStep
+                            {step}
+                            {stepIndex}
+                            height={cardHeight - buttonHeight}
+                        />
+                    {/if}
+                    {#if step.stepType === 'EvaluationStep'}
+                        <EvaluationStep
+                            {step}
+                            {stepIndex}
+                            height={cardHeight - buttonHeight}
+                        />
+                    {/if}
+                    {#if step.stepType === 'DataTransformationStep'}
+                        <DataTransformationStep
+                            {step}
+                            {stepIndex}
+                            height={cardHeight - buttonHeight}
+                        />
+                    {/if}
+                </div>
             </div>
         {/if}
     </div>
 {/if}
 
 <style>
-    .card {
-        overflow-y: scroll;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-        }
-
-    .card::-webkit-scrollbar {
-        width: 0;
-        height: 0;
+    .not-proceeding {
+        opacity: 0.2;
+        pointer-events: none;
     }
 </style>

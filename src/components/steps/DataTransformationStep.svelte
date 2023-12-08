@@ -1,53 +1,143 @@
 <script lang="ts">
     import _ from 'lodash';
-    import type { Step, Option, Workflow } from '../../interface/interfaces';
+    import type { Step, Workflow, Parameter } from '../../interface/interfaces';
     import type { Writable } from 'svelte/store';
     import { getContext } from 'svelte';
     import { deepCopy } from '../../utils';
+    import Tooltip from '../tooltip/Tooltip.svelte';
+    import Done from '../icons/Done.svelte';
+    import SelectionBoard from '../display/SelectionBoard.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
+    export let height: number = undefined;
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
+    const builtinTransformations: Writable<Array<string>> = getContext('builtinTransformations');
 
-    let variableResult: Option = undefined;
-    
+    let variableName: string = undefined;    
     let transformationName: string = undefined;
+    let transformationParameters: Parameter[] = undefined;
 
+    // function updateTransformation() {
+    //     let info = deepCopy($workflowInfo);
+    //     info.steps[stepIndex].config.variableResults = new Array(variableResult);
+    //     info.steps[stepIndex].config.transformationName = transformationName;
+    //     workflowInfo.set(info);
+    // }
 
-    function updateTransformation() {
+    function synctransformationParameters(parmams: Parameter[]){
+        transformationParameters = parmams;
+    };
+
+    $: synctransformationParameters(step?.config?.transformationParameters);
+
+    $: console.log("workflowInfo", $workflowInfo);
+    
+    function updateVariableResult() {
         let info = deepCopy($workflowInfo);
+        let variableResult =  step?.config?.variableCandidates?.find(
+            variable => variable.name == variableName
+        );
         info.steps[stepIndex].config.variableResults = new Array(variableResult);
+        workflowInfo.set(info);
+    }
+
+    function updateTransformation(){
+        let info = deepCopy($workflowInfo);
         info.steps[stepIndex].config.transformationName = transformationName;
         workflowInfo.set(info);
     }
 
+    function handleInputChange(parameterName, value) {
+        let info = deepCopy($workflowInfo);
+        console.log("before",transformationParameters);
+        let parameter = transformationParameters?.find(
+            parameter => parameter.name == parameterName
+        );
+        console.log("parameter",parameter);
+        if (!_.isUndefined(parameter)) {
+            parameter.value = value;
+        };
+        info.steps[stepIndex].config.transformationParameters = transformationParameters;
+        console.log("transformationParameters",transformationParameters);
+        workflowInfo.set(info);
+    }
+
+    function updateDone(){
+        let info = deepCopy($workflowInfo);
+        info.steps[stepIndex].done = true;
+        console.log(info.steps[stepIndex].done);
+        workflowInfo.set(info);
+    }
 </script>
 
-<div class="place-content-center flex">
-    <div
-        class="w-1/2 flex flex-col p-2 overflow-hidden bg-white border-2"
-    >
-        Select the column:
-        {#if !_.isUndefined(step?.config?.variableCandidates)}
-            <select class="border-2" bind:value={variableResult}>
-            {#each step?.config?.variableCandidates as variable}
-                <option value={variable}>{variable.name}</option>
+<div class="flex flex-col h-full">
+<div class="card place-content-center flex" style="height:{height-30}px">
+    <div class="parameter-container w-5/6 flex flex-col p-2 overflow-hidden bg-white border-2">
+        <div class="flex">
+            <span class="p-2">Select the transformation: </span>
+            <div class="grow" />
+            <select class="m-2" bind:value={transformationName} on:change={updateTransformation}>
+                <option disabled selected value> -- option -- </option>
+                {#each $builtinTransformations as transformation}
+                        <option value={transformation}>{transformation}</option>
+                {/each}
+            </select>
+        </div>
+        <div class="flex">
+            <span class="p-2">Select the column(s): </span>
+            <div class="grow" />
+            {#if !_.isUndefined(step?.config?.variableCandidates)}
+            <select class="m-2" bind:value={variableName} on:change={updateVariableResult}>
+                <option disabled selected value> -- option -- </option>
+                {#each step?.config?.variableCandidates as variable}
+                <option value={variable.name}>{variable.name}</option>
             {/each}
             </select>
-        {/if}
-        Select the transformation:
-        <select class="border-2" bind:value={transformationName}>
-            <option value="log">Log transformation</option>
-        </select>
-        <div class="grow" />
-    </div>
-    <div class="w-1/6 flex flex-col p-2 overflow-hidden bg-white border-2">
-        <button class="border-2">
-            <span class="font-bold">Skip</span>
-        </button>
-        <div class="grow" />
-        <button class="border-2" on:click={updateTransformation}>
-            <span class="font-bold">Done</span>
-        </button>
+            {/if}
+        </div>
+        <SelectionBoard parameters={step.config.transformationParameters} {handleInputChange} />
     </div>
 </div>
+<div class="grow" />
+    <div class="flex">
+        <div class="grow" />
+        <Tooltip title="Done">
+            <button on:click={updateDone}><Done /></button>
+        </Tooltip>
+    </div>
+</div>
+
+<style>
+    .card {
+        overflow-y: scroll;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .card::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+    }
+
+    .card span {
+        color: #333; /* Consistent text color */
+        padding: 10px;
+    }
+    .card select {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 5px 10px;
+        background-color: white;
+    }
+    .card select:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+
+    .parameter-container {
+        overflow-y: scroll;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+</style>
