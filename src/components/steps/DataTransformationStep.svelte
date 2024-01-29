@@ -9,7 +9,6 @@
     import SelectionBoard from '../display/SelectionBoard.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
-    export let height: number = undefined;
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
     const builtinTransformations: Writable<Array<string>> = getContext(
@@ -74,7 +73,7 @@
 </script>
 
 <div class="flex flex-col h-full">
-    <div class="card place-content-center flex" style="height:{height - 30}px">
+    <div class="card place-content-center flex">
         <div
             class="parameter-container w-5/6 flex flex-col p-2 overflow-hidden bg-white border-2"
         >

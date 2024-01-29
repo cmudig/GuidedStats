@@ -27,17 +27,10 @@
 
     const newStepPos: Writable<number> = getContext('newStepPos');
 
-    let stepHeight: number = 40;
-
-    let cardHeight: number = 40;
-
-    let buttonHeight: number = 20;
-
     let isShown: boolean = false;
 
     function unfold() {
         isShown = !isShown;
-        cardHeight = isShown ? 5 * stepHeight : stepHeight;
         let updatedInfo = deepCopy($workflowInfo);
 
         updatedInfo.steps[stepIndex].isShown = isShown;
@@ -51,14 +44,14 @@
 </script>
 
 {#if !_.isUndefined(step)}
-    <div class="flex-row" style="height:{cardHeight}px">
+    <div class="flex-row">
         <!-- Card -->
         <!-- if step.isProceeding is False then the div is disabled-->
         <div
-            class="px-2 flex hover:bg-slate-100 {step.isProceeding || step.done
+            class="px-2 flex hover:bg-slate-100 h-8 {step.isProceeding ||
+            step.done
                 ? ''
                 : 'not-proceeding'}"
-            style="height:{buttonHeight}px"
         >
             <button on:click={() => unfold()}>
                 <span class="inline-block align-top font-bold"
@@ -71,56 +64,29 @@
             </button>
         </div>
         <!-- The panel -->
-        {#if step.done || step.isProceeding}
-            <div
-                class="grow {isShown ? '' : ' hidden'}"
-                style="height:{cardHeight - buttonHeight}px"
-            >
+        {#if isShown && (step.done || step.isProceeding)}
+            <div class="grow">
                 <div class="px-6 py-2">
                     {#if step.stepType === 'LoadDatasetStep'}
                         <LoadDatasetStep {step} {stepIndex} />
                     {/if}
                     {#if step.stepType === 'VariableSelectionStep'}
-                        <VariableSelectionStep
-                            {step}
-                            {stepIndex}
-                            height={cardHeight - buttonHeight}
-                        />
+                        <VariableSelectionStep {step} {stepIndex} />
                     {/if}
                     {#if step.stepType === 'AssumptionCheckingStep'}
-                        <AssumptionCheckingStep
-                            {step}
-                            {stepIndex}
-                            height={cardHeight - buttonHeight}
-                        />
+                        <AssumptionCheckingStep {step} {stepIndex} />
                     {/if}
                     {#if step.stepType === 'TrainTestSplitStep'}
-                        <TrainTestSplitStep
-                            {step}
-                            {stepIndex}
-                            height={cardHeight - buttonHeight}
-                        />
+                        <TrainTestSplitStep {step} {stepIndex} />
                     {/if}
                     {#if step.stepType === 'ModelStep'}
-                        <ModelStep
-                            {step}
-                            {stepIndex}
-                            height={cardHeight - buttonHeight}
-                        />
+                        <ModelStep {step} {stepIndex} />
                     {/if}
                     {#if step.stepType === 'EvaluationStep'}
-                        <EvaluationStep
-                            {step}
-                            {stepIndex}
-                            height={cardHeight - buttonHeight}
-                        />
+                        <EvaluationStep {step} {stepIndex} />
                     {/if}
                     {#if step.stepType === 'DataTransformationStep'}
-                        <DataTransformationStep
-                            {step}
-                            {stepIndex}
-                            height={cardHeight - buttonHeight}
-                        />
+                        <DataTransformationStep {step} {stepIndex} />
                     {/if}
                 </div>
             </div>

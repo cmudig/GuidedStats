@@ -9,7 +9,6 @@
     import Selection from '../display/Selection.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
-    export let height: number = undefined;
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
@@ -62,7 +61,7 @@
 
 <div class="flex flex-col">
     <div>
-        <div class="flex card" style="height:{height - 30}px">
+        <div class="flex card">
             <!-- variable selection -->
             <div
                 class={'transition duration-500 flex flex-col' +

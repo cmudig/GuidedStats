@@ -18,7 +18,6 @@
     import Tabs from '../display/Tabs.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
-    export let height: number = undefined;
 
     export let specs: Array<any> = undefined;
 
@@ -61,7 +60,7 @@
 
 <div>
     {#if !_.isUndefined(step?.config?.assumptionResults)}
-        <div class="card" style="height:{height - 30}px">
+        <div class="card">
             <div class="flex">
                 <div class="grow" />
                 <!-- Visualization and Prompt -->
@@ -89,10 +88,7 @@
     {:else}
         <!-- This part is for self defining-->
         <div class="flex flex-col h-full">
-            <div
-                class="card place-content-center flex"
-                style="height:{height - 30}px"
-            >
+            <div class="card place-content-center flex">
                 <div
                     class="w-3/4 flex flex-col p-2 overflow-hidden bg-white border-2"
                 >

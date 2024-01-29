@@ -8,7 +8,6 @@
     import Done from '../icons/Done.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
-    export let height: number = undefined;
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
@@ -22,7 +21,7 @@
 </script>
 
 <div class="flex flex-col">
-    <div class="card place-content-center flex" style="height:{height - 30}px">
+    <div class="card place-content-center flex">
         <div class="w-3/4 p-4 overflow-hidden bg-white border-2">
             <div class="flex slider-container">
                 <span>Train Percentage: {percentage} %</span>

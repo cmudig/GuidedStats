@@ -10,7 +10,6 @@
 
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
-    export let height: number = undefined;
 
     let modelName: string = undefined;
     let parameterValues: Parameter[] = undefined;
@@ -44,7 +43,7 @@
 </script>
 
 <div class="flex flex-col h-full">
-    <div class="card place-content-center flex" style="height:{height - 30}px">
+    <div class="card place-content-center flex">
         <div class="w-3/4 flex flex-col p-4 overflow-scroll bg-white border-2">
             <div class="flex">
                 <span class="p-2">Model: </span>

@@ -13,7 +13,6 @@
     import Table from '../display/Table.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
-    export let height: number = undefined;
 
     const exportingItem: Writable<string> = getContext('exportingItem');
 
@@ -49,7 +48,7 @@
     let width: number = 450;
 </script>
 
-<div class="card overflow-x-scroll" style="height:{height}px">
+<div class="card overflow-x-scroll">
     <div class="flex">
         <div class="grow" />
         <div class="place-content-center flex p-4" style="width:{width}px">
