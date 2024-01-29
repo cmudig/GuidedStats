@@ -16,3 +16,5 @@ dist/
 */nbextension/index.js
 __pycache__
 guidedstats/labextension
+guidedstats/nbextension
+docs/
