@@ -23,9 +23,9 @@
     // const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
     export let workflowInfo: Writable<Workflow>;
 
-    const onSelectingStep:Writable<boolean> = getContext('onSelectingStep');
+    const onSelectingStep: Writable<boolean> = getContext('onSelectingStep');
 
-    const newStepPos:Writable<number> = getContext('newStepPos');
+    const newStepPos: Writable<number> = getContext('newStepPos');
 
     let stepHeight: number = 40;
 
@@ -62,7 +62,7 @@
         >
             <button on:click={() => unfold()}>
                 <span class="inline-block align-top font-bold"
-                    >Step {stepIndex + 1} {step.stepName}</span
+                    >Step {stepIndex + 1}: {step.stepName}</span
                 ></button
             >
             <div class="grow" />
