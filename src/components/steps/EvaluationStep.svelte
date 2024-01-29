@@ -1,7 +1,10 @@
 <script lang="ts">
     import _ from 'lodash';
     import type { Step, Visualization } from '../../interface/interfaces';
-    import { getScatterPlotStats, getTTestPlotStats } from '../viz/action/visualization';
+    import {
+        getScatterPlotStats,
+        getTTestPlotStats
+    } from '../viz/action/visualization';
     import embed from 'vega-embed';
     import Tooltip from '../tooltip/Tooltip.svelte';
     import ExportIcon from '../icons/ExportIcon.svelte';
@@ -32,11 +35,10 @@
         if (!_.isUndefined(vizs)) {
             let viz = vizs[0];
             let spec;
-            if(viz.vizType === "scatter"){
-            spec = getScatterPlotStats(viz, width * 0.6);
-            }
-            else if(viz.vizType === "ttest"){
-            spec = getTTestPlotStats(viz, width = width * 0.6);
+            if (viz.vizType === 'scatter') {
+                spec = getScatterPlotStats(viz, width * 0.6);
+            } else if (viz.vizType === 'ttest') {
+                spec = getTTestPlotStats(viz, (width = width * 0.6));
             }
             embed(`#vis-${stepIndex}`, spec, { actions: false });
         }
@@ -74,18 +76,18 @@
             {/if}
             {#if !_.isUndefined(step?.config?.modelParameters) && step?.config?.modelParameters.length > 0}
                 <div class="p-2">
-                    {#if step.config.modelParameters[0].hasOwnProperty("pvalue")}
-                    <Table
-                        headers={['Name', 'Value', 'P']}
-                        keys={['name', 'value', 'pvalue']}
-                        data={step?.config?.modelParameters}
-                    />
+                    {#if step.config.modelParameters[0].hasOwnProperty('pvalue')}
+                        <Table
+                            headers={['Name', 'Value', 'P']}
+                            keys={['name', 'value', 'pvalue']}
+                            data={step?.config?.modelParameters}
+                        />
                     {:else}
-                    <Table
-                        headers={['Name', 'Value']}
-                        keys={['name', 'value']}
-                        data={step?.config?.modelParameters}
-                    />
+                        <Table
+                            headers={['Name', 'Value']}
+                            keys={['name', 'value']}
+                            data={step?.config?.modelParameters}
+                        />
                     {/if}
                 </div>
             {/if}

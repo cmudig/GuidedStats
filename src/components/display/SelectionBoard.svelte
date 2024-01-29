@@ -34,9 +34,9 @@
                                     event.target.value
                                 )}
                         >
-                        <option disabled selected value>
-                            -- option --
-                        </option>
+                            <option disabled selected value>
+                                -- option --
+                            </option>
                             {#each parameter?.options as option}
                                 <option value={option.name}
                                     >{option.name}</option

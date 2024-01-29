@@ -12,9 +12,11 @@
     export let height: number = undefined;
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
-    const builtinTransformations: Writable<Array<string>> = getContext('builtinTransformations');
+    const builtinTransformations: Writable<Array<string>> = getContext(
+        'builtinTransformations'
+    );
 
-    let variableName: string = undefined;    
+    let variableName: string = undefined;
     let transformationName: string = undefined;
     let transformationParameters: Parameter[] = undefined;
     // function updateTransformation() {
@@ -24,22 +26,24 @@
     //     workflowInfo.set(info);
     // }
 
-    function synctransformationParameters(parmams: Parameter[]){
+    function synctransformationParameters(parmams: Parameter[]) {
         transformationParameters = parmams;
-    };
+    }
 
     $: synctransformationParameters(step?.config?.transformationParameters);
-    
+
     function updateVariableResult() {
         let info = deepCopy($workflowInfo);
-        let variableResult =  step?.config?.variableCandidates?.find(
+        let variableResult = step?.config?.variableCandidates?.find(
             variable => variable.name == variableName
         );
-        info.steps[stepIndex].config.variableResults = new Array(variableResult);
+        info.steps[stepIndex].config.variableResults = new Array(
+            variableResult
+        );
         workflowInfo.set(info);
     }
 
-    function updateTransformation(){
+    function updateTransformation() {
         let info = deepCopy($workflowInfo);
         info.steps[stepIndex].config.transformationName = transformationName;
         workflowInfo.set(info);
@@ -52,14 +56,15 @@
         );
         if (!_.isUndefined(parameter)) {
             parameter.value = value;
-        };
-        info.steps[stepIndex].config.transformationParameters = transformationParameters;
+        }
+        info.steps[stepIndex].config.transformationParameters =
+            transformationParameters;
         workflowInfo.set(info);
     }
 
-    function updateDone(){
+    function updateDone() {
         let info = deepCopy($workflowInfo);
-        if(info.steps[stepIndex].done){
+        if (info.steps[stepIndex].done) {
             info.steps[stepIndex].done = false;
             workflowInfo.set(info);
         }
@@ -69,34 +74,49 @@
 </script>
 
 <div class="flex flex-col h-full">
-<div class="card place-content-center flex" style="height:{height-30}px">
-    <div class="parameter-container w-5/6 flex flex-col p-2 overflow-hidden bg-white border-2">
-        <div class="flex">
-            <span class="p-2">Select the transformation: </span>
-            <div class="grow" />
-            <select class="m-2" bind:value={transformationName} on:change={updateTransformation}>
-                <option disabled selected value> -- option -- </option>
-                {#each $builtinTransformations as transformation}
+    <div class="card place-content-center flex" style="height:{height - 30}px">
+        <div
+            class="parameter-container w-5/6 flex flex-col p-2 overflow-hidden bg-white border-2"
+        >
+            <div class="flex">
+                <span class="p-2">Select the transformation: </span>
+                <div class="grow" />
+                <select
+                    class="m-2"
+                    bind:value={transformationName}
+                    on:change={updateTransformation}
+                >
+                    <option disabled selected value> -- option -- </option>
+                    {#each $builtinTransformations as transformation}
                         <option value={transformation}>{transformation}</option>
-                {/each}
-            </select>
+                    {/each}
+                </select>
+            </div>
+            <div class="flex">
+                <span class="p-2">Select the column(s): </span>
+                <div class="grow" />
+                {#if !_.isUndefined(step?.config?.variableCandidates)}
+                    <select
+                        class="m-2"
+                        bind:value={variableName}
+                        on:change={updateVariableResult}
+                    >
+                        <option disabled selected value> -- option -- </option>
+                        {#each step?.config?.variableCandidates as variable}
+                            <option value={variable.name}
+                                >{variable.name}</option
+                            >
+                        {/each}
+                    </select>
+                {/if}
+            </div>
+            <SelectionBoard
+                parameters={step.config.transformationParameters}
+                {handleInputChange}
+            />
         </div>
-        <div class="flex">
-            <span class="p-2">Select the column(s): </span>
-            <div class="grow" />
-            {#if !_.isUndefined(step?.config?.variableCandidates)}
-            <select class="m-2" bind:value={variableName} on:change={updateVariableResult}>
-                <option disabled selected value> -- option -- </option>
-                {#each step?.config?.variableCandidates as variable}
-                <option value={variable.name}>{variable.name}</option>
-            {/each}
-            </select>
-            {/if}
-        </div>
-        <SelectionBoard parameters={step.config.transformationParameters} {handleInputChange} />
     </div>
-</div>
-<div class="grow" />
+    <div class="grow" />
     <div class="flex">
         <div class="grow" />
         <Tooltip title="Done">

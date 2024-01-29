@@ -5,9 +5,9 @@
     import Tooltip from '../tooltip/Tooltip.svelte';
     import type { Writable } from 'svelte/store';
     import { getContext } from 'svelte';
-    
-    const onSelectingStep:Writable<boolean> = getContext('onSelectingStep');
-    const newStepType:Writable<string> = getContext('newStepType');
+
+    const onSelectingStep: Writable<boolean> = getContext('onSelectingStep');
+    const newStepType: Writable<string> = getContext('newStepType');
 
     function cancelAddStep() {
         onSelectingStep.set(false);
@@ -16,7 +16,7 @@
 
 <div
     class={'pnl grow bg-white w-full mt-2 border-2 rounded-lg' +
-        ($onSelectingStep ? ' ring-4' : '') }
+        ($onSelectingStep ? ' ring-4' : '')}
 >
     <div class="flex p-2">
         <span class="font-bold">Step</span>

@@ -35,7 +35,7 @@
 
     const handleClick = tabValue => () => (activeTabValue = tabValue);
 
-    function exportViz(stepIndex,vizIndex) {
+    function exportViz(stepIndex, vizIndex) {
         exportingItem.set('viz');
         exportVizStepIdx.set(stepIndex);
         exportVizIdx.set(vizIndex);
@@ -58,15 +58,18 @@
         {#if activeTabValue == i}
             <div class="box">
                 <div class="flex">
-                <div class="grow" />
-                <div style="flex-wrap: wrap;width:300px">
-                    {assumptionResults[activeTabValue].prompt}
-                </div>
-                <div class="grow" />
+                    <div class="grow" />
+                    <div style="flex-wrap: wrap;width:300px">
+                        {assumptionResults[activeTabValue].prompt}
+                    </div>
+                    <div class="grow" />
                 </div>
                 <div class="flex">
                     <div class="grow" />
-                    <div id="vis-{$serial}-{stepIndex}-{i}" style="width:300px"/>
+                    <div
+                        id="vis-{$serial}-{stepIndex}-{i}"
+                        style="width:300px"
+                    />
                     <!-- <Tooltip title="Export Visualization">
                         <button on:click={() => exportViz(stepIndex,i)}><ExportIcon /></button>
                     </Tooltip> -->

@@ -41,7 +41,8 @@
     "watch": "run-p watch:src watch:labextension",
     "watch:src": "webpack --watch --mode=development",
     "watch:labextension": "jupyter labextension watch .",
-    "install:extension": "npm ci && jlpm build"
+    "install:extension": "npm ci && jlpm build",
+    "format": "npx prettier -w ."
   },
   "dependencies": {
     "@jupyter-widgets/base": "^1.1 || ^2 || ^3 || ^4 || ^6",

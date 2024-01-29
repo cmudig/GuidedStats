@@ -11,9 +11,9 @@
 
     const onSelectingStep = writable(false);
     const newStepPos = writable(-1);
-    const newStepType = writable("");
-    const exportingItem = writable("");
-    
+    const newStepType = writable('');
+    const exportingItem = writable('');
+
     const exportTableStepIdx = WidgetWritable<number>(
         'exportTableStepIdx',
         -1,
@@ -26,17 +26,9 @@
         model
     );
 
-    const exportVizIdx = WidgetWritable<number>(
-        'exportVizIdx',
-        -1,
-        model
-    );
+    const exportVizIdx = WidgetWritable<number>('exportVizIdx', -1, model);
 
-    const exportCode = WidgetWritable<string>(
-        'exportCode',
-        "",
-        model
-    );
+    const exportCode = WidgetWritable<string>('exportCode', '', model);
 
     const builtinWorkflows = WidgetWritable<Array<string>>(
         'builtinWorkflows',
@@ -62,11 +54,7 @@
         model
     );
 
-    const serial = WidgetWritable<string>(
-        'serial',
-        '',
-        model
-    );
+    const serial = WidgetWritable<string>('serial', '', model);
 
     const selectedWorkflow = WidgetWritable<string>(
         'selectedWorkflow',
@@ -78,7 +66,7 @@
         'selectedStepInfo',
         {
             stepType: undefined,
-            stepPos: undefined,
+            stepPos: undefined
         },
         model
     );
@@ -93,43 +81,43 @@
         },
         model
     );
-    
+
     setContext('onSelectingStep', onSelectingStep);
     setContext('newStepPos', newStepPos);
     setContext('newStepType', newStepType);
     setContext('exportingItem', exportingItem);
-    
+
     setContext('workflowInfo', workflowInfo);
 
-    setContext('exportTableStepIdx',exportTableStepIdx);
+    setContext('exportTableStepIdx', exportTableStepIdx);
 
-    setContext('exportVizStepIdx',exportVizStepIdx);
+    setContext('exportVizStepIdx', exportVizStepIdx);
 
-    setContext('exportVizIdx',exportVizIdx);
+    setContext('exportVizIdx', exportVizIdx);
 
-    setContext('builtinAssumptions',builtinAssumptions);
+    setContext('builtinAssumptions', builtinAssumptions);
 
-    setContext('builtinTransformations',builtinTransformations);
+    setContext('builtinTransformations', builtinTransformations);
 
-    setContext('serial',serial);
+    setContext('serial', serial);
 
-    function addNewStep(stepType: string, stepPos: number){
-        if($builtinSteps.includes(stepType) && stepPos >= 0){
+    function addNewStep(stepType: string, stepPos: number) {
+        if ($builtinSteps.includes(stepType) && stepPos >= 0) {
             let pos: number;
-            if(stepPos == $workflowInfo.steps.length - 1){
+            if (stepPos == $workflowInfo.steps.length - 1) {
                 pos = -1;
             } else {
                 pos = stepPos + 1;
-            };
+            }
             console.log($serial);
             selectedStepInfo.set({
-            stepType: stepType,
-            stepPos: pos,
-        });
-        newStepType.set("");
-        newStepPos.set(-1);
-        };
-    };
+                stepType: stepType,
+                stepPos: pos
+            });
+            newStepType.set('');
+            newStepPos.set(-1);
+        }
+    }
 
     $: addNewStep($newStepType, $newStepPos);
 
@@ -137,31 +125,30 @@
         selectedWorkflow.set(event.detail.selectedWorkflow);
     }
 
-    function exportCodeToCell(code:string){
-        if($exportingItem == "table"){
+    function exportCodeToCell(code: string) {
+        if ($exportingItem == 'table') {
             exportHTMLTable(code);
-        } else if($exportingItem == "viz"){
+        } else if ($exportingItem == 'viz') {
             exportCodeViz(code);
         }
     }
 
-    function exportHTMLTable(code:string) {
-        if(code !== ""){
-            let cell = Jupyter.notebook.insert_cell_below("markdown");
+    function exportHTMLTable(code: string) {
+        if (code !== '') {
+            let cell = Jupyter.notebook.insert_cell_below('markdown');
             cell.set_text(code);
             cell.execute();
         }
-    };
+    }
 
-    function exportCodeViz(code:string) {
-        if(code !== ""){
-            let cell = Jupyter.notebook.insert_cell_below("code");
+    function exportCodeViz(code: string) {
+        if (code !== '') {
+            let cell = Jupyter.notebook.insert_cell_below('code');
             cell.set_text(code);
         }
-    };
+    }
 
     $: exportCodeToCell($exportCode);
-
 </script>
 
 <div class="bg-slate-50 rounded-xl w-full h-1/2 outlayer p-4 flex flex-row">

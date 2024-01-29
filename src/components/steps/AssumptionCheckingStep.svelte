@@ -57,7 +57,6 @@
     }
 
     $: updateChart(step?.config?.viz);
-
 </script>
 
 <div>
@@ -90,10 +89,17 @@
     {:else}
         <!-- This part is for self defining-->
         <div class="flex flex-col h-full">
-            <div class="card place-content-center flex" style="height:{height - 30}px">
-                <div class="w-3/4 flex flex-col p-2 overflow-hidden bg-white border-2">
+            <div
+                class="card place-content-center flex"
+                style="height:{height - 30}px"
+            >
+                <div
+                    class="w-3/4 flex flex-col p-2 overflow-hidden bg-white border-2"
+                >
                     <div class="flex">
-                        <span class="p-2">Select the assumption you would like to check: </span>
+                        <span class="p-2"
+                            >Select the assumption you would like to check:
+                        </span>
                         <div class="grow" />
                         <select bind:value={assumptionName}>
                             <option disabled selected value>

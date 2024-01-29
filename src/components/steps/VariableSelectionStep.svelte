@@ -24,7 +24,7 @@
             groupResults = [...value.map(d => d.name)];
             updateGroupResults();
         }
-    };
+    }
 
     function updateVariableResults() {
         let results = step.config.variableCandidates.filter(d =>
@@ -64,7 +64,12 @@
     <div>
         <div class="flex card" style="height:{height - 30}px">
             <!-- variable selection -->
-            <div class={"transition duration-500 flex flex-col" + (_.isUndefined(step?.config?.groupCandidates)? " w-full": " w-1/2")}>
+            <div
+                class={'transition duration-500 flex flex-col' +
+                    (_.isUndefined(step?.config?.groupCandidates)
+                        ? ' w-full'
+                        : ' w-1/2')}
+            >
                 <div>
                     {#if !_.isUndefined(step.config.metric)}
                         We find these variables have high {step.config.metric} with
@@ -101,7 +106,12 @@
             <!-- select groups -->
             {#if !_.isUndefined(step?.config?.groupCandidates) && step.config.groupCandidates.length > 0}
                 <div class="transition duration-500 flex flex-col w-1/2">
-                    <div>Please select <span class="font-bold" style="color:#008AFE">groups</span> from below:</div>
+                    <div>
+                        Please select <span
+                            class="font-bold"
+                            style="color:#008AFE">groups</span
+                        > from below:
+                    </div>
 
                     <Selection
                         parameterName="groupResults"

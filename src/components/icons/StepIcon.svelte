@@ -6,7 +6,14 @@
     export let fill: string = '#807E7E';
 </script>
 
-<svg style="min-width: {minWidth}" {width} {height} viewBox="-4 -4 24 24" fill="none" fill-rule="evenodd">
+<svg
+    style="min-width: {minWidth}"
+    {width}
+    {height}
+    viewBox="-4 -4 24 24"
+    fill="none"
+    fill-rule="evenodd"
+>
     <path
         {fill}
         fill-rule="evenodd"

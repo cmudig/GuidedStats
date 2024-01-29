@@ -10,9 +10,9 @@
 
     function getColor(step: Step) {
         if (step.done) {
-            return "#1d346e";
+            return '#1d346e';
         } else if (step.isProceeding) {
-            return "#05a3da";
+            return '#05a3da';
         } else {
             return '#c3cece';
         }
@@ -30,9 +30,13 @@
                     (step.isShown ? 5 * stepHeight : stepHeight) +
                     currentHeight;
                 heights.push(currentHeight);
-            };
-            
-            height = heights[heights.length - 1] + ((steps[steps.length - 1].isShown) ? 4.5 * stepHeight : 0.5 * stepHeight);
+            }
+
+            height =
+                heights[heights.length - 1] +
+                (steps[steps.length - 1].isShown
+                    ? 4.5 * stepHeight
+                    : 0.5 * stepHeight);
         }
 
         return heights;
@@ -65,6 +69,7 @@
         {/if}
     </svg>
 </div>
+
 <style>
     .dag {
         width: 60px;
