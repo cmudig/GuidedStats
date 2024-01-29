@@ -11,7 +11,6 @@ examples/.ipynb_checkpoints/
 *.tsbuildinfo
 dist/
 .DS_Store
-.vscode/
 */labextension/
 */nbextension/index.js
 __pycache__
