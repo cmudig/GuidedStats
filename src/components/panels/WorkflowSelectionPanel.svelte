@@ -1,11 +1,10 @@
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte';
-
-    import { onSelectingStep } from '../../stores';
-
-    import DefineIcon from '../icons/DefineIcon.svelte';
+    import { createEventDispatcher, getContext } from 'svelte';
     import WorkflowIcon from '../icons/WorkflowIcon.svelte';
+    import type { Writable } from 'svelte/store';
     export let workflows: Array<string> = undefined;
+
+    const onSelectingStep:Writable<boolean> = getContext('onSelectingStep');
 
     const dispatch = createEventDispatcher();
 
@@ -15,7 +14,6 @@
     <div class="flex p-2">
         <span class="font-bold">Workflow</span>
         <div class="grow" />
-        <!-- <DefineIcon /> -->
     </div>
     <div class="p-2">
         {#each workflows as workflow}

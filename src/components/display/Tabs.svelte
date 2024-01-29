@@ -6,7 +6,6 @@
     import ExportIcon from '../icons/ExportIcon.svelte';
     import type { Writable } from 'svelte/store';
     import { getContext } from 'svelte';
-    import { exportingItem } from '../../stores';
     export let num: number = undefined;
     export let stepIndex: number = undefined;
     export let assumptionResults: AssumptionResult[] = undefined;
@@ -16,12 +15,16 @@
 
     const exportVizIdx: Writable<number> = getContext('exportVizIdx');
 
+    const serial: Writable<string> = getContext('serial');
+
+    const exportingItem: Writable<string> = getContext('exportingItem');
+
     let activeTabValue = 0;
 
     function updateChart(specs: Array<any>, activeTabValue: number) {
         if (!_.isUndefined(specs)) {
             embed(
-                `#vis-${stepIndex}-${activeTabValue}`,
+                `#vis-${$serial}-${stepIndex}-${activeTabValue}`,
                 specs[activeTabValue],
                 { actions: false }
             );
@@ -56,17 +59,17 @@
             <div class="box">
                 <div class="flex">
                 <div class="grow" />
-                <div style="flex-wrap: wrap;width: 210px">
+                <div style="flex-wrap: wrap;width:300px">
                     {assumptionResults[activeTabValue].prompt}
                 </div>
                 <div class="grow" />
                 </div>
                 <div class="flex">
                     <div class="grow" />
-                    <div id="vis-{stepIndex}-{i}" />
-                    <Tooltip title="Export Visualization">
+                    <div id="vis-{$serial}-{stepIndex}-{i}" style="width:300px"/>
+                    <!-- <Tooltip title="Export Visualization">
                         <button on:click={() => exportViz(stepIndex,i)}><ExportIcon /></button>
-                    </Tooltip>
+                    </Tooltip> -->
                     <div class="grow" />
                 </div>
             </div>

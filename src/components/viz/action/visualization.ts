@@ -5,7 +5,7 @@ export function getBoxplotStats(viz: Visualization, width: number = 200, height:
 
     const spec = {
         "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-        "width": width,
+        "width": "container",
         "height": height,
         "data": {
             "values": viz.vizStats
@@ -51,7 +51,7 @@ export function getScatterPlotStats(viz: Visualization, width: number = 200, hei
     const spec =
     {
         "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-        "width": width,
+        "width": "container",
         "height": height,
         "data": { "values": viz.vizStats },
         "mark": { "type": "point", "tooltip": true },
@@ -71,7 +71,7 @@ export function getDensityPlotStats(viz: Visualization, width: number = 200, hei
     const minimum = Math.min(...viz.vizStats.map((d: any) => d.value));
     const spec = {
         "$schema": 'https://vega.github.io/schema/vega-lite/v5.json',
-        "width": width,
+        "width": "container",
         "height": height,
         "data": {
             "values": viz.vizStats
@@ -85,7 +85,7 @@ export function getDensityPlotStats(viz: Visualization, width: number = 200, hei
             }
         ],
         "encoding": {
-            "x": { "field": "value", "type": "quantitative"},
+            "x": { "field": "value", "type": "quantitative" },
             "y": { "field": "density", "type": "quantitative", "stack": "zero" },
             "color": { "field": "group", "type": "nominal" }
         }
@@ -94,38 +94,73 @@ export function getDensityPlotStats(viz: Visualization, width: number = 200, hei
 }
 
 export function getTTestPlotStats(viz: Visualization, width: number = 200, height: number = 120, title: string = "T-Test") {
-    if(!_.isUndefined(viz?.title)){
+    if (!_.isUndefined(viz?.title)) {
         title = viz.title
     };
     const spec = {
         "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-        "width": width,
+        "width": "container",
         "height": height,
         "data": {
-          "values": viz.vizStats
+            "values": viz.vizStats
         },
         "layer": [
-          {
-            "mark": "boxplot",
-            "encoding": {
-              "x": {"field": "group", "type": "nominal"},
-              "y": {"field": "value", "type": "quantitative"}
+            {
+                "mark": "boxplot",
+                "encoding": {
+                    "x": { "field": "group", "type": "nominal" },
+                    "y": { "field": "value", "type": "quantitative" }
+                }
+            },
+            {
+                "mark": "point",
+                "encoding": {
+                    "x": { "field": "group", "type": "nominal" },
+                    "y": { "field": "value", "type": "quantitative" }
+                }
             }
-          },
-          {
-            "mark": "point",
-            "encoding": {
-              "x": {"field": "group", "type": "nominal"},
-              "y": {"field": "value", "type": "quantitative"}
-            }
-          }
         ],
         "title": {
-          "text": title,
-          "anchor": "middle",
+            "text": title,
+            "anchor": "middle",
         }
-      }
-      
+    }
+
 
     return spec;
 }
+
+export function getHeatMapStats(viz: Visualization, width: number = 200, height: number = 120) {
+    const spec = {
+        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+        "width": "container",
+        "height": height,
+        "data": {
+            "values": viz.vizStats
+        },
+        "title": {
+            "text": "Correlation Matrix",
+            "anchor": "middle",
+        },
+        "mark": {"type":"rect","tooltip": true},
+        "encoding": {
+            "x": {
+                "field": "variable1",
+                "title": null
+            },
+            "y": {
+                "field": "variable2",
+                "title": null
+            },
+            "color": {
+                "field": "value",
+                "type": "quantitative",
+                "legend": {
+                    "title": null
+                }
+            }
+        }
+      }
+    return spec;
+}
+

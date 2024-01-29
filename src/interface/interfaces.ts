@@ -78,7 +78,7 @@ export type Visualization = {
     xLabel?: string;
     yLabel?: string;
     title?: string;
-    vizStats: BoxPlotStats[] | ScatterPlotStats[] | DensityPlotStats[];
+    vizStats: BoxPlotStats[] | ScatterPlotStats[] | DensityPlotStats[] | HeatMapStats[];
 }
 
 export type BoxPlotStats = {
@@ -97,8 +97,14 @@ export type ScatterPlotStats = {
 }
 
 export type DensityPlotStats = {
-    "group": number | string;
-    "value": number;
+    group: number | string;
+    value: number;
+}
+
+export type HeatMapStats = {
+    variable1: string;
+    variable2: string;
+    value: number;
 }
 
 export type Flow = {

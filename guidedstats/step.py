@@ -1,10 +1,6 @@
 from abc import abstractmethod
-import inspect
 import json
-import sys
 import copy
-import random
-from typing import Any, Callable
 import traitlets as tl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,22 +12,22 @@ from .assumptions import AssumptionWrapper
 from .transformations import TransformationWrapper
 from .viz import VIZ
 from .model import ModelWrapper
+from .utils import QUANTITATIVE_DTYPES
 
-
-quantitative_dtypes = ['float32', 'float64', 'int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32', 'uint64']
 
 class Config(tl.HasTraits):
-    dataset = tl.Unicode("").tag(sync=True);
-    metric = tl.Unicode("").tag(sync=True);
-    transformation = tl.Unicode("").tag(sync=True);
-    variableName = tl.Unicode("").tag(sync=True);
-    variableCandidates = tl.List([]).tag(sync=True);
-    variableResults = tl.List([]).tag(sync=True);
-    assumptionName = tl.Unicode("").tag(sync=True);
-    modelName = tl.Unicode("").tag(sync=True);
-    modelCandidates = tl.List([]).tag(sync=True);
-    modelResults = tl.List([]).tag(sync=True);
-    
+    dataset = tl.Unicode("").tag(sync=True)
+    metric = tl.Unicode("").tag(sync=True)
+    transformation = tl.Unicode("").tag(sync=True)
+    variableName = tl.Unicode("").tag(sync=True)
+    variableCandidates = tl.List([]).tag(sync=True)
+    variableResults = tl.List([]).tag(sync=True)
+    assumptionName = tl.Unicode("").tag(sync=True)
+    modelName = tl.Unicode("").tag(sync=True)
+    modelCandidates = tl.List([]).tag(sync=True)
+    modelResults = tl.List([]).tag(sync=True)
+
+
 class Step(tl.HasTraits):
     stepId = tl.Int().tag(sync=True)
     stepName = tl.Unicode().tag(sync=True)
@@ -45,8 +41,9 @@ class Step(tl.HasTraits):
     """
     base class
     """
-    def __init__(self,stepId:int= None,stepName="step",succeedPreviousStepOutput=False,previousSteps:list=None,**kwargs):
-                
+
+    def __init__(self, stepId: int = None, stepName="step", succeedPreviousStepOutput=False, previousSteps: list = None, **kwargs):
+
         # state variables of Step
         if stepId is not None:
             self.stepId = stepId
@@ -55,29 +52,29 @@ class Step(tl.HasTraits):
         self.done = False
         self.isProceeding = False
         self.isShown = False
-        
-        #back-end state
+
+        # back-end state
         self.inputs = {}
         self.outputs = {}
-        self.outputNames = kwargs.get("outputNames",None)
-        self.inputNames = kwargs.get("inputNames",None)
-        
+        self.outputNames = kwargs.get("outputNames", None)
+        self.inputNames = kwargs.get("inputNames", None)
+
         self.registered_functions = []
-                
+
         self._workflow = None
-        
+
         self.previousSteps = previousSteps
-        
+
     @property
     def workflow(self):
         return self._workflow
-    
+
     @workflow.setter
-    def workflow(self,workflow):
+    def workflow(self, workflow):
         self._workflow = workflow
-    
-    #utils function
-    def changeConfig(self,key,value):
+
+    # utils function
+    def changeConfig(self, key, value):
         tmp = self.config
         tmp[key] = value
         tmp = json.dumps(tmp)
@@ -85,8 +82,8 @@ class Step(tl.HasTraits):
         self.config = tmp
         if self.workflow is not None:
             self.workflow.updateWorkflowInfo(None)
-        
-    def compareConfig(self,old_config,new_config):
+
+    def compareConfig(self, old_config, new_config):
         differentKeys = []
         for key in new_config.keys():
             if key in old_config.keys():
@@ -95,81 +92,87 @@ class Step(tl.HasTraits):
             else:
                 differentKeys.append(key)
         return differentKeys
-        
+
     @abstractmethod
-    def onObserveConfig(self,change):
-        pass      
-    
+    def onObserveConfig(self, change):
+        pass
+
     def moveToNextStep(self):
         self.workflow.moveToNextStep(self)
-   
+
     @abstractmethod
     def forward(self):
         """
         execute the current step and move forward
         """
         pass
-    
+
     @abstractmethod
     # register the functions used in rerunning the step
-    def register(self,function):
+    def register(self, function):
         pass
-    
+
     @abstractmethod
     # clear all inputs from UI
     def clearUIinputs(self):
         pass
-        
-    
+
+
 class GuidedStep(Step):
     """
         GuidedStep suggests potentially insightful column(s) based on selected metrics
     """
-    def __init__(self, stepId: int = None, stepName="step", succeedPreviousStepOutput=False, previousSteps: list = None, compare: bool = False, metricName:str=None, **kwargs):
+
+    def __init__(self, stepId: int = None, stepName="step", succeedPreviousStepOutput=False, previousSteps: list = None, compare: bool = False, metricName: str = None, **kwargs):
         super().__init__(stepId, stepName, succeedPreviousStepOutput, previousSteps, **kwargs)
         self._compare = compare
-        
+
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
         if metricName is not None:
             self.metric = MetricWrapper()
             self.metric.setMetric(metricName)
-            
-            self.changeConfig("metric",metricName)
-    
-    #Utils function
-    def computeMetric(self,dataframe:pd.DataFrame,column:str,*referenceColumns:str):
+
+            self.changeConfig("metric", metricName)
+
+    # Utils function
+    def computeMetric(self, dataframe: pd.DataFrame, column: str, *referenceColumns: str):
         X = dataframe[column]
         referenceXs = [dataframe[col] for col in referenceColumns]
-        return self.metric.compute(X,*referenceXs)
-        
-    def compare(self,dataframe:pd.DataFrame,columns:list,k:int=1,*referenceColumns:str):
+        return self.metric.compute(X, *referenceXs)
+
+    def compare(self, dataframe: pd.DataFrame, columns: list, k: int = 1, *referenceColumns: str):
         """
             Return the top-k highest column(s) based on the metric
         """
         results = []
         for column in columns:
-            if column not in referenceColumns: #referenceColumns is the dependent variable
-                if dataframe[column].dtype in quantitative_dtypes:
-                #the constraint should be relaxed for other types of variables
-                    result = {"name":column}
-                    outputs = self.computeMetric(dataframe,column,*referenceColumns)
+            if column not in referenceColumns:  # referenceColumns is the dependent variable
+                if dataframe[column].dtype in QUANTITATIVE_DTYPES:
+                    # the constraint should be relaxed for other types of variables
+                    result = {"name": column}
+                    outputs = self.computeMetric(
+                        dataframe, column, *referenceColumns)
                     result["score"] = outputs["statistics"]
                     if "pvalue" in outputs:
                         pvalue = outputs["pvalue"]
                         result["pvalue"] = pvalue
-                    #TBC, here only consider correlation
+                    # TBC, here only consider correlation
                     results.append(result)
-        descendingColumns = sorted(results,key=lambda x:abs(x["score"]),reverse=True)
-        return descendingColumns[0:min(len(descendingColumns),k)]
+        descendingColumns = sorted(
+            results, key=lambda x: abs(x["score"]), reverse=True)
+        return descendingColumns[0:min(len(descendingColumns), k)]
 
-#Define Step that get the outputs of the previous step
+# Define Step that get the outputs of the previous step
+
+
 class SucccessorStep(Step):
     def __init__(self, stepId: int = None, stepName="step", succeedPreviousStepOutput=False, previousSteps: list = None, **kwargs):
-        super().__init__(stepId, stepName, succeedPreviousStepOutput, previousSteps,**kwargs)
+        super().__init__(stepId, stepName, succeedPreviousStepOutput, previousSteps, **kwargs)
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
-    
+
     def getPreviousOutputs(self):
         return self.workflow.stepList[self.stepId - 1].outputs
+
 
 class DataTransformationStep(SucccessorStep):
     def __init__(self, stepId: int = None, stepName="Data Transformation",  succeedPreviousStepOutput=True, previousSteps: list = None, **kwargs):
@@ -179,130 +182,71 @@ class DataTransformationStep(SucccessorStep):
         self.transformationParameters = []
         self.selfDefinedTransformations = {}
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
-        
+
     def clearUIinputs(self):
-        self.config.pop("variableCandidates",None)
-        self.config.pop("transformationName",None)
-        self.config.pop("variableResults",None)
-        
+        self.config.pop("variableCandidates", None)
+        self.config.pop("transformationName", None)
+        self.config.pop("variableResults", None)
+
     @tl.observe("config")
-    def setTransformation(self,change):
+    def setTransformation(self, change):
         """
         Args:
             transformationName (str):  the name of transformation
             transformation (Callable): a column-wise transformation applied 
         """
-        differences = self.compareConfig(change["old"],change["new"])
+        differences = self.compareConfig(change["old"], change["new"])
         if "transformationName" in differences and change["new"]["transformationName"] is not None:
             transformationName = change["new"]["transformationName"]
             self._transformation = TransformationWrapper()
-            self._transformation.setTransformation(transformationName) 
+            self._transformation.setTransformation(transformationName)
             self._transformationName = transformationName
-            if self._transformation.requireGroupVariable:
-                options = [{"name": col} for col in self.inputs["dataset"].columns]
-                self.transformationParameters.append({"name":"groupVariable","displayName":"Select Group Variable","multiple":False,"options":options})
-                self.changeConfig("transformationParameters",self.transformationParameters)
-        if "transformationParameters" in differences and any([param["name"] == "groupVariable" and "value" in param and param["value"] is not None for param in self.config["transformationParameters"]]):
-            if self._transformation.requireVarCat:
-                col = list(filter(lambda param: param["name"] == "groupVariable", self.config["transformationParameters"]))[0]["value"]
-                col = col[0] if isinstance(col,list) else col
-                values = getUniqueValues(self.inputs["dataset"],col)
-                options = [{"name":value} for value in values]
-                self.transformationParameters = self.config["transformationParameters"]
-                self.transformationParameters.append({"name":"group","displayName":"Select Groups","multiple":True,"options":options})
-                #incorporate self.transformationParameters into config
-                
-                self.changeConfig("transformationParameters",self.transformationParameters)
-        # if "variableResults" in differences and len(change["new"]["variableResults"]) != 0:
-        #     columns = [option["name"] for option in change["new"]["variableResults"]]
-        #     if self._transformation.requireVarCat:
-        #         values = getUniqueValues(self.inputs["dataset"],columns[0])
-        #         options = [{"name":value} for value in values]
-        #         self.transformationParameters.append({"name":"group","displayName":"Selected Groups","multiple":True,"options":options})
-        #         self.changeConfig("transformationParameters",self.transformationParameters) 
 
-        # hasTransformationName = "transformationName" in change["new"] and change["new"]["transformationName"] is not None
-        # hasVariableResults = "variableResults" in change["new"] and change["new"]["variableResults"] is not None
-        # if hasTransformationName and hasVariableResults:
-        #     transformationName = change["new"]["transformationName"]
-        #     columns = [option["name"] for option in self.config["variableResults"]]
-        #     self._transformation = TransformationWrapper(columns,transformationName)
-        #     self._transformationName = transformationName
-            
-        #     inputDataset = copy.deepcopy(self.inputs["dataset"])
-            
-        #     inputDataset = self._transformation.transform(inputDataset)
-            
-        #     outputs = self.getPreviousOutputs()
-            
-        #     outputs[list(outputs.keys())[0]] = inputDataset
-
-        #     self.outputs = outputs
-              
-        #     #update current dataframe
-        #     if self.workflow is not None:
-        #         self.workflow.current_dataframe = inputDataset
-        #     del inputDataset    
-            
-        #     self.done = True
-            
-        #     self.moveToNextStep()
-            
-        #     del inputDataset
-    
     @tl.observe("done")
-    def onObservingDone(self,change):
+    def onObservingDone(self, change):
         hasAll = True
         hasTransformation = self._transformation is not None
-        hasVariableResults = "variableResults" in self.config and len(self.config["variableResults"]) != 0
+        hasVariableResults = "variableResults" in self.config and len(
+            self.config["variableResults"]) != 0
         hasAll = hasAll and hasTransformation and hasVariableResults
-        
+
         otherParameters = {}
-        if self._transformation.requireGroupVariable:
-            hasGroupVariable = any([param["name"] == "groupVariable" and "value" in param and param["value"] is not None for param in self.config["transformationParameters"]])
-            if hasGroupVariable:
-                col = filter(self.transformationParameters,lambda param: param["name"] == "groupVariable")[0]["value"]
-                col = col[0] if isinstance(col,list) else col
-                otherParameters["groupVariable"] = col
-            hasAll = hasAll and hasGroupVariable
-        if self._transformation.requireVarCat:
-            hasVarCat = any([param["name"] == "group" and "value" in param and param["value"] is not None for param in self.config["transformationParameters"]]) 
-            if hasVarCat:
-                groups = filter(self.transformationParameters,lambda param: param["name"] == "group")[0]["value"]
-                groups = groups if isinstance(groups,list) else [groups]
-                otherParameters["group"] = groups
-            hasAll = hasAll and hasVarCat
         if hasAll:
-            columns = [option["name"] for option in self.config["variableResults"]]
-            
-            outputName = list(self.outputs.keys())[0]
+            columns = [option["name"]
+                       for option in self.config["variableResults"]]
+
+            outputName = self.outputNames[0]
             otherParameters["outputName"] = outputName
             inputDataset = copy.deepcopy(self.inputs["dataset"])
-            transformedDataset = self._transformation.transform(inputDataset,columns,**otherParameters)
-            
-            outputs = self.getPreviousOutputs()
-        
+            transformedDataset = self._transformation.transform(
+                inputDataset, columns, **otherParameters)
+            outputs = copy.deepcopy(self.getPreviousOutputs())
             for key in transformedDataset.keys():
-                outputs[key] = transformedDataset[key]                
-
+                outputs[key] = transformedDataset[key]
             self.outputs = outputs
-              
-            #update current dataframe
+
+            # update current dataframe
             if self.workflow is not None:
-                self.workflow.current_dataframe = inputDataset
-            del inputDataset    
-            
+                dataset = copy.deepcopy(self.inputs["dataset"])
+                for key in transformedDataset.keys():    
+                    dataset[key] = transformedDataset[key]
+                self.workflow.current_dataframe = dataset
+            del inputDataset, dataset, transformedDataset
+
             self.done = True
-            
+
             self.moveToNextStep()
-                        
-    def forward(self):
-        #check whether setTransformation has been called previously
+
+    def forward(self, **inputs):
+        # check whether setTransformation has been called previously
 
         outputs = self.getPreviousOutputs()
-        
+
+        if self.outputNames is None:
+            self.outputNames = [list(outputs.keys())[0]]
+
         # get dataset from previous steps
-        #format: [string, string]
+        # format: [string, string]
         keys = list(self.workflow.outputsStorage.keys())
         keys.sort(reverse=True)
         found = False
@@ -311,134 +255,149 @@ class DataTransformationStep(SucccessorStep):
 
         while not found:
             currentObservingOutputs = self.workflow.outputsStorage[keys[currentIdx]]
-            if "dataset" in currentObservingOutputs:             
+            if "dataset" in currentObservingOutputs:
                 found = True
                 dataset = currentObservingOutputs["dataset"]
             currentIdx += 1
-        
+
         self.inputs["dataset"] = dataset
-        
+
         self.inputs[list(outputs.keys())[0]] = outputs[list(outputs.keys())[0]]
-        
-        variableCandidates = [{"name": col} for col in self.inputs[list(outputs.keys())[0]].columns]
-        self.changeConfig("variableCandidates",variableCandidates)
-    
-        
+
+        variableCandidates = [{"name": col}
+                              for col in self.inputs[list(outputs.keys())[0]].columns]
+        self.changeConfig("variableCandidates", variableCandidates)
+
+
 class LoadDatasetStep(Step):
-    
+
     def __init__(self, stepId: int = None, stepName="Load Dataset", succeedPreviousStepOutput=False, previousSteps: list = None, **kwarg):
         super().__init__(stepId, stepName, succeedPreviousStepOutput, previousSteps, **kwarg)
         self._dataset = None
         self._datasetName = None
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
-        
+
     @property
     def dataset(self):
         return self._dataset
 
     @dataset.setter
-    def dataset(self,dataset:pd.DataFrame):
+    def dataset(self, dataset: pd.DataFrame):
         self._dataset = dataset
-        
+
     @property
     def datasetName(self):
         return self._datasetName
-    
+
     @datasetName.setter
-    def datasetName(self,datasetName:str):
+    def datasetName(self, datasetName: str):
         self._datasetName = datasetName
-        self.changeConfig("dataset",datasetName)
-     
+        self.changeConfig("dataset", datasetName)
+
     def forward(self):
-        
+
         self.dataset = self.workflow.dataset
         self.datasetName = self.workflow.datasetName
-        
-        self.outputs = {"dataset":self.dataset}
-        
-        #update current dataframe
+
+        self.outputs = {"dataset": self.dataset}
+
+        # update current dataframe
         if self.workflow is not None:
             self.workflow.current_dataframe = self.dataset
-        
+
         self.done = True
         self.moveToNextStep()
-    
+
+
 class VariableSelectionStep(GuidedStep):
-    
-    def __init__(self, variableType:str, variableNum=1, candidateNum=4, stepId: int = None, stepName="Select Variable(s)",  succeedPreviousStepOutput=False, previousSteps: list = None, compare: bool = False, metricName: str = None, **kwargs):
+
+    def __init__(self, variableType: str, variableNum=1, candidateNum=4, stepId: int = None, stepName="Select Variable(s)",  succeedPreviousStepOutput=False, previousSteps: list = None, compare: bool = False, metricName: str = None, **kwargs):
         if variableType == "independent variables":
-            previousSteps = ["dataset","referenceDataset"]
+            previousSteps = ["dataset", "referenceDataset"]
         elif variableType == "dependent variable":
             previousSteps = ["dataset"]
         elif variableType == "group variable":
-            previousSteps = ["dataset","Y1"]
+            previousSteps = ["dataset", "Y1"]
         else:
             previousSteps = ["dataset"]
-        self.requireVarCategory = kwargs.get("requireVarCategory",False)
-        super().__init__(stepId, stepName, succeedPreviousStepOutput, previousSteps, compare, metricName, **kwargs)
-        #TBC, we should allow undecided number of variables
+        self.requireVarCategory = kwargs.get("requireVarCategory", False)
+        super().__init__(stepId, stepName, succeedPreviousStepOutput,
+                         previousSteps, compare, metricName, **kwargs)
+        # TBC, we should allow undecided number of variables
         self._variableType = variableType
         self.variableNum = variableNum
         self.candidateNum = candidateNum
-        
+
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
-        
-        self.changeConfig("variableName",variableType)
-        self.changeConfig("variableNum",variableNum)
-        
-        self.changeConfig("requireVarCategory",self.requireVarCategory)
-        
+
+        self.changeConfig("variableName", variableType)
+        self.changeConfig("variableNum", variableNum)
+
+        self.changeConfig("requireVarCategory", self.requireVarCategory)
+
         self.groupCandidates = None
-        
+
     def clearUIinputs(self):
-        self.config.pop("variableCandidates",None)
-        self.config.pop("variableResults",None)
-        
-    def findVariableCandidates(self,dataset:pd.DataFrame,referenceDataset:pd.DataFrame=None) -> pd.DataFrame:
+        self.config.pop("variableCandidates", None)
+        self.config.pop("variableResults", None)
+
+    def findVariableCandidates(self, dataset: pd.DataFrame, referenceDataset: pd.DataFrame = None) -> pd.DataFrame:
         if self._compare:
             if referenceDataset is not None:
-                self.changeConfig("referenceVariables",list(referenceDataset.columns))
-                candidateColumns = self.compare(dataset,dataset.columns,self.candidateNum,*referenceDataset.columns)
+                self.changeConfig("referenceVariables",
+                                  list(referenceDataset.columns))
+                candidateColumns = self.compare(
+                    dataset, dataset.columns, self.candidateNum, *referenceDataset.columns)
 
             else:
-                candidateColumns = self.compare(dataset,dataset.columns,self.candidateNum)
+                candidateColumns = self.compare(
+                    dataset, dataset.columns, self.candidateNum)
         else:
-            candidateColumns = [{"name":col} for col in dataset.columns]
-        self.changeConfig("variableCandidates",candidateColumns)
+            candidateColumns = [{"name": col} for col in dataset.columns]
+        self.changeConfig("variableCandidates", candidateColumns)
         # self.workflow.onProceeding = False
-    
+
     @tl.observe("config")
-    def onObserveConfig(self,change):
-        hasGroupResults = "groupResults" in change["new"] and len(change["new"]["groupResults"]) == 2
-        hasVariableResults = "variableResults" in change["new"] and len(change["new"]["variableResults"]) != 0
-        if self.requireVarCategory:        
-            if hasGroupResults and hasVariableResults: # 2. after selecting groupby options
-                selectedColumns = [result["name"] for result in change["new"]["variableResults"]] 
+    def onObserveConfig(self, change):
+        hasGroupResults = "groupResults" in change["new"] and len(
+            change["new"]["groupResults"]) == 2
+        hasVariableResults = "variableResults" in change["new"] and len(
+            change["new"]["variableResults"]) != 0
+        if self.requireVarCategory:
+            if hasGroupResults and hasVariableResults:  # 2. after selecting groupby options
+                selectedColumns = [result["name"]
+                                   for result in change["new"]["variableResults"]]
                 self.outputs = {}
                 for i in range(len(self.outputNames)):
                     group = change["new"]["groupResults"][i]["name"]
-                    self.outputs[self.outputNames[i]] = self.inputs["Y1"][self.inputs["dataset"][selectedColumns[0]] == group]
+                    self.outputs[self.outputNames[i]
+                                 ] = self.inputs["Y1"][self.inputs["dataset"][selectedColumns[0]] == group]
             else:
-                if hasVariableResults: # 1. display groupby options
-                    selectedColumns = [result["name"] for result in change["new"]["variableResults"]]
-                    values = getUniqueValues(self.inputs["dataset"],selectedColumns[0])
-                    options = [{"name":value} for value in values]
+                if hasVariableResults:  # 1. display groupby options
+                    selectedColumns = [result["name"]
+                                       for result in change["new"]["variableResults"]]
+                    values = getUniqueValues(
+                        self.inputs["dataset"], selectedColumns[0])
+                    options = [{"name": value} for value in values]
                     self.groupCandidates = options
-                    self.changeConfig("groupCandidates",self.groupCandidates)
+                    self.changeConfig("groupCandidates", self.groupCandidates)
                     self.workflow.updateWorkflowInfo(None)
         else:
             if hasVariableResults:
-                selectedColumns = [result["name"] for result in change["new"]["variableResults"]]
+                selectedColumns = [result["name"]
+                                   for result in change["new"]["variableResults"]]
                 subset = self.inputs["dataset"][selectedColumns]
                 if self._variableType == "independent variables":
-                    self.outputs = {self.outputNames[0]:subset, "referenceDataset":self.inputs["referenceDataset"]}
+                    self.outputs = {
+                        self.outputNames[0]: subset, "referenceDataset": self.inputs["referenceDataset"], "exog": subset}
                 elif self._variableType == "dependent variable":
-                    self.outputs = {self.outputNames[0]:subset, "referenceDataset":subset}
+                    self.outputs = {
+                        self.outputNames[0]: subset, "referenceDataset": subset}
                 else:
-                    self.outputs = {self.outputNames[0]:subset}
-    
+                    self.outputs = {self.outputNames[0]: subset}
+
     @tl.observe("done")
-    def onObserveDone(self,change):
+    def onObserveDone(self, change):
         if change["old"] == False and change["new"] == True:
             if len(self.outputs) != 0:
                 self.moveToNextStep()
@@ -446,220 +405,244 @@ class VariableSelectionStep(GuidedStep):
                 self.done = False
                 self.workflow.currentStep = self
                 self.workflow.currentStep.isShown = True
-            
-    def forward(self,**inputs) -> pd.DataFrame:
+
+    def forward(self, **inputs) -> pd.DataFrame:
         print("move to VariableSelectionStep")
         self.inputs = inputs
-        dataset = self.inputs.get("dataset",None)
-        referenceDataset = self.inputs.get("referenceDataset",None)
-        self.findVariableCandidates(dataset,referenceDataset)        
-        
+        dataset = self.inputs.get("dataset", None)
+        referenceDataset = self.inputs.get("referenceDataset", None)
+        self.findVariableCandidates(dataset, referenceDataset)
+
+
 class AssumptionCheckingStep(SucccessorStep):
 
-    def __init__(self, stepId: int = None, stepName="Check Assumption", succeedPreviousStepOutput=False, previousSteps: list = None, assumptionName:str = None, isRelaxed:bool = True, **kwargs):
+    def __init__(self, stepId: int = None, stepName="Check Assumption", succeedPreviousStepOutput=True, previousSteps: list = None, assumptionName: str = None, isRelaxed: bool = True, **kwargs):
         super().__init__(stepId, stepName, succeedPreviousStepOutput, previousSteps, **kwargs)
         self.isRelaxed = isRelaxed
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
-        # TBC, if relaxed is True, then even the assumption does not meet the proess will continue 
-        
+        # TBC, if relaxed is True, then even the assumption does not meet the proess will continue
         self.assumption = None
-        
-        #get inputNames
-        self.previousSteps = kwargs.get("inputNames",None)
-        
+        # get inputNames
+        self.previousSteps = kwargs.get("inputNames", None)
+
         if assumptionName is not None:
             self.assumption = AssumptionWrapper()
             self.assumption.setAssumption(assumptionName)
 
     def clearUIinputs(self):
-        self.config.pop("assumptionResults",None)
-        self.config.pop("viz",None)
-        
+        self.config.pop("assumptionResults", None)
+        self.config.pop("viz", None)
+
     @tl.observe("done")
-    def onObserveDone(self,change):
-        if change["old"] == False and change["new"] == True:
-            #if approved, pass the same outputs to the next step
+    def onObserveDone(self, change):
+        if self.outputNames is not None:
+            self.outputs = {}
+            for i, outputName in enumerate(self.outputNames):
+                self.outputs[outputName] = list(self.inputs.values())[i]
+        else:
             self.outputs = self.getPreviousOutputs()
-            
-            self.moveToNextStep()
+
+        self.moveToNextStep()
 
     @tl.observe("config")
     def onObserveConfig(self, change):
         if "assumptionName" in self.config and self.config["assumptionName"] is not None:
+            assumption_dict = {
+                "Outliers Checking" : "outlier",
+                "Levene Test" : "levene",
+                "Normality Test" : "normality",
+                "Multicollinearity Test" : "multicollinearity"
+            }
             self.assumption = AssumptionWrapper()
-            self.assumption.setAssumption(self.config["assumptionName"])
-        
+            self.assumption.setAssumption(assumption_dict[self.config["assumptionName"]])
+
         if self.workflow is not None and self.workflow.currentStep is not None and self.workflow.currentStep == self:
             self.checkAssumption(self.inputs)
-    
-    def checkAssumption(self, inputs):
-        #2. check assumption
-        assumptionResults,vizs = self.assumption.checkAssumption(*tuple(inputs.values()))
-        #3. set config
-        self.changeConfig("assumptionResults",assumptionResults)
+
+    def checkAssumption(self, inputs: dict):
+        # 2. check assumption
+        assumptionResults, vizs = self.assumption.checkAssumption(
+            *tuple(inputs.values()));
+        # 3. set config
+        self.changeConfig("assumptionResults", assumptionResults)
         self.changeConfig("viz", vizs)
-    
-    def forward(self,**inputs):
-            
-        #1. get outputs from previous step, and assign it as the current input
+
+    def forward(self, **inputs):
+
+        # 1. get outputs from previous step, and assign it as the current input
         self.inputs = inputs
-        
+
         if self.assumption is not None:
             if self.workflow is not None and self.workflow.currentStep is not None and self.workflow.currentStep == self:
                 self.checkAssumption(self.inputs)
-            
+
+
 class TrainTestSplitStep(Step):
     """
         temporary class, maybe changed to 
     """
-    
+
     def __init__(self, stepId: int = None, stepName="Train Test Split",  succeedPreviousStepOutput=False, previousSteps: list = None, **kwargs):
         super().__init__(stepId, stepName, succeedPreviousStepOutput, previousSteps, **kwargs)
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
-        self.previousSteps = kwargs.get("inputNames",None)
-        
+        self.previousSteps = kwargs.get("inputNames", None)
+
     def clearUIinputs(self):
-        self.config.pop("trainSize",None)
-        
+        self.config.pop("trainSize", None)
+
     @tl.observe("config")
-    def onObserveConfig(self,change):
+    def onObserveConfig(self, change):
         if "trainSize" in change["new"]:
             trainSize = change["new"]["trainSize"]
-            #TBC trainSize should be checked
+            # TBC trainSize should be checked
             valSize = (1-trainSize)/2
-            
+
             X = self.inputs["X"]
             Y = self.inputs["Y"]
             indices = np.arange(len(X))
             np.random.shuffle(indices)
             train_indices = indices[:int(len(indices)*float(trainSize))]
-            validation_indices = indices[int(len(indices)*float(trainSize)):int(len(indices)*(float(trainSize)+float(valSize)))]
-            test_indices = indices[int(len(indices)*(float(trainSize)+float(valSize))):]
-                
+            validation_indices = indices[int(len(
+                indices)*float(trainSize)):int(len(indices)*(float(trainSize)+float(valSize)))]
+            test_indices = indices[int(
+                len(indices)*(float(trainSize)+float(valSize))):]
+
             XTrain = X.iloc[train_indices]
             XVal = X.iloc[validation_indices]
             XTest = X.iloc[test_indices]
             yTrain = Y.iloc[train_indices]
             yVal = Y.iloc[validation_indices]
             yTest = Y.iloc[test_indices]
-            
-            self.outputs = {"XTrain":XTrain, "XVal":XVal, "XTest":XTest, "yTrain":yTrain, "yVal":yVal, "yTest":yTest}
+
+            self.outputs = {"XTrain": XTrain, "XVal": XVal, "XTest": XTest,
+                            "yTrain": yTrain, "yVal": yVal, "yTest": yTest}
             self.done = True
-            
+
             self.moveToNextStep()
-        
-    def forward(self,X:pd.DataFrame,Y:pd.DataFrame):
-        self.inputs = {"X":X,"Y":Y}
+
+    def forward(self, X: pd.DataFrame, Y: pd.DataFrame):
+        self.inputs = {"X": X, "Y": Y}
+
 
 class ModelStep(GuidedStep):
-    
-    def __init__(self, stepId: int = None, stepName="Train Model", succeedPreviousStepOutput=False, previousSteps: list = None, compare: bool = False, metricName: str = None, modelCandidates:list=None, **kwargs):
-        super().__init__(stepId, stepName, succeedPreviousStepOutput, previousSteps, compare, metricName, **kwargs)
-        #TBC, should allow more types of models and hyperparameter search
+
+    def __init__(self, stepId: int = None, stepName="Train Model", succeedPreviousStepOutput=False, previousSteps: list = None, compare: bool = False, metricName: str = None, modelCandidates: list = None, **kwargs):
+        super().__init__(stepId, stepName, succeedPreviousStepOutput,
+                         previousSteps, compare, metricName, **kwargs)
+        # TBC, should allow more types of models and hyperparameter search
         self.modelWrapper = ModelWrapper()
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
-        
-        self.previousSteps = kwargs.get("inputNames",None)
-    
+
+        self.previousSteps = kwargs.get("inputNames", None)
+
         if modelCandidates is not None:
-            self.changeConfig("modelCandidates",modelCandidates)
-            
+            self.changeConfig("modelCandidates", modelCandidates)
+
     def clearUIinputs(self):
-        self.config.pop("modelName",None)
-    
+        self.config.pop("modelName", None)
+
     @tl.observe("config")
-    def onObserveConfig(self,change): 
+    def onObserveConfig(self, change):
         if "modelName" in change["new"]:
             self.modelWrapper.setModel(change["new"]["modelName"])
             if "modelParameters" in change["new"]:
                 args = {}
                 for parameter in change["new"]["modelParameters"]:
                     args[parameter["name"]] = parameter["value"]
-                model,results = self.modelWrapper.fit(*tuple(self.inputs.values()),**args)
+                model, results = self.modelWrapper.fit(
+                    *tuple(self.inputs.values()), **args)
             else:
-                model,results = self.modelWrapper.fit(*tuple(self.inputs.values())) 
-            
-            #update current model and results
+                model, results = self.modelWrapper.fit(
+                    *tuple(self.inputs.values()))
+
+            # update current model and results
             if self.workflow is not None:
-                if model.fittedModel is not None:
-                    self.workflow.all_models.append(model.fittedModel)
-                    self.workflow.current_model = model.fittedModel
-                    self.workflow.current_model_results = results
-            
+                self.workflow.current_model = model
+
             self.done = True
-            
-            #TBC, the model should be wrapped
-            self.outputs = {"model":model,"results":results}
+
+            # TBC, the model should be wrapped
+            self.outputs = {"model": model, "results": results}
             self.done = True
-            
+
             self.moveToNextStep()
-        
-                       
-    def forward(self,**inputs):
+
+    def forward(self, **inputs):
         self.inputs = inputs
 
 
 class EvaluationStep(GuidedStep):
     def __init__(self, stepId: int = None, stepName="Evaluate Model", succeedPreviousStepOutput=False, previousSteps: list = None, compare: bool = False, metricName: str = None, **kwargs):
-        super().__init__(stepId, stepName, succeedPreviousStepOutput, previousSteps, compare, metricName, **kwargs)
+        super().__init__(stepId, stepName, succeedPreviousStepOutput,
+                         previousSteps, compare, metricName, **kwargs)
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
-        self.previousSteps = kwargs.get("inputNames",None)
-        self.evaluationMetricNames = kwargs.get("evaluationMetricNames",None)
-        self.visType = kwargs.get("visType",None)
-        
+        self.previousSteps = kwargs.get("inputNames", None)
+        self.evaluationMetricNames = kwargs.get("evaluationMetricNames", None)
+        self.visType = kwargs.get("visType", None)
+
         self.metricWrappers = []
         if self.evaluationMetricNames is not None:
             for metricName in self.evaluationMetricNames:
                 metricWrapper = MetricWrapper()
                 metricWrapper.setMetric(metricName)
                 self.metricWrappers.append(metricWrapper)
-    
+
     def clearUIinputs(self):
-        self.config.pop("modelParameters",None)
-        self.config.pop("modelResults",None)
-        self.config.pop("viz",None)
-    
-    def forward(self,**inputs):
+        self.config.pop("modelParameters", None)
+        self.config.pop("modelResults", None)
+        self.config.pop("viz", None)
+
+    def forward(self, **inputs):
         # TBC, should wrap a model object
-        #join test dataset for altair visualization
+        # join test dataset for altair visualization
         values = list(inputs.values())
 
         self.inputs = inputs
-        
-        #update model parameters  
-        if hasattr(self.inputs["results"],"params"):
-            params = self.inputs["results"].params
-        if hasattr(self.inputs["results"],"pvalues"):
-            p_values = self.inputs["results"].pvalues
+
+        # update model parameters
+        if self.inputs["model"]._modelName in ("Simple Linear Regression", "Ridge Regression", "Lasso Regression"):
+            if hasattr(self.inputs["results"], "params"):
+                params = self.inputs["results"].params
+            if hasattr(self.inputs["results"], "pvalues"):
+                p_values = self.inputs["results"].pvalues
+        elif self.inputs["model"]._modelName == "T Test":
+            if self.inputs["results"].getStat("tstat"):
+                params = [self.inputs["results"].getStat("tstat")]
+            if self.inputs["results"].getStat("pvalue"):
+                p_values = [self.inputs["results"].getStat("pvalue")]
         if len(params) != 0:
             rows = []
-            if self.inputs["model"]._modelName in ("Simple Linear Regression","Ridge Regression","Lasso Regression"):
+            if self.inputs["model"]._modelName in ("Simple Linear Regression", "Ridge Regression", "Lasso Regression"):
                 columns = ["const"] + list(self.inputs["XTest"].columns)
-                for i,col in enumerate(columns):
-                    if hasattr(self.inputs["results"],"pvalues"):
-                        rows.append({"name":col,"value":round(params[i],4),"pvalue":round(p_values[i],6)})
+                for i, col in enumerate(columns):
+                    if hasattr(self.inputs["results"], "pvalues"):
+                        rows.append({"name": col, "value": round(
+                            params[i], 4), "pvalue": round(p_values[i], 6)})
                     else:
-                        rows.append({"name":col,"value":round(params[i],4)})
-                self.changeConfig("modelParameters",rows)
+                        rows.append(
+                            {"name": col, "value": round(params[i], 4)})
+                self.changeConfig("modelParameters", rows)
             elif self.inputs["model"]._modelName == "T Test":
                 columns = list(["T Statistic"])
-                for i,col in enumerate(columns):
-                    if hasattr(self.inputs["results"],"pvalues"):
-                        rows.append({"name":col,"value":round(params[i],4),"pvalue":round(p_values[i],6)})
+                for i, col in enumerate(columns):
+                    if hasattr(self.inputs["results"], "pvalues"):
+                        rows.append({"name": col, "value": round(
+                            params[i], 4), "pvalue": round(p_values[i], 6)})
                     else:
-                        rows.append({"name":col,"value":round(params[i],4)})
-            self.changeConfig("modelParameters",rows)
-        
-        #TBC, apply the test dataset
-        #viz
+                        rows.append(
+                            {"name": col, "value": round(params[i], 4)})
+            self.changeConfig("modelParameters", rows)
+
+        # TBC, apply the test dataset
+        # viz
         if self.inputs["model"]._canPredict:
             X_wconstant = sm.add_constant(self.inputs["XTest"])
             Y_hat = self.inputs["results"].predict(X_wconstant)
             Y_hat = Y_hat.to_numpy().reshape((-1))
             Y_true = self.inputs["yTest"].to_numpy().reshape((-1))
-            
+
             if self.visType is not None and self.visType == "residual":
-                vizStats = VIZ[self.visType](Y_hat,Y_true)
+                vizStats = VIZ[self.visType](Y_hat, Y_true)
                 viz = {
                     "vizType": "scatter",
                     "xLabel": "Predicted {}".format(self.inputs["yTest"].columns[0]),
@@ -667,18 +650,19 @@ class EvaluationStep(GuidedStep):
                     "vizStats": vizStats,
                 }
                 vizs = [viz]
-                self.changeConfig("viz",vizs)
+                self.changeConfig("viz", vizs)
         else:
             if self.visType is not None and self.visType == "ttest":
-                vizStats = VIZ[self.visType](self.inputs["Y1"],self.inputs["Y2"])
-                
-                stat = self.inputs["results"].params[0]
-                #determine p's range
-                p = self.inputs["results"].pvalues[0]
+                vizStats = VIZ[self.visType](
+                    self.inputs["Y1"], self.inputs["Y2"])
+
+                stat = self.inputs["results"].getStat("tstat")
+                # determine p's range
+                p = self.inputs["results"].getStat("pvalue")
                 sign = checkPRange(p)
-                
-                title = "T Test, t = {:.4f}, p {}".format(stat,sign)
-                
+
+                title = "T Test, t = {:.4f}, p {}".format(stat, sign)
+
                 viz = {
                     "vizType": "ttest",
                     "xLabel": "group",
@@ -687,15 +671,14 @@ class EvaluationStep(GuidedStep):
                     "vizStats": vizStats,
                 }
                 vizs = [viz]
-                self.changeConfig("viz",vizs)
-                
+                self.changeConfig("viz", vizs)
 
-        
         modelResults = []
-        #TBC, decide what to display
+        # TBC, decide what to display
         for metric in self.metricWrappers:
-            outputs = metric.compute(Y_true,Y_hat)
-            modelResults.append({"name":metric._metricName,"score":round(outputs["statistics"],4)})
-        
-        self.changeConfig("modelResults",modelResults)        
+            outputs = metric.compute(Y_true, Y_hat)
+            modelResults.append(
+                {"name": metric._metricName, "score": round(outputs["statistics"], 4)})
+
+        self.changeConfig("modelResults", modelResults)
         self.done = True

@@ -34,6 +34,9 @@
                                     event.target.value
                                 )}
                         >
+                        <option disabled selected value>
+                            -- option --
+                        </option>
                             {#each parameter?.options as option}
                                 <option value={option.name}
                                     >{option.name}</option
@@ -59,8 +62,8 @@
 
 <style>
     .parameter-container {
-        background-color: #f2f2f2; 
-        border-bottom: 1px solid #ddd; 
+        background-color: #f2f2f2;
+        border-bottom: 1px solid #ddd;
     }
     .parameter-label {
         color: #333;
@@ -71,11 +74,11 @@
         border: 1px solid #ccc;
         border-radius: 4px;
         padding: 5px 10px;
-        background-color: white; 
+        background-color: white;
     }
     .parameter-input:focus,
     .parameter-select:focus {
         border-color: #007bff;
-        outline: none; 
+        outline: none;
     }
 </style>

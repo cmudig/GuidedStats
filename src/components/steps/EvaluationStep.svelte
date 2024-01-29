@@ -7,11 +7,12 @@
     import ExportIcon from '../icons/ExportIcon.svelte';
     import { getContext } from 'svelte';
     import type { Writable } from 'svelte/store';
-    import { exportingItem } from '../../stores';
     import Table from '../display/Table.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
     export let height: number = undefined;
+
+    const exportingItem: Writable<string> = getContext('exportingItem');
 
     var exportTableStepIdx: Writable<number> = getContext('exportTableStepIdx');
     var exportVizStepIdx: Writable<number> = getContext('exportVizStepIdx');
@@ -53,13 +54,13 @@
             <div class="grow" />
             <div class="flex flex-col">
                 <!-- Visualization -->
-                <div id="vis-{stepIndex}" />
+                <div id="vis-{stepIndex}" style="width:220px" />
             </div>
-            <div>
+            <!-- <div style="width:1em">
                 <Tooltip title="Export Visualization">
                     <button on:click={exportViz}><ExportIcon /></button>
                 </Tooltip>
-            </div>
+            </div> -->
             {#if !_.isUndefined(step?.config?.modelResults) && step?.config?.modelResults.length > 0}
                 <div class="flex flex-col">
                     <div class="p-2">
@@ -92,12 +93,6 @@
         </div>
         <div class="grow" />
     </div>
-    <!-- <div class="flex">
-        <div class="grow" />
-        <Tooltip title="Export">
-            <button on:click={exportRegressionTable}><ExportIcon /></button>
-        </Tooltip>
-    </div> -->
 </div>
 
 <style>

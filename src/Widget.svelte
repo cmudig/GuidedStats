@@ -1,12 +1,18 @@
 <script lang="ts">
     import { setContext } from 'svelte';
-    import { WidgetWritable, newStepPos, newStepType, exportingItem } from './stores';
+    import { WidgetWritable } from './stores';
     import type { Workflow, selectedStepInfo } from './interface/interfaces';
     import WorkflowSelectionPanel from './components/panels/WorkflowSelectionPanel.svelte';
     import StepSelectionPanel from './components/panels/StepSelectionPanel.svelte';
     import DisplayPanel from './components/panels/DisplayPanel.svelte';
+    import { writable } from 'svelte/store';
 
     export let model;
+
+    const onSelectingStep = writable(false);
+    const newStepPos = writable(-1);
+    const newStepType = writable("");
+    const exportingItem = writable("");
     
     const exportTableStepIdx = WidgetWritable<number>(
         'exportTableStepIdx',
@@ -56,6 +62,12 @@
         model
     );
 
+    const serial = WidgetWritable<string>(
+        'serial',
+        '',
+        model
+    );
+
     const selectedWorkflow = WidgetWritable<string>(
         'selectedWorkflow',
         '',
@@ -82,7 +94,11 @@
         model
     );
     
-
+    setContext('onSelectingStep', onSelectingStep);
+    setContext('newStepPos', newStepPos);
+    setContext('newStepType', newStepType);
+    setContext('exportingItem', exportingItem);
+    
     setContext('workflowInfo', workflowInfo);
 
     setContext('exportTableStepIdx',exportTableStepIdx);
@@ -95,6 +111,8 @@
 
     setContext('builtinTransformations',builtinTransformations);
 
+    setContext('serial',serial);
+
     function addNewStep(stepType: string, stepPos: number){
         if($builtinSteps.includes(stepType) && stepPos >= 0){
             let pos: number;
@@ -102,7 +120,8 @@
                 pos = -1;
             } else {
                 pos = stepPos + 1;
-            }
+            };
+            console.log($serial);
             selectedStepInfo.set({
             stepType: stepType,
             stepPos: pos,
@@ -113,9 +132,6 @@
     };
 
     $: addNewStep($newStepType, $newStepPos);
-
-    $: console.log($workflowInfo);
-
 
     function getWorkflow(event) {
         selectedWorkflow.set(event.detail.selectedWorkflow);

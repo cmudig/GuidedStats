@@ -4,11 +4,12 @@
     import StepPanel from './StepPanel.svelte';
     import Dag from '../viz/Dag.svelte';
     import type { Writable } from 'svelte/store';
-    import { onSelectingStep } from '../../stores';
     export let steps: Array<Step>;
     let height: number;
 
     const workflowInfo:Writable<Workflow> = getContext('workflowInfo');
+
+    const onSelectingStep:Writable<boolean> = getContext('onSelectingStep');
 
 
 </script>

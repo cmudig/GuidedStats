@@ -1,10 +1,13 @@
 <script lang="ts">
     export let steps: Array<string> = undefined;
-    import DefineIcon from '../icons/DefineIcon.svelte';
     import StepIcon from '../icons/StepIcon.svelte';
-    import { newStepType, onSelectingStep } from '../../stores';
     import CancelIcon from '../icons/CancelIcon.svelte';
     import Tooltip from '../tooltip/Tooltip.svelte';
+    import type { Writable } from 'svelte/store';
+    import { getContext } from 'svelte';
+    
+    const onSelectingStep:Writable<boolean> = getContext('onSelectingStep');
+    const newStepType:Writable<string> = getContext('newStepType');
 
     function cancelAddStep() {
         onSelectingStep.set(false);
@@ -18,7 +21,6 @@
     <div class="flex p-2">
         <span class="font-bold">Step</span>
         <div class="grow" />
-        <!-- <DefineIcon /> -->
         {#if $onSelectingStep}
             <button on:click={cancelAddStep}
                 ><Tooltip title="Cancel"><CancelIcon /></Tooltip></button

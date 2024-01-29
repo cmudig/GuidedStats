@@ -21,6 +21,7 @@ _ttestConfig = [
      "stepConfig":
      {"stepName": "Check Outliers",
       "inputNames": ["Y1"],
+      "outputNames": ["Y1"],
       "assumptionName": "outlier",
       "isRelaxed": True,
       "succeedPreviousStepOutput": False,
@@ -42,26 +43,53 @@ _ttestConfig = [
      "stepConfig":
      {"stepName": "Check Homogeneity of Variance",
       "inputNames": ["Y1", "Y2"],
+      "outputNames": ["Y1", "Y2"],
       "assumptionName": "levene",
       "isRelaxed": True,
       "succeedPreviousStepOutput": False,
       }
      },
-    {"id": 5,
+    {
+        "id": 5,
+        "stepType": "AssumptionCheckingStep",
+        "stepConfig":
+        {"stepName": "Check Normality of the First Group",
+         "inputNames": ["Y1"],
+         "outputNames": ["Y1"],
+         "assumptionName": "normality",
+         "isRelaxed": True,
+         "succeedPreviousStepOutput": False,
+         }
+    },
+    {
+        "id": 6,
+        "stepType": "AssumptionCheckingStep",
+        "stepConfig":
+        {"stepName": "Check Normality of the Second Group",
+         "inputNames": ["Y2"],
+         "outputNames": ["Y2"],
+         "assumptionName": "normality",
+         "isRelaxed": True,
+         "succeedPreviousStepOutput": False,
+         }
+    },
+    {"id": 7,
      "stepType": "ModelStep",
      "stepConfig":
      {"stepName": "State Hypothesis and Type I Error",
       "inputNames": ["Y1", "Y2"],
       "modelCandidates": [{"name": "T Test",
                            "parameters": [{"name": "alpha", "displayName": "Type I Error Rate"},
-                                          {"name": "alternative", "displayName": "Alternative Hypothesis", "options": [{"name": "two-sided"}, {"name": "smaller"}, {"name": "larger"}]}]
+                                          {"name": "alternative", "displayName": "Alternative Hypothesis", "options": [{"name": "two-sided"}, {"name": "smaller"}, {"name": "larger"}]},
+                                          {"name": "equal_var", "displayName": "Equal Variance", "options": [{"name": "True"}, {"name": "False"}]}
+                                          ]
                            }],
       }},
-    {"id": 6,
+    {"id": 8,
      "stepType": "EvaluationStep",
      "stepConfig":
      {"stepName": "Evaluate the model",
-      "inputNames": ["model","results","Y1", "Y2"],
+      "inputNames": ["model", "results", "Y1", "Y2"],
       "visType": "ttest",
       }},
 ]

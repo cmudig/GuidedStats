@@ -9,6 +9,8 @@ import scipy.stats as spstats
 from sklearn.metrics import r2_score
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
+from .utils import QUANTITATIVE_DTYPES
+
 """
 A Metric should allow user to define their own metrics,
 some built-in functions are provided
@@ -49,10 +51,19 @@ def outlier(x,y:Iterable=None,*args):
 
 def levene(Y1:Iterable,Y2:Iterable,*args):
     #Perform Levene test for testing equal variances.
-    #perform Levene test
     Y1 = np.array(Y1).reshape(-1).tolist()
     Y2 = np.array(Y2).reshape(-1).tolist()
     stats,p = scipy.stats.levene(Y1,Y2)
+    stats,p = round(stats,6),round(p,6)
+    
+    if p < 0.05:
+        phrase = "does reject"
+    else:
+        phrase = "does not reject"
+    return (stats,p,phrase)
+
+def sharpiro(x,y:Iterable=None,*args):
+    stats,p = spstats.shapiro(x)
     stats,p = round(stats,6),round(p,6)
     
     if p < 0.05:
@@ -68,10 +79,27 @@ def mse(y_true,y_pred,*args):
 def r2(y_true,y_pred,*args):
     r2_score(y_true,y_pred)
     
-def VIF(exog,*other_exogs):
-    exogs = np.array([exog,*other_exogs])
-    vif = variance_inflation_factor(exogs,0)
-    return (vif)
+def VIF(exog:pd.DataFrame,design_matrix:pd.DataFrame,*args):
+    print(design_matrix)
+    #find the index of exog in design_matrix
+    other_exogs = []
+    for i in range(design_matrix.shape[1]):
+        if design_matrix.columns[i] != exog.columns[0] and design_matrix.iloc[:,i].dtype in QUANTITATIVE_DTYPES:
+            other_exogs.append(design_matrix.iloc[:,i])
+    #concatenate other exogs with exog
+    design_matrix = pd.concat(other_exogs,axis=1)
+    design_matrix = pd.concat([exog,design_matrix],axis=1)
+    vif = variance_inflation_factor(design_matrix.values,0)
+    vif = round(vif,6)
+    if vif > 10:
+        phrase = "serious"
+    elif vif > 4:
+        phrase = "moderate"
+    elif vif > 1:
+        phrase = "minor"
+    else:
+        phrase = "no"
+    return (vif,phrase)
 
 METRICS = {
     "pearson": pearson,
@@ -79,6 +107,7 @@ METRICS = {
     "kurtosis": kurtosis,
     "outlier": outlier,
     "levene": levene,
+    "sharpiro": sharpiro,
     "mse": mse,
     "r2":r2,
     "VIF":VIF,
@@ -124,7 +153,15 @@ class MetricWrapper(object):
         
 
 if __name__ == "__main__":
-    #Test Example
-    wrapper = MetricWrapper()
-    wrapper.setMetric("mse")
-    print(wrapper.compute([1,2,3,4],[6,7,3,45]))
+    #unit test for all functions below
+    #TBC
+    def test_sharpiro():
+        x = np.array([1, 2, 3, 4, 5])
+        result = sharpiro(x)
+        print(result)
+    test_sharpiro()
+    def test_vif():
+        X = pd.DataFrame({"x1":[1,2,3,4,5],"x2":[8,3,4,5,6],"x3":[3,10,5,9,7]})
+        result = VIF(X[["x1"]],X)
+        print(result)
+    test_vif()

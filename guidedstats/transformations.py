@@ -5,25 +5,6 @@ def log_transform(data,columns,**kwargs):
     outputName = kwargs.get("outputName",None)
     return {outputName: data}
 
-def group_split(data,columns,**kwargs):
-    groupVariable = kwargs.get("groupVariable",None)
-    group = kwargs.get("group",None)
-    outputName = kwargs.get("outputName",None)
-    if groupVariable is not None and group is not None:
-        outputs = {}
-        import re
-        pattern = re.compile(r"([A-Z]+)([0-9]+)")
-        match = pattern.match(outputName)
-        letter = match.group(1)
-        number = int(match.group(2))
-        
-        for grp in group:
-            outputs["{}{}".format(str(letter),str(number))] = data[data[groupVariable] == grp][columns] 
-            number += 1
-        return outputs
-    else:
-        raise ValueError("group_split requires groupVariable and group")
-
 TRANSFORMATIONS = {
     "log": 
         {
@@ -31,14 +12,7 @@ TRANSFORMATIONS = {
             "func": log_transform,
             "requireVarCat": False,
             "requireGroupVariable": False,
-        },
-    "group_split":
-        {
-            "displayName": "Split by Group and Select",
-            "func": group_split,
-            "requireVarCat": True,
-            "requireGroupVariable": True,
-        },  
+        }
 }
 
 class TransformationWrapper:

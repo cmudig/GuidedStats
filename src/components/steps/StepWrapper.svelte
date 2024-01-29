@@ -2,7 +2,6 @@
     import _ from 'lodash';
     import { deepCopy } from '../../utils';
     import type { Writable } from 'svelte/store';
-    import { newStepPos, onSelectingStep } from '../../stores';
 
     import type { Step, Workflow } from '../../interface/interfaces';
 
@@ -16,12 +15,17 @@
 
     import AddIcon from '../icons/AddIcon.svelte';
     import Tooltip from '../tooltip/Tooltip.svelte';
+    import { getContext } from 'svelte';
 
     export let step: Step;
     export let stepIndex: number;
 
     // const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
     export let workflowInfo: Writable<Workflow>;
+
+    const onSelectingStep:Writable<boolean> = getContext('onSelectingStep');
+
+    const newStepPos:Writable<number> = getContext('newStepPos');
 
     let stepHeight: number = 40;
 

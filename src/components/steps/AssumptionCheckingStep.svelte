@@ -3,7 +3,8 @@
     import Tooltip from '../tooltip/Tooltip.svelte';
     import {
         getBoxplotStats,
-        getDensityPlotStats
+        getDensityPlotStats,
+        getHeatMapStats
     } from '../viz/action/visualization';
     import { deepCopy } from '../../utils';
     import type {
@@ -48,6 +49,8 @@
                     return getDensityPlotStats(viz);
                 } else if (viz.vizType == 'boxplot') {
                     return getBoxplotStats(viz);
+                } else if (viz.vizType == 'heatmap') {
+                    return getHeatMapStats(viz);
                 }
             });
         }
@@ -86,18 +89,25 @@
         </div>
     {:else}
         <!-- This part is for self defining-->
-        <div class="place-content-center flex">
-            <div
-                class="w-1/2 flex flex-col p-2 overflow-hidden bg-white border-2"
-            >
-                <span>Select the assumption you would like to check:</span>
-                <div class="grow" />
-                <select bind:value={assumptionName}>
-                    {#each $builtinAssumptions as assumption}
-                        <option value={assumption}>{assumption}</option>
-                    {/each}
-                </select>
+        <div class="flex flex-col h-full">
+            <div class="card place-content-center flex" style="height:{height - 30}px">
+                <div class="w-3/4 flex flex-col p-2 overflow-hidden bg-white border-2">
+                    <div class="flex">
+                        <span class="p-2">Select the assumption you would like to check: </span>
+                        <div class="grow" />
+                        <select bind:value={assumptionName}>
+                            <option disabled selected value>
+                                -- option --
+                            </option>
+                            {#each $builtinAssumptions as assumption}
+                                <option value={assumption}>{assumption}</option>
+                            {/each}
+                        </select>
+                    </div>
+                    <div class="grow" />
+                </div>
             </div>
+            <div class="grow" />
             <div class="flex">
                 <div class="grow" />
                 <Tooltip title="Done">
@@ -118,5 +128,19 @@
     .card::-webkit-scrollbar {
         width: 0;
         height: 0;
+    }
+    .card span {
+        color: #333; /* Consistent text color */
+        padding: 10px;
+    }
+    .card select {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 5px 10px;
+        background-color: white;
+    }
+    .card select:focus {
+        border-color: #007bff;
+        outline: none;
     }
 </style>

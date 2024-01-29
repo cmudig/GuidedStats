@@ -23,16 +23,20 @@
 
 <div class="flex flex-col">
     <div class="card place-content-center flex" style="height:{height-30}px">
-        <div class="w-1/2 p-2 overflow-hidden bg-white border-2">
+        <div class="w-3/4 p-4 overflow-hidden bg-white border-2">
             <div class="flex slider-container">
-                <p>Train Percentage: {percentage} %</p>
+                <span>Train Percentage: {percentage} %</span>
+                <div class="grow" />
+                <div class="w-1/2">
                 <input
                     type="range"
                     min="0"
                     max="100"
                     value={percentage}
                     on:input={e => (percentage = +e.target.value)}
-                />   
+                />       
+                </div>
+                
             </div>
         </div>
     </div>

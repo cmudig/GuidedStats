@@ -7,14 +7,13 @@ export function WidgetWritable<T>(name_: string, value_: T, model: DOMWidgetMode
   const internalWritable: Writable<any> = writable(model.get(name_) || value_);
   model.on(
     'change:' + name,
-    () => internalWritable.set(model.get(name)),
+    () => {internalWritable.set(model.get(name))},
     null
   );
 
   return {
     set: (v: any) => {
       internalWritable.set(v);
-      console.log(v);
       if (model) {
         model.set(name, v);
         model.save_changes();
@@ -33,9 +32,3 @@ export function WidgetWritable<T>(name_: string, value_: T, model: DOMWidgetMode
     },
   };
 }
-
-// UI stores, used to communicate between components
-export const onSelectingStep = writable(false);
-export const newStepPos = writable(-1);
-export const newStepType = writable("");
-export const exportingItem = writable("");

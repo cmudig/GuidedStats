@@ -21,6 +21,7 @@ _regressionConfig = [
      "stepConfig":
      {"stepName": "Check Outliers",
       "inputNames":["Y"],
+      "outputNames":["Y"],
       "assumptionName": "outlier",
       "isRelaxed": True,
       "succeedPreviousStepOutput": False,
@@ -45,17 +46,29 @@ _regressionConfig = [
       "assumptionName": "outlier",
       "isRelaxed": True,
       "inputNames": ["X"],
+      "outputNames": ["X"],
       "succeedPreviousStepOutput": False,
       }
      },
     {"id": 5,
+     "stepType": "AssumptionCheckingStep",
+     "stepConfig":
+       {"stepName": "Check Multicollinearity",
+        "assumptionName": "multicollinearity",
+        "isRelaxed": True,
+        "inputNames": ["X","exog"],
+        "outputNames": ["X"],
+        "succeedPreviousStepOutput": False,
+        } 
+       },
+    {"id": 6,
      "stepType": "TrainTestSplitStep",
      "stepConfig":
      {"stepName": "Do train test split",
       "inputNames": ["X","Y"],
      }
      },
-    {"id": 6,
+    {"id": 7,
      "stepType": "ModelStep",
      "stepConfig":
      {"stepName": "Train model",
@@ -64,7 +77,7 @@ _regressionConfig = [
                           {"name": "Ridge Regression", "parameters": [{"name": "alpha"}]},
                           {"name": "Lasso Regression", "parameters": [{"name": "alpha"}]}],
       }},
-    {"id": 7,
+    {"id": 8,
      "stepType": "EvaluationStep",
      "stepConfig":
      {"stepName": "Evaluate the model",

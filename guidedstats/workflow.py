@@ -1,12 +1,10 @@
 
-from abc import abstractmethod
 from collections import OrderedDict
 from typing import Iterable
 import pandas as pd
 import traitlets as tl
 import copy as copy
 import json
-import inspect
 
 from .step import *
 
@@ -37,9 +35,7 @@ class WorkFlow(tl.HasTraits):
         
         #export related state variables
         self.current_dataframe = None
-        self.all_models = []
         self.current_model = None
-        self.current_model_results = None
         
         #step-related state variables
         self.loadStep = None
@@ -230,9 +226,8 @@ class WorkFlow(tl.HasTraits):
         if self.currentStep.succeedPreviousStepOutput:
             # let step itself get its parameters from previous steps
             currentIdx = self.stepList.index(self.currentStep)
-            parameters = self.outputsStorage[self.stepList[currentIdx - 1].stepId].values()
-            
-            self.currentStep.forward()
+            parameters = self.outputsStorage[self.stepList[currentIdx - 1].stepId]
+            self.currentStep.forward(**parameters)
         else:
             parameters = OrderedDict()
             keys = list(self.outputsStorage.keys())

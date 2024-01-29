@@ -17,7 +17,6 @@
     let variableName: string = undefined;    
     let transformationName: string = undefined;
     let transformationParameters: Parameter[] = undefined;
-
     // function updateTransformation() {
     //     let info = deepCopy($workflowInfo);
     //     info.steps[stepIndex].config.variableResults = new Array(variableResult);
@@ -30,8 +29,6 @@
     };
 
     $: synctransformationParameters(step?.config?.transformationParameters);
-
-    $: console.log("workflowInfo", $workflowInfo);
     
     function updateVariableResult() {
         let info = deepCopy($workflowInfo);
@@ -50,23 +47,23 @@
 
     function handleInputChange(parameterName, value) {
         let info = deepCopy($workflowInfo);
-        console.log("before",transformationParameters);
         let parameter = transformationParameters?.find(
             parameter => parameter.name == parameterName
         );
-        console.log("parameter",parameter);
         if (!_.isUndefined(parameter)) {
             parameter.value = value;
         };
         info.steps[stepIndex].config.transformationParameters = transformationParameters;
-        console.log("transformationParameters",transformationParameters);
         workflowInfo.set(info);
     }
 
     function updateDone(){
         let info = deepCopy($workflowInfo);
+        if(info.steps[stepIndex].done){
+            info.steps[stepIndex].done = false;
+            workflowInfo.set(info);
+        }
         info.steps[stepIndex].done = true;
-        console.log(info.steps[stepIndex].done);
         workflowInfo.set(info);
     }
 </script>

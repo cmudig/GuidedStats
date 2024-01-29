@@ -31,23 +31,26 @@
         if (!_.isUndefined(parameter)) {
             parameter.value = value;
         }
+        console.log(parameter);
     }
 
     function updateModelResult(event) {
         let info: Workflow = deepCopy($workflowInfo);
         info.steps[stepIndex].config.modelName = modelName;
         info.steps[stepIndex].config.modelParameters = parameterValues;
+        console.log(info);
         workflowInfo.set(info);
     }
 </script>
 
 <div class="flex flex-col h-full">
     <div class="card place-content-center flex" style="height:{height - 30}px">
-        <div class="w-3/4 flex flex-col p-2 overflow-hidden bg-white border-2">
+        <div class="w-3/4 flex flex-col p-4 overflow-scroll bg-white border-2">
             <div class="flex">
                 <span class="p-2">Model: </span>
                 <div class="grow" />
                 <select class="m-2" bind:value={modelName}>
+                    <option disabled selected value> -- option -- </option>
                     {#each step.config.modelCandidates as modelCandidate}
                         <option value={modelCandidate?.name}
                             >{modelCandidate?.name}</option

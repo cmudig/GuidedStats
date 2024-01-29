@@ -13,6 +13,8 @@ import os
 from typing import Callable
 import pandas as pd
 from itertools import groupby
+import random
+import string
 
 from ipywidgets import DOMWidget
 from IPython.display import display, Javascript, HTML
@@ -57,11 +59,15 @@ class GuidedStats(DOMWidget):
     exportVizIdx = Int(-1).tag(sync=True) 
     exportCode = Unicode("").tag(sync=True)
     
+    serial = Unicode("").tag(sync=True)
+    
     def __init__(self, dataset: pd.DataFrame, datasetName: str = "dataset", *args, **kwargs):
         super(GuidedStats, self).__init__(*args, **kwargs)
 
         self.dataset = dataset
         self.datasetName = datasetName
+        
+        self.serial = ''.join(random.choices(string.ascii_letters + string.digits, k=4))
         
         self.observe(self.addWorkFlow, names='selectedWorkflow')
         
@@ -88,12 +94,13 @@ class GuidedStats(DOMWidget):
             vizStep = self.workflow.steps[self.exportVizStepIdx]
             viz = vizStep.config["viz"][viz_idx]
             if viz["vizType"] == "boxplot":
-                vizStats = viz["vizStats"]
-                vizCode = exportBoxplot(vizStats)
+                vizCode = exportBoxplot(viz)
             elif viz["vizType"] == "scatter":
-                vizStats = viz["vizStats"]
-                vizCode = exportScatterplot(vizStats)
-            
+                vizCode = exportScatterplot(viz)
+            elif viz["vizType"] == "density":
+                vizCode = exportDensityPlot(viz)
+            elif viz["vizType"] == "ttest":
+                vizCode = exportTTestPlot(viz)
             self.exportCode = vizCode
         
     def export(self,item:str,**kwargs):
@@ -104,15 +111,12 @@ class GuidedStats(DOMWidget):
         elif item == "report":
             report = self.exportReport()
             return report
-        elif item == "models":
-            models = self.exportModels()
-            return models
-        elif item == "currentModel":
+        elif item == "model":
             model = self.exportCurrentModel()
             return model
-        elif item == "results":
-            results = self.exportModelResults()
-            return results
+        elif item == "dataset":
+            dataset = self.exportDataset()
+            return dataset
         else:
             raise ValueError("Invalid export item")
             
@@ -134,30 +138,25 @@ class GuidedStats(DOMWidget):
         # self.exportCode = html_table
         
     def exportReport(self):
-        if self.workflow.current_model_results is not None:
-            # print(exportReport(self.workflow.current_model_results))
-            return exportReport(self.workflow.current_model_results)
+        if self.workflow.current_model is not None:
+            if self.workflow.current_model._results is None:
+                raise ValueError("Model not fitted")
+            if self.workflow.current_model._modelName == "Simple Linear Regression":  
+                return exportReport(self.workflow.current_model._results)
+            elif self.workflow.current_model._modelName == "T Test":
+                return exportTTestReport(self.workflow.current_model._results)
         else:
-            raise ValueError("No model results found")
+            raise ValueError("No model found")
         
-    def exportModels(self):
-        if len(self.workflow.all_models) != 0:
-            return self.workflow.all_models
-        else:
-            raise ValueError("No models found")
-    
     def exportCurrentModel(self):
         if self.workflow.current_model is not None:
             return self.workflow.current_model
         else:
             raise ValueError("No model found")
-    
-    def exportModelResults(self):
-        if self.workflow.current_model_results is not None:
-            return self.workflow.current_model_results
-        else:
-            raise ValueError("No model results found")
-    
+        
+    def exportDataset(self):
+        if self.workflow.current_dataframe is not None:
+            return self.workflow.current_dataframe
       
     def getBuiltinWorkflow(self):
         self.builtinWorkflows = ["Linear Regression","T Test"]
@@ -202,8 +201,6 @@ class GuidedStats(DOMWidget):
     
     @tl.observe("selectedStepInfo")
     def addStep(self,change):
-        with open("./test.txt", "a+") as f:
-            f.write("addStep onProceeding: " + str(change["new"]) + "\n")
         stepInfo = change["new"]
         self.workflow.addStep(stepInfo["stepType"],stepInfo["stepPos"])
         

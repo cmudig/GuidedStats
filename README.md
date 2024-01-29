@@ -3,6 +3,9 @@ A Jupyter extension provides customizable, comparable, and reusable UI to constr
 
 ## Install(For Developers)
 Tips: you can create a new conda environment to avoid any package conflicts.
+```
+conda create -n guidedstatstest jupyter-packaging python=3.11 "jupyterlab<4.0"
+```
 
 First, install the package in editable mode
 ```
@@ -18,6 +21,7 @@ jupyter nbextension enable --sys-prefix --py guidedstats
 ```
 To build the project
 ```
+npm install
 npm run build
 ```
 To automatically rebuild the project after editing frontend code
