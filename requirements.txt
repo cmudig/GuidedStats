@@ -12,4 +12,3 @@ varname==0.11.2
 stargazer
 altair==5.1.2
 traitlets==5.7.1
-jup
