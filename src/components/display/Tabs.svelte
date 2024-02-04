@@ -1,6 +1,7 @@
 <script lang="ts">
     import _ from 'lodash';
     import embed from 'vega-embed';
+    import Hint from '../tooltip/Hint.svelte';
     import type { AssumptionResult } from '../../interface/interfaces';
     import Tooltip from '../tooltip/Tooltip.svelte';
     import ExportIcon from '../icons/ExportIcon.svelte';
@@ -60,7 +61,8 @@
                 <div class="flex">
                     <div class="grow" />
                     <div style="flex-wrap: wrap;width:300px">
-                        {assumptionResults[activeTabValue].prompt}
+                        <Hint text={assumptionResults[activeTabValue].prompt} />
+                        <!-- {assumptionResults[activeTabValue].prompt} -->
                     </div>
                     <div class="grow" />
                 </div>

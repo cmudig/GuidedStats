@@ -144,3 +144,8 @@ export type selectedStepInfo = {
     stepType: string;
     stepPos: number;
 };
+
+export type Explanation = {
+    word: string;
+    explanation: string;
+};

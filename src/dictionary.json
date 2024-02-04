@@ -1,0 +1,10 @@
+[
+    {
+        "word": "multicollinearity",
+        "explanation": "Perfect multicollinearity arises when one of the regressors is a perfect linear combination of the other regressors. Imperfect multicollinearity arises when one of the regressors is very highly correlated—but not perfectly correlated—with the other regressors"
+    },
+    {
+        "word": "p-value",
+        "explanation": "The p-value, also called the significance probability, is the probability of drawing a statistic at least as adverse to the null hypothesis as the one you actually computed in your sample, assuming the null hypothesis is correct."
+    }
+]

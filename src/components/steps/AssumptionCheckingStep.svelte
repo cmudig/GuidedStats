@@ -71,12 +71,6 @@
                     assumptionResults={step.config.assumptionResults}
                     {specs}
                 />
-                <!-- <div>
-                    <Tooltip title="Export Visualization">
-                        <button on:click={exportViz}><ExportIcon /></button>
-                    </Tooltip>
-                    <div class="grow" />
-                </div> -->
                 <div class="grow" />
             </div>
         </div>
