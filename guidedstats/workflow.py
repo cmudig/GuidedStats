@@ -75,13 +75,13 @@ class WorkFlow(tl.HasTraits):
     def steps(self, value):
         # Unobserve old steps
         for step in self._steps:
-            step.unobserve(self.updateWorkflowInfo,names=["stepId","stepName","stepType","done","isProceeding","isShown","config","previousConfig","groupConfig"])
+            step.unobserve(self.updateWorkflowInfo,names=["stepId","stepName","stepType","stepExplanation","done","isProceeding","isShown","config","previousConfig","groupConfig"])
         # Set the new steps
         self._steps = value
         # Observe new steps
         for step in self._steps:
             step.workflow = self
-            step.observe(self.updateWorkflowInfo,names=["stepId","stepName","stepType","done","isProceeding","isShown","config","previousConfig","groupConfig"])
+            step.observe(self.updateWorkflowInfo,names=["stepId","stepName","stepType","stepExplanation","done","isProceeding","isShown","config","previousConfig","groupConfig"])
             
     def addStep(self, stepName:str, stepPos):
         # find the step in stepList and insert the new step before it
@@ -252,7 +252,7 @@ class WorkFlow(tl.HasTraits):
 
         stepInfos = []
         for step in self.steps:
-            stepInfo = {"stepId":step.stepId,"stepName":step.stepName,"stepType":step.stepType,"done":step.done,"isProceeding":step.isProceeding,"isShown":step.isShown,"config":step.config,"previousConfig":step.previousConfig,"groupConfig":step.groupConfig}
+            stepInfo = {"stepId":step.stepId,"stepName":step.stepName,"stepType":step.stepType,"stepExplanation":step.stepExplanation,"done":step.done,"isProceeding":step.isProceeding,"isShown":step.isShown,"config":step.config,"previousConfig":step.previousConfig,"groupConfig":step.groupConfig}
             stepInfos.append(stepInfo)
         flowInfos = []
         for flow in self.flows:
@@ -261,7 +261,6 @@ class WorkFlow(tl.HasTraits):
         
         info = {"workflowName":self.workflowName,
                         "currentStepId":self.currentStepId,
-                        # "onProceeding":self.onProceeding,
                         "steps":stepInfos,
                         "flows":flowInfos}
         
@@ -301,10 +300,11 @@ class WorkFlow(tl.HasTraits):
     def constructSteps(self):        
         # construct all Steps
         for config in self.configFile:
-            cls = globals()[config["stepType"]]
+            cls = globals()[config["stepType"]]          
             parameters = {param:value for param,value in config["stepConfig"].items() if param != "previousStepsConfigs"}
+            if config.get("stepExplanation") is not None:
+                parameters["stepExplanation"] = config["stepExplanation"]
             step = cls(**parameters)
-            # step.previousSteps = config["stepConfig"]["previousStepsConfigs"]
             step.stepId = config["id"]
             self.stepList.append(step)
                 

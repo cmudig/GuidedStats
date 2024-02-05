@@ -16,6 +16,7 @@
     import AddIcon from '../icons/AddIcon.svelte';
     import Tooltip from '../tooltip/Tooltip.svelte';
     import { getContext } from 'svelte';
+    import WordWithHint from '../tooltip/WordWithHint.svelte';
 
     export let step: Step;
     export let stepIndex: number;
@@ -65,6 +66,7 @@
                     >Step {stepIndex + 1}: {step.stepName}</span
                 ></button
             >
+            <WordWithHint explanation={step?.stepExplanation} />
             <div class="grow" />
             <button on:click={addStep}>
                 <Tooltip title="Add Step Below"><AddIcon /></Tooltip>

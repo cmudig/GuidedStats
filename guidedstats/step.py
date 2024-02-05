@@ -35,6 +35,7 @@ class Step(tl.HasTraits):
     done = tl.Bool(False).tag(sync=True)
     isProceeding = tl.Bool(False).tag(sync=True)
     isShown = tl.Bool(False).tag(sync=True)
+    stepExplanation = tl.Unicode().tag(sync=True)
     config = tl.Dict({}).tag(sync=True)
     previousConfig = tl.Dict({}).tag(sync=True)
     groupConfig = tl.Dict({}).tag(sync=True)
@@ -42,7 +43,7 @@ class Step(tl.HasTraits):
     base class
     """
 
-    def __init__(self, stepId: int = None, stepName="step", succeedPreviousStepOutput=False, previousSteps: list = None, **kwargs):
+    def __init__(self, stepId: int = None, stepName="step", stepExplanation="", succeedPreviousStepOutput=False, previousSteps: list = None, **kwargs):
 
         # state variables of Step
         if stepId is not None:
@@ -52,6 +53,7 @@ class Step(tl.HasTraits):
         self.done = False
         self.isProceeding = False
         self.isShown = False
+        self.stepExplanation = stepExplanation
 
         # back-end state
         self.inputs = {}
@@ -123,8 +125,9 @@ class GuidedStep(Step):
         GuidedStep suggests potentially insightful column(s) based on selected metrics
     """
 
-    def __init__(self, stepId: int = None, stepName="step", succeedPreviousStepOutput=False, previousSteps: list = None, compare: bool = False, metricName: str = None, **kwargs):
-        super().__init__(stepId, stepName, succeedPreviousStepOutput, previousSteps, **kwargs)
+    def __init__(self, stepId: int = None, stepName="step", stepExplanation="", succeedPreviousStepOutput=False, previousSteps: list = None, compare: bool = False, metricName: str = None, **kwargs):
+        super().__init__(stepId, stepName, stepExplanation,
+                         succeedPreviousStepOutput, previousSteps, **kwargs)
         self._compare = compare
 
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
@@ -166,8 +169,9 @@ class GuidedStep(Step):
 
 
 class SucccessorStep(Step):
-    def __init__(self, stepId: int = None, stepName="step", succeedPreviousStepOutput=False, previousSteps: list = None, **kwargs):
-        super().__init__(stepId, stepName, succeedPreviousStepOutput, previousSteps, **kwargs)
+    def __init__(self, stepId: int = None, stepName="step", stepExplanation="", succeedPreviousStepOutput=False, previousSteps: list = None, **kwargs):
+        super().__init__(stepId, stepName, stepExplanation,
+                         succeedPreviousStepOutput, previousSteps, **kwargs)
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
 
     def getPreviousOutputs(self):
@@ -175,8 +179,9 @@ class SucccessorStep(Step):
 
 
 class DataTransformationStep(SucccessorStep):
-    def __init__(self, stepId: int = None, stepName="Data Transformation",  succeedPreviousStepOutput=True, previousSteps: list = None, **kwargs):
-        super().__init__(stepId, stepName, succeedPreviousStepOutput, previousSteps, **kwargs)
+    def __init__(self, stepId: int = None, stepName="Data Transformation", stepExplanation="", succeedPreviousStepOutput=True, previousSteps: list = None, **kwargs):
+        super().__init__(stepId, stepName, stepExplanation,
+                         succeedPreviousStepOutput, previousSteps, **kwargs)
         self._transformation = None
         self._transformationName = None
         self.transformationParameters = []
@@ -228,7 +233,7 @@ class DataTransformationStep(SucccessorStep):
             # update current dataframe
             if self.workflow is not None:
                 dataset = copy.deepcopy(self.inputs["dataset"])
-                for key in transformedDataset.keys():    
+                for key in transformedDataset.keys():
                     dataset[key] = transformedDataset[key]
                 self.workflow.current_dataframe = dataset
             del inputDataset, dataset, transformedDataset
@@ -271,8 +276,9 @@ class DataTransformationStep(SucccessorStep):
 
 class LoadDatasetStep(Step):
 
-    def __init__(self, stepId: int = None, stepName="Load Dataset", succeedPreviousStepOutput=False, previousSteps: list = None, **kwarg):
-        super().__init__(stepId, stepName, succeedPreviousStepOutput, previousSteps, **kwarg)
+    def __init__(self, stepId: int = None, stepName="Load Dataset", stepExplanation="", succeedPreviousStepOutput=False, previousSteps: list = None, **kwarg):
+        super().__init__(stepId, stepName, stepExplanation,
+                         succeedPreviousStepOutput, previousSteps, **kwarg)
         self._dataset = None
         self._datasetName = None
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
@@ -311,7 +317,7 @@ class LoadDatasetStep(Step):
 
 class VariableSelectionStep(GuidedStep):
 
-    def __init__(self, variableType: str, variableNum=1, candidateNum=4, stepId: int = None, stepName="Select Variable(s)",  succeedPreviousStepOutput=False, previousSteps: list = None, compare: bool = False, metricName: str = None, **kwargs):
+    def __init__(self, variableType: str, variableNum=1, candidateNum=4, stepId: int = None, stepName="Select Variable(s)", stepExplanation="", succeedPreviousStepOutput=False, previousSteps: list = None, compare: bool = False, metricName: str = None, **kwargs):
         if variableType == "independent variables":
             previousSteps = ["dataset", "referenceDataset"]
         elif variableType == "dependent variable":
@@ -321,7 +327,7 @@ class VariableSelectionStep(GuidedStep):
         else:
             previousSteps = ["dataset"]
         self.requireVarCategory = kwargs.get("requireVarCategory", False)
-        super().__init__(stepId, stepName, succeedPreviousStepOutput,
+        super().__init__(stepId, stepName, stepExplanation, succeedPreviousStepOutput,
                          previousSteps, compare, metricName, **kwargs)
         # TBC, we should allow undecided number of variables
         self._variableType = variableType
@@ -416,8 +422,9 @@ class VariableSelectionStep(GuidedStep):
 
 class AssumptionCheckingStep(SucccessorStep):
 
-    def __init__(self, stepId: int = None, stepName="Check Assumption", succeedPreviousStepOutput=True, previousSteps: list = None, assumptionName: str = None, isRelaxed: bool = True, **kwargs):
-        super().__init__(stepId, stepName, succeedPreviousStepOutput, previousSteps, **kwargs)
+    def __init__(self, stepId: int = None, stepName="Check Assumption", stepExplanation="", succeedPreviousStepOutput=True, previousSteps: list = None, assumptionName: str = None, isRelaxed: bool = True, **kwargs):
+        super().__init__(stepId, stepName, stepExplanation,
+                         succeedPreviousStepOutput, previousSteps, **kwargs)
         self.isRelaxed = isRelaxed
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
         # TBC, if relaxed is True, then even the assumption does not meet the proess will continue
@@ -448,13 +455,14 @@ class AssumptionCheckingStep(SucccessorStep):
     def onObserveConfig(self, change):
         if "assumptionName" in self.config and self.config["assumptionName"] is not None:
             assumption_dict = {
-                "Outliers Checking" : "outlier",
-                "Levene Test" : "levene",
-                "Normality Test" : "normality",
-                "Multicollinearity Test" : "multicollinearity"
+                "Outliers Checking": "outlier",
+                "Levene Test": "levene",
+                "Normality Test": "normality",
+                "Multicollinearity Test": "multicollinearity"
             }
             self.assumption = AssumptionWrapper()
-            self.assumption.setAssumption(assumption_dict[self.config["assumptionName"]])
+            self.assumption.setAssumption(
+                assumption_dict[self.config["assumptionName"]])
 
         if self.workflow is not None and self.workflow.currentStep is not None and self.workflow.currentStep == self:
             self.checkAssumption(self.inputs)
@@ -462,7 +470,7 @@ class AssumptionCheckingStep(SucccessorStep):
     def checkAssumption(self, inputs: dict):
         # 2. check assumption
         assumptionResults, vizs = self.assumption.checkAssumption(
-            *tuple(inputs.values()));
+            *tuple(inputs.values()))
         # 3. set config
         self.changeConfig("assumptionResults", assumptionResults)
         self.changeConfig("viz", vizs)
@@ -482,8 +490,9 @@ class TrainTestSplitStep(Step):
         temporary class, maybe changed to 
     """
 
-    def __init__(self, stepId: int = None, stepName="Train Test Split",  succeedPreviousStepOutput=False, previousSteps: list = None, **kwargs):
-        super().__init__(stepId, stepName, succeedPreviousStepOutput, previousSteps, **kwargs)
+    def __init__(self, stepId: int = None, stepName="Train Test Split", stepExplanation="", succeedPreviousStepOutput=False, previousSteps: list = None, **kwargs):
+        super().__init__(stepId, stepName, stepExplanation,
+                         succeedPreviousStepOutput, previousSteps, **kwargs)
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
         self.previousSteps = kwargs.get("inputNames", None)
 
@@ -526,8 +535,8 @@ class TrainTestSplitStep(Step):
 
 class ModelStep(GuidedStep):
 
-    def __init__(self, stepId: int = None, stepName="Train Model", succeedPreviousStepOutput=False, previousSteps: list = None, compare: bool = False, metricName: str = None, modelCandidates: list = None, **kwargs):
-        super().__init__(stepId, stepName, succeedPreviousStepOutput,
+    def __init__(self, stepId: int = None, stepName="Train Model", stepExplanation="", succeedPreviousStepOutput=False, previousSteps: list = None, compare: bool = False, metricName: str = None, modelCandidates: list = None, **kwargs):
+        super().__init__(stepId, stepName, stepExplanation, succeedPreviousStepOutput,
                          previousSteps, compare, metricName, **kwargs)
         # TBC, should allow more types of models and hyperparameter search
         self.modelWrapper = ModelWrapper()
@@ -572,8 +581,8 @@ class ModelStep(GuidedStep):
 
 
 class EvaluationStep(GuidedStep):
-    def __init__(self, stepId: int = None, stepName="Evaluate Model", succeedPreviousStepOutput=False, previousSteps: list = None, compare: bool = False, metricName: str = None, **kwargs):
-        super().__init__(stepId, stepName, succeedPreviousStepOutput,
+    def __init__(self, stepId: int = None, stepName="Evaluate Model", stepExplanation="", succeedPreviousStepOutput=False, previousSteps: list = None, compare: bool = False, metricName: str = None, **kwargs):
+        super().__init__(stepId, stepName, stepExplanation, succeedPreviousStepOutput,
                          previousSteps, compare, metricName, **kwargs)
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
         self.previousSteps = kwargs.get("inputNames", None)

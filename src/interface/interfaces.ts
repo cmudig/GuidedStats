@@ -35,6 +35,7 @@ export type Step = {
     done: boolean;
     isProceeding: boolean;
     isShown: boolean;
+    stepExplanation?: string;
     config: StepConfig;
     previousConfig?: StepConfig;
     groupConfig?: GroupConfig;

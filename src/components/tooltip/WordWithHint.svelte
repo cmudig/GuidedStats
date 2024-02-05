@@ -1,27 +1,29 @@
 <script lang="ts">
     import HintIcon from '../icons/HintIcon.svelte';
 
-    export let word: string;
-    export let explanation: string;
+    export let word: string = '';
+    export let explanation: string = '';
     let isClicked = false;
     let x: number;
     let y: number;
 
     function toggleHint(event) {
         isClicked = !isClicked;
-        x = event.layerX;
+        x = event.layerX + 5;
         y = event.layerY;
     }
 </script>
-
-<span class="inline-flex" on:click={toggleHint} role="button">
-    <p class="float-left">{word}</p>
-    <HintIcon />
+{#if explanation.length > 0}
+<span class="inline-flex">
+    {#if word.length > 0}
+        <p class="float-left">{word}</p>
+    {/if}
+    <button on:click={toggleHint}><HintIcon /></button>
     {#if isClicked}
         <div style="top: {y}px; left: {x}px;" class="hint">{explanation}</div>
     {/if}
 </span>
-
+{/if}
 <style>
     .hint {
         width: 200px;

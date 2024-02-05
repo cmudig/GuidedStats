@@ -1,7 +1,7 @@
 _regressionConfig = [
     {"id": 0,
-     "stepType": "LoadDatasetStep",#for workflow
-     "stepConfig":#for step itself
+     "stepType": "LoadDatasetStep",  # for workflow
+     "stepConfig":  # for step itself
      {
          "stepName": "Load Dataset",
      }
@@ -10,7 +10,7 @@ _regressionConfig = [
      "stepType": "VariableSelectionStep",
      "stepConfig":  # This is for the initialization of Steps
      {"stepName": "Select Dependent Variable",
-     "outputNames":["Y"],
+      "outputNames": ["Y"],
       "variableType": "dependent variable",
       "variableNum": 1,
       "candidateNum": 4,
@@ -20,8 +20,8 @@ _regressionConfig = [
      "stepType": "AssumptionCheckingStep",
      "stepConfig":
      {"stepName": "Check Outliers",
-      "inputNames":["Y"],
-      "outputNames":["Y"],
+      "inputNames": ["Y"],
+      "outputNames": ["Y"],
       "assumptionName": "outlier",
       "isRelaxed": True,
       "succeedPreviousStepOutput": False,
@@ -53,35 +53,36 @@ _regressionConfig = [
     {"id": 5,
      "stepType": "AssumptionCheckingStep",
      "stepConfig":
-       {"stepName": "Check Multicollinearity",
-        "assumptionName": "multicollinearity",
-        "isRelaxed": True,
-        "inputNames": ["X","exog"],
-        "outputNames": ["X"],
-        "succeedPreviousStepOutput": False,
-        } 
-       },
+     {"stepName": "Check Multicollinearity",
+      "assumptionName": "multicollinearity",
+      "isRelaxed": True,
+      "inputNames": ["X", "exog"],
+      "outputNames": ["X"],
+      "succeedPreviousStepOutput": False,
+      }
+     },
     {"id": 6,
      "stepType": "TrainTestSplitStep",
      "stepConfig":
      {"stepName": "Do train test split",
-      "inputNames": ["X","Y"],
-     }
+      "inputNames": ["X", "Y"],
+      }
      },
     {"id": 7,
      "stepType": "ModelStep",
      "stepConfig":
      {"stepName": "Train model",
-      "inputNames": ["XTrain","yTrain"],
+      "inputNames": ["XTrain", "yTrain"],
       "modelCandidates": [{"name": "Simple Linear Regression"},
-                          {"name": "Ridge Regression", "parameters": [{"name": "alpha"}]},
+                          {"name": "Ridge Regression",
+                              "parameters": [{"name": "alpha"}]},
                           {"name": "Lasso Regression", "parameters": [{"name": "alpha"}]}],
       }},
     {"id": 8,
      "stepType": "EvaluationStep",
      "stepConfig":
      {"stepName": "Evaluate the model",
-      "inputNames": ["model","results","XTest","yTest"],
+      "inputNames": ["model", "results", "XTest", "yTest"],
       "visType": "residual",
       "evaluationMetricNames": ["mse"],
       }},

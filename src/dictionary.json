@@ -6,5 +6,9 @@
     {
         "word": "p-value",
         "explanation": "The p-value, also called the significance probability, is the probability of drawing a statistic at least as adverse to the null hypothesis as the one you actually computed in your sample, assuming the null hypothesis is correct."
+    },
+    {
+        "word": "VIF",
+        "explanation": "Variance inflation factors (VIF) of the jth independent variable is given by 1/(1 - Rj**2), where Rj**2 is the R2 from the regression of the jth explanatory variable on the remaining explanatory variables. The VIF of an explanatory variable indicates the strength of the linear relationship between the variable and the remaining explanatory variables. A rough rule of thumb is that the VIFs greater than 10 give some cause for concern."
     }
 ]

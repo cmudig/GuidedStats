@@ -52,6 +52,7 @@ _ttestConfig = [
     {
         "id": 5,
         "stepType": "AssumptionCheckingStep",
+        "stepExplanation": "Two independent samples t-Test requires the two groups have normal distributions. In practice, the method is robust to violations of the normal population assumption. This is especially true when both n1 and n2 are at least about 30, by the Central Limit Theorem.",
         "stepConfig":
         {"stepName": "Check Normality of the First Group",
          "inputNames": ["Y1"],
@@ -80,8 +81,10 @@ _ttestConfig = [
       "inputNames": ["Y1", "Y2"],
       "modelCandidates": [{"name": "T Test",
                            "parameters": [{"name": "alpha", "displayName": "Type I Error Rate"},
-                                          {"name": "alternative", "displayName": "Alternative Hypothesis", "options": [{"name": "two-sided"}, {"name": "smaller"}, {"name": "larger"}]},
-                                          {"name": "equal_var", "displayName": "Equal Variance", "options": [{"name": "True"}, {"name": "False"}]}
+                                          {"name": "alternative", "displayName": "Alternative Hypothesis", "options": [
+                                              {"name": "two-sided"}, {"name": "smaller"}, {"name": "larger"}]},
+                                          {"name": "equal_var", "displayName": "Equal Variance", "options": [
+                                              {"name": "True"}, {"name": "False"}]}
                                           ]
                            }],
       }},

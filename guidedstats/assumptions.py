@@ -11,7 +11,7 @@ ASSUMPTIONS = {
         "display": "Outliers Checking",
         "isSingleColumn": True,
         "vis_type": "boxplot",
-        "vis_func": viz.outlierVizStats,
+        "vis_func": viz.boxplotVizStats,
         "metric_func": [METRICS["outlier"]],
         # fillNum is used to indicate which number in the output of metric_func should be filled in the prompt
         "fillNum": [[0]],
@@ -20,8 +20,8 @@ ASSUMPTIONS = {
     "levene": {
         "display": "Levene Test",
         "isSingleColumn": True,
-        "vis_type": "density",
-        "vis_func": viz.densityVizStats,
+        "vis_type": "boxplot",
+        "vis_func": viz.multiBoxplotVizStats,
         "metric_func": [METRICS["levene"]],
         "fillNum": [[1, 2]],
         "prompt": "The p-value of Levene Test is {0}, which {1} the null hypothesis that the variances are equal",
