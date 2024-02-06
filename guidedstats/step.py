@@ -418,7 +418,6 @@ class VariableSelectionStep(GuidedStep):
                 self.toExecute = False
 
     def forward(self, **inputs) -> pd.DataFrame:
-        print("move to VariableSelectionStep")
         self.inputs = inputs
         dataset = self.inputs.get("dataset", None)
         referenceDataset = self.inputs.get("referenceDataset", None)

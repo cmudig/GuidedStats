@@ -78,8 +78,6 @@ class AssumptionWrapper(object):
             raise KeyError("The assumption does not exist")
 
     def checkAssumption(self, X: pd.DataFrame, *referenceXs: pd.DataFrame):
-        print("******"+self._assumption["display"]+"******")
-
         # TBC
         assumptionResults = []
         vizStats = []

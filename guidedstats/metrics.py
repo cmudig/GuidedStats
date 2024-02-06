@@ -80,7 +80,6 @@ def r2(y_true,y_pred,*args):
     r2_score(y_true,y_pred)
     
 def VIF(exog:pd.DataFrame,design_matrix:pd.DataFrame,*args):
-    print(design_matrix)
     #find the index of exog in design_matrix
     other_exogs = []
     for i in range(design_matrix.shape[1]):

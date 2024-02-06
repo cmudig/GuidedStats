@@ -109,7 +109,6 @@
             } else {
                 pos = stepPos + 1;
             }
-            console.log($serial);
             selectedStepInfo.set({
                 stepType: stepType,
                 stepPos: pos

@@ -340,8 +340,6 @@ class WorkFlow(tl.HasTraits):
         self.currentStep.isProceeding = True
         
         self.currentStep.forward()
-        
-        print("Hey, welcome to GuidedStats. In the following parts, we will guide you to perform {}".format(self.workflowName))
 
 
 if __name__ == "__main__":
