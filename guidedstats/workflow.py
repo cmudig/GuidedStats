@@ -75,13 +75,13 @@ class WorkFlow(tl.HasTraits):
     def steps(self, value):
         # Unobserve old steps
         for step in self._steps:
-            step.unobserve(self.updateWorkflowInfo,names=["stepId","stepName","stepType","stepExplanation","done","isProceeding","isShown","config","previousConfig","groupConfig"])
+            step.unobserve(self.updateWorkflowInfo,names=["stepId","stepName","stepType","stepExplanation","done","isProceeding","toExecute","isShown","config","previousConfig","groupConfig"])
         # Set the new steps
         self._steps = value
         # Observe new steps
         for step in self._steps:
             step.workflow = self
-            step.observe(self.updateWorkflowInfo,names=["stepId","stepName","stepType","stepExplanation","done","isProceeding","isShown","config","previousConfig","groupConfig"])
+            step.observe(self.updateWorkflowInfo,names=["stepId","stepName","stepType","stepExplanation","done","isProceeding","toExecute","isShown","config","previousConfig","groupConfig"])
             
     def addStep(self, stepName:str, stepPos):
         # find the step in stepList and insert the new step before it
@@ -212,47 +212,53 @@ class WorkFlow(tl.HasTraits):
     def moveToNextStep(self,step: Step):
         #if done, store the current outputs and move to the next step
         self.outputsStorage[step.stepId] = step.outputs
-        currentIdx = self.stepList.index(step)
+        stepIdx = self.stepList.index(step)
         
         step.isProceeding = False
+        step.toExecute = False
         
-        self.currentStep = self.stepList[currentIdx+1]
-        
-        self.currentStep.isProceeding = True
-        
-        self.callStepForward()
+        if self.stepList.index(self.currentStep) > stepIdx+1:
+            #rerun the workflow
+            self.stepList[stepIdx+1].done = False
+            self.stepList[stepIdx+1].isProceeding = True
+            self.callStepForward(self.stepList[stepIdx+1])
+            self.stepList[stepIdx+1].toExecute = True
+        elif self.stepList.index(self.currentStep) <= stepIdx+1:
+            self.currentStep = self.stepList[stepIdx+1]
+            self.currentStep.isProceeding = True
+            self.callStepForward(self.currentStep)
 
-    def callStepForward(self):
-        if self.currentStep.succeedPreviousStepOutput:
+    def callStepForward(self,step: Step):
+        if step.succeedPreviousStepOutput:
             # let step itself get its parameters from previous steps
-            currentIdx = self.stepList.index(self.currentStep)
+            currentIdx = self.stepList.index(step)
             parameters = self.outputsStorage[self.stepList[currentIdx - 1].stepId]
-            self.currentStep.forward(**parameters)
+            step.forward(**parameters)
         else:
             parameters = OrderedDict()
-            keys = list(self.outputsStorage.keys())
-            keys.sort(reverse=True)
+            
+            stepIdx = self.stepList.index(step)
             
             # get parameters from previous steps
-            for pconfig in self.currentStep.previousSteps:
+            for pconfig in step.previousSteps:
                 #format: [string, string]
                 found = False
-                currentIdx = 0
-                while not found:
-                    currentObservingOutputs = self.outputsStorage[keys[currentIdx]]
+                currentIdx = stepIdx - 1
+                while not found and currentIdx >= 0:
+                    currentObservingOutputs = self.outputsStorage[currentIdx]
                     if pconfig in currentObservingOutputs:             
                         found = True
                         parameters[pconfig] = currentObservingOutputs[pconfig]
-                    currentIdx += 1
+                    currentIdx -= 1
             
-            self.currentStep.forward(**parameters)
+            step.forward(**parameters)
              
     def updateWorkflowInfo(self, change):
         self.isUpdatingWorkflowInfo = True
 
         stepInfos = []
         for step in self.steps:
-            stepInfo = {"stepId":step.stepId,"stepName":step.stepName,"stepType":step.stepType,"stepExplanation":step.stepExplanation,"done":step.done,"isProceeding":step.isProceeding,"isShown":step.isShown,"config":step.config,"previousConfig":step.previousConfig,"groupConfig":step.groupConfig}
+            stepInfo = {"stepId":step.stepId,"stepName":step.stepName,"stepType":step.stepType,"stepExplanation":step.stepExplanation,"done":step.done,"isProceeding":step.isProceeding,"toExecute":step.toExecute,"isShown":step.isShown,"config":step.config,"previousConfig":step.previousConfig,"groupConfig":step.groupConfig}
             stepInfos.append(stepInfo)
         flowInfos = []
         for flow in self.flows:
@@ -290,6 +296,9 @@ class WorkFlow(tl.HasTraits):
                         break
                     if step.done != stepInfo["done"]:
                         step.done = stepInfo["done"]
+                        break
+                    if step.toExecute != stepInfo["toExecute"]:
+                        step.toExecute = stepInfo["toExecute"]
                         break
                     configs = json.loads(json.dumps(stepInfo["config"]))
                     if step.config != configs:

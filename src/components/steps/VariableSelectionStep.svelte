@@ -53,9 +53,9 @@
         workflowInfo.set(info);
     }
 
-    function updateDone() {
+    function execute() {
         let info = deepCopy($workflowInfo);
-        info.steps[stepIndex].done = true;
+        info.steps[stepIndex].toExecute = true;
         workflowInfo.set(info);
     }
 </script>
@@ -128,8 +128,8 @@
     <div class="grow" />
     <div class="flex">
         <div class="grow" />
-        <Tooltip title="Done">
-            <button on:click={updateDone}><Done /></button>
+        <Tooltip title="Execute">
+            <button on:click={execute}><Done /></button>
         </Tooltip>
     </div>
 </div>

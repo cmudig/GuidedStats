@@ -34,6 +34,7 @@ class Step(tl.HasTraits):
     stepType = tl.Unicode().tag(sync=True)
     done = tl.Bool(False).tag(sync=True)
     isProceeding = tl.Bool(False).tag(sync=True)
+    toExecute = tl.Bool(False).tag(sync=True)
     isShown = tl.Bool(False).tag(sync=True)
     stepExplanation = tl.Unicode().tag(sync=True)
     config = tl.Dict({}).tag(sync=True)
@@ -52,6 +53,7 @@ class Step(tl.HasTraits):
         self.stepType = self.__class__.__name__
         self.done = False
         self.isProceeding = False
+        self.toExecute = False
         self.isShown = False
         self.stepExplanation = stepExplanation
 
@@ -98,8 +100,13 @@ class Step(tl.HasTraits):
     @abstractmethod
     def onObserveConfig(self, change):
         pass
+    
+    @abstractmethod
+    def onObserveToExecute(self, change):
+        pass
 
     def moveToNextStep(self):
+        self.done = True
         self.workflow.moveToNextStep(self)
 
     @abstractmethod
@@ -359,7 +366,7 @@ class VariableSelectionStep(GuidedStep):
                 candidateColumns = self.compare(
                     dataset, dataset.columns, self.candidateNum)
         else:
-            candidateColumns = [{"name": col} for col in dataset.columns]
+            candidateColumns = [{"name": col} for col in dataset.columns if dataset[col].dtype in QUANTITATIVE_DTYPES]
         self.changeConfig("variableCandidates", candidateColumns)
         # self.workflow.onProceeding = False
 
@@ -402,15 +409,13 @@ class VariableSelectionStep(GuidedStep):
                 else:
                     self.outputs = {self.outputNames[0]: subset}
 
-    @tl.observe("done")
-    def onObserveDone(self, change):
+    @tl.observe("toExecute")
+    def onObserveToExecute(self, change):
         if change["old"] == False and change["new"] == True:
             if len(self.outputs) != 0:
                 self.moveToNextStep()
             else:
-                self.done = False
-                self.workflow.currentStep = self
-                self.workflow.currentStep.isShown = True
+                self.toExecute = False
 
     def forward(self, **inputs) -> pd.DataFrame:
         print("move to VariableSelectionStep")
@@ -440,16 +445,20 @@ class AssumptionCheckingStep(SucccessorStep):
         self.config.pop("assumptionResults", None)
         self.config.pop("viz", None)
 
-    @tl.observe("done")
-    def onObserveDone(self, change):
-        if self.outputNames is not None:
-            self.outputs = {}
-            for i, outputName in enumerate(self.outputNames):
-                self.outputs[outputName] = list(self.inputs.values())[i]
-        else:
-            self.outputs = self.getPreviousOutputs()
-
-        self.moveToNextStep()
+    @tl.observe("toExecute")
+    def onObserveToExecute(self, change):
+        if change["old"] == False and change["new"] == True:
+            if self.config.get("assumptionResults", None) is not None:
+                if self.outputNames is not None:
+                    self.outputs = {}
+                    for i, outputName in enumerate(self.outputNames):
+                        self.outputs[outputName] = list(
+                            self.inputs.values())[i]
+                else:
+                    self.outputs = self.getPreviousOutputs()
+                self.moveToNextStep()
+            else:
+                self.toExecute = False
 
     @tl.observe("config")
     def onObserveConfig(self, change):
@@ -481,7 +490,7 @@ class AssumptionCheckingStep(SucccessorStep):
         self.inputs = inputs
 
         if self.assumption is not None:
-            if self.workflow is not None and self.workflow.currentStep is not None and self.workflow.currentStep == self:
+            if self.workflow is not None and self.workflow.currentStep is not None:
                 self.checkAssumption(self.inputs)
 
 
@@ -499,35 +508,37 @@ class TrainTestSplitStep(Step):
     def clearUIinputs(self):
         self.config.pop("trainSize", None)
 
-    @tl.observe("config")
-    def onObserveConfig(self, change):
-        if "trainSize" in change["new"]:
-            trainSize = change["new"]["trainSize"]
-            # TBC trainSize should be checked
-            valSize = (1-trainSize)/2
+    @tl.observe("toExecute")
+    def onObserveToExecute(self, change):
+        if change["old"] == False and change["new"] == True:
+            if self.config.get("trainSize", None) is not None:
+                trainSize = self.config["trainSize"]
+                # TBC trainSize should be checked
+                valSize = (1-trainSize)/2
 
-            X = self.inputs["X"]
-            Y = self.inputs["Y"]
-            indices = np.arange(len(X))
-            np.random.shuffle(indices)
-            train_indices = indices[:int(len(indices)*float(trainSize))]
-            validation_indices = indices[int(len(
-                indices)*float(trainSize)):int(len(indices)*(float(trainSize)+float(valSize)))]
-            test_indices = indices[int(
-                len(indices)*(float(trainSize)+float(valSize))):]
+                X = self.inputs["X"]
+                Y = self.inputs["Y"]
+                indices = np.arange(len(X))
+                np.random.shuffle(indices)
+                train_indices = indices[:int(len(indices)*float(trainSize))]
+                validation_indices = indices[int(len(
+                    indices)*float(trainSize)):int(len(indices)*(float(trainSize)+float(valSize)))]
+                test_indices = indices[int(
+                    len(indices)*(float(trainSize)+float(valSize))):]
 
-            XTrain = X.iloc[train_indices]
-            XVal = X.iloc[validation_indices]
-            XTest = X.iloc[test_indices]
-            yTrain = Y.iloc[train_indices]
-            yVal = Y.iloc[validation_indices]
-            yTest = Y.iloc[test_indices]
+                XTrain = X.iloc[train_indices]
+                XVal = X.iloc[validation_indices]
+                XTest = X.iloc[test_indices]
+                yTrain = Y.iloc[train_indices]
+                yVal = Y.iloc[validation_indices]
+                yTest = Y.iloc[test_indices]
 
-            self.outputs = {"XTrain": XTrain, "XVal": XVal, "XTest": XTest,
-                            "yTrain": yTrain, "yVal": yVal, "yTest": yTest}
-            self.done = True
+                self.outputs = {"XTrain": XTrain, "XVal": XVal, "XTest": XTest,
+                                "yTrain": yTrain, "yVal": yVal, "yTest": yTest}
 
-            self.moveToNextStep()
+                self.moveToNextStep()
+            else:
+                self.toExecute = False
 
     def forward(self, X: pd.DataFrame, Y: pd.DataFrame):
         self.inputs = {"X": X, "Y": Y}
@@ -550,31 +561,30 @@ class ModelStep(GuidedStep):
     def clearUIinputs(self):
         self.config.pop("modelName", None)
 
-    @tl.observe("config")
-    def onObserveConfig(self, change):
-        if "modelName" in change["new"]:
-            self.modelWrapper.setModel(change["new"]["modelName"])
-            if "modelParameters" in change["new"]:
-                args = {}
-                for parameter in change["new"]["modelParameters"]:
-                    args[parameter["name"]] = parameter["value"]
-                model, results = self.modelWrapper.fit(
-                    *tuple(self.inputs.values()), **args)
+    @tl.observe("toExecute")
+    def onObserveToExecute(self, change):
+        if change["old"] == False and change["new"] == True:
+            if self.config.get("modelName", None) is not None:
+                self.modelWrapper.setModel(self.config["modelName"])
+                if self.config.get("modelParameters", None) is not None:
+                    args = {}
+                    for parameter in self.config["modelParameters"]:
+                        args[parameter["name"]] = parameter["value"]
+                    model, results = self.modelWrapper.fit(
+                        *tuple(self.inputs.values()), **args)
+                else:
+                    model, results = self.modelWrapper.fit(
+                        *tuple(self.inputs.values()))
+
+                # update current model and results
+                if self.workflow is not None:
+                    self.workflow.current_model = model
+
+                # TBC, the model should be wrapped
+                self.outputs = {"model": model, "results": results}
+                self.moveToNextStep()
             else:
-                model, results = self.modelWrapper.fit(
-                    *tuple(self.inputs.values()))
-
-            # update current model and results
-            if self.workflow is not None:
-                self.workflow.current_model = model
-
-            self.done = True
-
-            # TBC, the model should be wrapped
-            self.outputs = {"model": model, "results": results}
-            self.done = True
-
-            self.moveToNextStep()
+                self.toExecute = False
 
     def forward(self, **inputs):
         self.inputs = inputs

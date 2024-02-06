@@ -31,7 +31,7 @@
 
     function stopInspectingAssumption() {
         let info: Workflow = deepCopy($workflowInfo);
-        info.steps[stepIndex].done = true;
+        info.steps[stepIndex].toExecute = true;
         workflowInfo.set(info);
     }
 
@@ -110,7 +110,7 @@
             <div class="grow" />
             <div class="flex">
                 <div class="grow" />
-                <Tooltip title="Done">
+                <Tooltip title="Execute">
                     <button on:click={updateAssumption}><Done /></button>
                 </Tooltip>
             </div>

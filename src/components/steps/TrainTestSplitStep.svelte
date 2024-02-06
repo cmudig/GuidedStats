@@ -11,14 +11,21 @@
     export let height: number = undefined;
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
+    
+    let percentage: number = 80;
 
-    function updateSizeResult() {
+    function updateSizeResult(event) {
         let info = deepCopy($workflowInfo);
+        percentage = +event.target.value;
         info.steps[stepIndex].config.trainSize = percentage / 100;
         workflowInfo.set(info);
     }
 
-    let percentage: number = 80;
+    function execute() {
+        let info = deepCopy($workflowInfo);
+        info.steps[stepIndex].toExecute = true;
+        workflowInfo.set(info);
+    }
 </script>
 
 <div class="flex flex-col">
@@ -33,7 +40,7 @@
                         min="0"
                         max="100"
                         value={percentage}
-                        on:input={e => (percentage = +e.target.value)}
+                        on:input={updateSizeResult}
                     />
                 </div>
             </div>
@@ -42,8 +49,8 @@
     <div class="grow" />
     <div class="flex">
         <div class="grow" />
-        <Tooltip title="Done">
-            <button on:click={updateSizeResult}><Done /></button>
+        <Tooltip title="Execute">
+            <button on:click={execute}><Done /></button>
         </Tooltip>
     </div>
 </div>

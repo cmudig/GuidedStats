@@ -31,14 +31,21 @@
         if (!_.isUndefined(parameter)) {
             parameter.value = value;
         }
-        console.log(parameter);
+        let info: Workflow = deepCopy($workflowInfo);
+        info.steps[stepIndex].config.modelParameters = parameterValues;
+        workflowInfo.set(info);
     }
 
-    function updateModelResult(event) {
+    function updateModelName(event) {
+        modelName = event.target.value;
         let info: Workflow = deepCopy($workflowInfo);
         info.steps[stepIndex].config.modelName = modelName;
-        info.steps[stepIndex].config.modelParameters = parameterValues;
-        console.log(info);
+        workflowInfo.set(info);
+    }
+
+    function execute(event) {
+        let info: Workflow = deepCopy($workflowInfo);
+        info.steps[stepIndex].toExecute = true;
         workflowInfo.set(info);
     }
 </script>
@@ -49,7 +56,11 @@
             <div class="flex">
                 <span class="p-2">Model: </span>
                 <div class="grow" />
-                <select class="m-2" bind:value={modelName}>
+                <select
+                    class="m-2"
+                    bind:value={modelName}
+                    on:change={updateModelName}
+                >
                     <option disabled selected value> -- option -- </option>
                     {#each step.config.modelCandidates as modelCandidate}
                         <option value={modelCandidate?.name}
@@ -65,8 +76,8 @@
     <div class="grow" />
     <div class="flex">
         <div class="grow" />
-        <Tooltip title="Done">
-            <button on:click={updateModelResult}><Done /></button>
+        <Tooltip title="Execute">
+            <button on:click={execute}><Done /></button>
         </Tooltip>
     </div>
 </div>
