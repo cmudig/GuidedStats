@@ -10,22 +10,17 @@
 
     let selectedOptionNames: string[] = [];
 
-    function handleOption(name: string) {
-        if (selectedOptionNames.includes(name)) {
-            selectedOptionNames.splice(selectedOptionNames.indexOf(name), 1);
+    function handleOption(event, name: string) {
+        if (event.shiftKey) {
+            selectedOptionNames = [...selectedOptionNames, name];
         } else {
-            if (selectedOptionNames.length < maxSelectedNum) {
-                selectedOptionNames.push(name);
-            } else {
-                // check if the number of selected variables is more than variableNum
-                alert(`You can only select ${maxSelectedNum} variables`);
-            }
+            selectedOptionNames = [name];
         }
-        selectedOptionNames = [...selectedOptionNames];
-        // find corresponding options by names
+
         let selectedOptions = options.filter(d =>
             selectedOptionNames.includes(d.name)
         );
+
         handleInputChange(parameterName, selectedOptions);
     }
 </script>
@@ -42,7 +37,7 @@
                 )
                     ? ' bg-gray-300'
                     : ''}"
-                on:click={() => handleOption(option.name)}
+                on:click={e => handleOption(e, option.name)}
                 ><span
                     >{option.name}{_.isUndefined(option.score)
                         ? ''
