@@ -53,10 +53,11 @@ def multiBoxplotVizStats(*args, **kwargs):
 
 def residVizStats(Y_hat: Iterable, Y_true: Iterable, **kwargs):
     max_point = kwargs.get("max_point", 100)
+    group = kwargs.get("group","group")
     resid = Y_hat - Y_true
     vizStats = []
     for i in range(len(Y_hat)):
-        vizStats.append({"x": Y_hat[i], "y": resid[i]})
+        vizStats.append({"x": Y_hat[i], "y": resid[i], "group": group})
     sample = random.sample(vizStats, min(max_point, len(vizStats)))
     return sample
 

@@ -59,18 +59,34 @@ export function getScatterPlotStats(
     width: number = 200,
     height: number = 120
 ) {
-    const spec = {
+    let spec;
+    spec = {
         $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
         width: 'container',
         height: height,
         data: { values: viz.vizStats },
         mark: { type: 'point', tooltip: true },
+        selection: {
+            "grp": {
+              type: "single",
+              fields: ["group"],
+              bind: {
+                input: "select",
+                options: ["Train", "Test"],
+                name: "Select: "
+              }
+            }
+          },
+        transform: [
+            {
+              "filter": {"selection": "grp"}
+            }
+          ],
         encoding: {
             x: { field: 'x', title: viz.xLabel, type: 'quantitative' },
             y: { field: 'y', title: viz.yLabel, type: 'quantitative' }
         }
     };
-
     return spec;
 }
 

@@ -100,6 +100,7 @@ export type BoxPlotStats = {
 export type ScatterPlotStats = {
     x: number;
     y: number;
+    group: number | string;
 };
 
 export type DensityPlotStats = {

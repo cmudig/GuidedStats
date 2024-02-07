@@ -512,28 +512,22 @@ class TrainTestSplitStep(Step):
         if change["old"] == False and change["new"] == True:
             if self.config.get("trainSize", None) is not None:
                 trainSize = self.config["trainSize"]
-                # TBC trainSize should be checked
-                valSize = (1-trainSize)/2
 
                 X = self.inputs["X"]
                 Y = self.inputs["Y"]
                 indices = np.arange(len(X))
                 np.random.shuffle(indices)
                 train_indices = indices[:int(len(indices)*float(trainSize))]
-                validation_indices = indices[int(len(
-                    indices)*float(trainSize)):int(len(indices)*(float(trainSize)+float(valSize)))]
                 test_indices = indices[int(
-                    len(indices)*(float(trainSize)+float(valSize))):]
+                    len(indices)*(float(trainSize))):]
 
                 XTrain = X.iloc[train_indices]
-                XVal = X.iloc[validation_indices]
                 XTest = X.iloc[test_indices]
                 yTrain = Y.iloc[train_indices]
-                yVal = Y.iloc[validation_indices]
                 yTest = Y.iloc[test_indices]
 
-                self.outputs = {"XTrain": XTrain, "XVal": XVal, "XTest": XTest,
-                                "yTrain": yTrain, "yVal": yVal, "yTest": yTest}
+                self.outputs = {"XTrain": XTrain, "XTest": XTest,
+                                "yTrain": yTrain, "yTest": yTest}
 
                 self.moveToNextStep()
             else:
@@ -612,8 +606,6 @@ class EvaluationStep(GuidedStep):
 
     def forward(self, **inputs):
         # TBC, should wrap a model object
-        # join test dataset for altair visualization
-        values = list(inputs.values())
 
         self.inputs = inputs
 
@@ -654,13 +646,20 @@ class EvaluationStep(GuidedStep):
         # TBC, apply the test dataset
         # viz
         if self.inputs["model"]._canPredict:
-            X_wconstant = sm.add_constant(self.inputs["XTest"])
-            Y_hat = self.inputs["results"].predict(X_wconstant)
-            Y_hat = Y_hat.to_numpy().reshape((-1))
-            Y_true = self.inputs["yTest"].to_numpy().reshape((-1))
-
             if self.visType is not None and self.visType == "residual":
-                vizStats = VIZ[self.visType](Y_hat, Y_true)
+                
+                X_wconstant = sm.add_constant(self.inputs["XTest"])
+                Y_hat = self.inputs["results"].predict(X_wconstant)
+                Y_hat = Y_hat.to_numpy().reshape((-1))
+                Y_true = self.inputs["yTest"].to_numpy().reshape((-1))
+                vizStats = VIZ[self.visType](Y_hat, Y_true, group = "Test")
+
+                X_wconstant = sm.add_constant(self.inputs["XTrain"])
+                Y_hat = self.inputs["results"].predict(X_wconstant)
+                Y_hat = Y_hat.to_numpy().reshape((-1))
+                Y_true = self.inputs["yTrain"].to_numpy().reshape((-1))
+                vizStats.extend(VIZ[self.visType](Y_hat, Y_true, group = "Train"))
+                
                 viz = {
                     "vizType": "scatter",
                     "xLabel": "Predicted {}".format(self.inputs["yTest"].columns[0]),

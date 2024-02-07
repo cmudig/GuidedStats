@@ -25,11 +25,6 @@
         exportVizStepIdx.set(stepIndex);
     }
 
-    // function exportRegressionTable() {
-    //     exportingItem.set('table');
-    //     exportTableStepIdx.set(stepIndex);
-    // }
-
     //buttons
     function renderViz(vizs: Visualization[], width: number) {
         if (!_.isUndefined(vizs)) {

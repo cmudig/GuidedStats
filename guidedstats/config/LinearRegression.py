@@ -82,7 +82,7 @@ _regressionConfig = [
      "stepType": "EvaluationStep",
      "stepConfig":
      {"stepName": "Evaluate the model",
-      "inputNames": ["model", "results", "XTest", "yTest"],
+      "inputNames": ["model", "results", "XTest", "yTest", "XTrain", "yTrain"],
       "visType": "residual",
       "evaluationMetricNames": ["mse"],
       }},
