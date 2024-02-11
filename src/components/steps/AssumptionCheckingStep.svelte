@@ -18,7 +18,6 @@
     import Tabs from '../display/Tabs.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
-    export let height: number = undefined;
 
     export let specs: Array<any> = undefined;
 
@@ -61,7 +60,7 @@
 
 <div>
     {#if !_.isUndefined(step?.config?.assumptionResults)}
-        <div class="card" style="height:{height - 30}px">
+        <div class="overflow-y-scroll" style="scrollbar-width: none">
             <div class="flex">
                 <div class="grow" />
                 <!-- Visualization and Prompt -->
@@ -84,14 +83,14 @@
         <!-- This part is for self defining-->
         <div class="flex flex-col h-full">
             <div
-                class="card place-content-center flex"
-                style="height:{height - 30}px"
+                class="overflow-y-scroll place-content-center flex"
+                style="scrollbar-width: none"
             >
                 <div
                     class="w-3/4 flex flex-col p-2 overflow-hidden bg-white border-2"
                 >
                     <div class="flex">
-                        <span class="p-2"
+                        <span class="p-3"
                             >Select the assumption you would like to check:
                         </span>
                         <div class="grow" />
@@ -119,20 +118,6 @@
 </div>
 
 <style>
-    .card {
-        overflow-y: scroll;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-
-    .card::-webkit-scrollbar {
-        width: 0;
-        height: 0;
-    }
-    .card span {
-        color: #333; /* Consistent text color */
-        padding: 10px;
-    }
     .card select {
         border: 1px solid #ccc;
         border-radius: 4px;

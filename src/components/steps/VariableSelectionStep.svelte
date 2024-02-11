@@ -9,7 +9,6 @@
     import Selection from '../display/Selection.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
-    export let height: number = undefined;
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
@@ -62,7 +61,7 @@
 
 <div class="flex flex-col">
     <div>
-        <div class="flex card" style="height:{height - 30}px">
+        <div class="flex overflow-y-scroll" style="scrollbar-width: none">
             <!-- variable selection -->
             <div
                 class={'transition duration-500 flex flex-col' +
@@ -96,8 +95,6 @@
                             options={step.config.variableCandidates}
                             {handleInputChange}
                             maxSelectedNum={step?.config?.variableNum}
-                            width={200}
-                            height={120}
                         />
                         <div class="grow" />
                     {/if}
@@ -118,8 +115,6 @@
                         options={step.config.groupCandidates}
                         {handleInputChange}
                         maxSelectedNum={2}
-                        width={200}
-                        height={120}
                     />
                 </div>
             {/if}
@@ -133,28 +128,3 @@
         </Tooltip>
     </div>
 </div>
-
-<style>
-    .variable-container {
-        height: 120px;
-        overflow-y: scroll;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-
-    .card {
-        overflow-y: scroll;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-
-    .card::-webkit-scrollbar {
-        width: 0;
-        height: 0;
-    }
-
-    .variable-container::-webkit-scrollbar {
-        width: 0;
-        height: 0;
-    }
-</style>

@@ -5,9 +5,7 @@
     export let options: Option[] = undefined;
     export let handleInputChange: Function = undefined;
     export let maxSelectedNum: number = 1;
-    export let width: number = 120;
-    export let height: number = 100;
-
+    
     let selectedOptionNames: string[] = [];
 
     function handleOption(event, name: string) {
@@ -26,8 +24,7 @@
 </script>
 
 <div
-    class="parameter-container p-2 m-2 overflow-hidden bg-white border-2 flex flex-col"
-    style="width:{width}px;height:{height}px"
+    class="p-2 m-2 overflow-hidden overflow-y-scroll bg-white border-2 flex flex-col"
 >
     {#if !_.isUndefined(options)}
         {#each options as option}
@@ -47,16 +44,3 @@
         {/each}
     {/if}
 </div>
-
-<style>
-    .parameter-container {
-        overflow-y: scroll;
-        /* scrollbar-width: none;
-        -ms-overflow-style: none; */
-    }
-
-    /* .parameter-container::-webkit-scrollbar {
-        width: 0;
-        height: 0;
-    } */
-</style>

@@ -15,8 +15,9 @@
 </script>
 
 <div
-    class={'pnl grow bg-white w-full mt-2 border-2 rounded-lg' +
+    class={'grow bg-white w-full mt-2 border-2 rounded-lg overflow-y-scroll' +
         ($onSelectingStep ? ' ring-4' : '')}
+    style="scrollbar-width: none"
 >
     <div class="flex p-2">
         <span class="font-bold">Step</span>
@@ -42,17 +43,3 @@
         {/each}
     </div>
 </div>
-
-<style>
-    .pnl {
-        min-height: 45%;
-        overflow-y: scroll;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-
-    .pnl::-webkit-scrollbar {
-        width: 0;
-        height: 0;
-    }
-</style>

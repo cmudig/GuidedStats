@@ -9,6 +9,8 @@
 
     export let model;
 
+    let height: number;
+
     const onSelectingStep = writable(false);
     const newStepPos = writable(-1);
     const newStepType = writable('');
@@ -150,8 +152,8 @@
     $: exportCodeToCell($exportCode);
 </script>
 
-<div class="bg-slate-50 rounded-xl w-full h-1/2 outlayer p-4 flex flex-row">
-    <div class="w-1/4 h-full mr-2 float-left flex flex-col">
+<div class="bg-slate-50 rounded-xl w-full h-1/2 p-4 flex flex-row">
+    <div bind:clientHeight={height} class="w-1/4 h-full mr-2 float-left flex flex-col">
         <WorkflowSelectionPanel
             workflows={$builtinWorkflows}
             on:message={getWorkflow}
@@ -159,7 +161,7 @@
         <div class="grow" />
         <StepSelectionPanel steps={$builtinSteps} />
     </div>
-    <div class="w-3/5 h-full ml-2 float-left grow">
+    <div class="w-3/5 h-full ml-2 float-left grow" style="height:{height}px">
         <DisplayPanel steps={$workflowInfo.steps} />
     </div>
 </div>
@@ -169,12 +171,4 @@
     @tailwind base;
     @tailwind components;
     @tailwind utilities;
-
-    .outlayer {
-        height: 400px;
-    }
-
-    #graph-container {
-        max-width: 60%;
-    }
 </style>

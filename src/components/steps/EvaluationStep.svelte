@@ -6,14 +6,11 @@
         getTTestPlotStats
     } from '../viz/action/visualization';
     import embed from 'vega-embed';
-    import Tooltip from '../tooltip/Tooltip.svelte';
-    import ExportIcon from '../icons/ExportIcon.svelte';
     import { getContext } from 'svelte';
     import type { Writable } from 'svelte/store';
     import Table from '../display/Table.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
-    export let height: number = undefined;
 
     const exportingItem: Writable<string> = getContext('exportingItem');
 
@@ -44,7 +41,7 @@
     let width: number = 450;
 </script>
 
-<div class="card overflow-x-scroll" style="height:{height}px">
+<div class="card overflow-x-scroll">
     <div class="flex">
         <div class="grow" />
         <div class="place-content-center flex p-4" style="width:{width}px">
@@ -53,11 +50,6 @@
                 <!-- Visualization -->
                 <div id="vis-{stepIndex}" style="width:220px" />
             </div>
-            <!-- <div style="width:1em">
-                <Tooltip title="Export Visualization">
-                    <button on:click={exportViz}><ExportIcon /></button>
-                </Tooltip>
-            </div> -->
             {#if !_.isUndefined(step?.config?.modelResults) && step?.config?.modelResults.length > 0}
                 <div class="flex flex-col">
                     <div class="p-2">
