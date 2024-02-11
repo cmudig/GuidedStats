@@ -112,7 +112,7 @@
     <div class="grow" />
     <div class="flex">
         <div class="grow" />
-        <Tooltip title="Done">
+        <Tooltip title="Execute">
             <button on:click={updateDone}><Done /></button>
         </Tooltip>
     </div>

@@ -4,7 +4,7 @@
     import Tooltip from '../tooltip/Tooltip.svelte';
     import type { Step, Workflow } from '../../interface/interfaces';
     import type { Writable } from 'svelte/store';
-    import { getContext } from 'svelte';
+    import { afterUpdate, getContext } from 'svelte';
     import Done from '../icons/Done.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
@@ -12,6 +12,13 @@
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
     
     let percentage: number = 80;
+
+    // update percentage value before adjusting the slider
+    afterUpdate(() => {
+        let info = deepCopy($workflowInfo);
+        info.steps[stepIndex].config.trainSize = percentage / 100;
+        workflowInfo.set(info);
+    });
 
     function updateSizeResult(event) {
         let info = deepCopy($workflowInfo);

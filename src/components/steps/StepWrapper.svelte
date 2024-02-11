@@ -59,7 +59,7 @@
 {#if !_.isUndefined(step)}
     <div class="flex px-2 w-full">
         <DotLine {step} {height} {isLast} />
-        <div class="grow px-2 pb-4">
+        <div class="grow px-2 pb-2">
             <!-- Card -->
             <!-- if step.isProceeding is False then the div is disabled-->
             <div
