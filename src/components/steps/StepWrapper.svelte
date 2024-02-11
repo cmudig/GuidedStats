@@ -38,6 +38,7 @@
 
     function unfold() {
         isShown = !isShown;
+        console.log(isShown);
         let updatedInfo = deepCopy($workflowInfo);
         updatedInfo.steps[stepIndex].isShown = isShown;
         workflowInfo.set(updatedInfo); // Update with the new object
@@ -66,7 +67,7 @@
                 class="px-2 flex hover:bg-slate-100 {step.isProceeding ||
                 step.done
                     ? ''
-                    : 'not-proceeding'}"
+                    : ' opacity-20 pointer-events-none'}"
                 bind:clientHeight={buttonHeight}
             >
                 <button on:click={() => unfold()}>
@@ -92,7 +93,7 @@
                             <LoadDatasetStep {step} {stepIndex} />
                         {/if}
                         {#if step.stepType === 'VariableSelectionStep'}
-                            <VariableSelectionStep {step} {stepIndex} />
+                            <VariableSelectionStep on:isShown={unfold} {step} {stepIndex} />
                         {/if}
                         {#if step.stepType === 'AssumptionCheckingStep'}
                             <AssumptionCheckingStep {step} {stepIndex} />
@@ -115,10 +116,3 @@
         </div>
     </div>
 {/if}
-
-<style>
-    .not-proceeding {
-        opacity: 0.2;
-        pointer-events: none;
-    }
-</style>

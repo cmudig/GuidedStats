@@ -2,13 +2,15 @@
     import _ from 'lodash';
     import type { Step, Workflow, Option } from '../../interface/interfaces';
     import type { Writable } from 'svelte/store';
-    import { getContext } from 'svelte';
+    import { createEventDispatcher, getContext, type EventDispatcher } from 'svelte';
     import { deepCopy } from '../../utils';
     import Done from '../icons/Done.svelte';
     import Tooltip from '../tooltip/Tooltip.svelte';
     import Selection from '../display/Selection.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
+
+    const dispatch: EventDispatcher<any> = createEventDispatcher();
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
@@ -56,6 +58,7 @@
         let info = deepCopy($workflowInfo);
         info.steps[stepIndex].toExecute = true;
         workflowInfo.set(info);
+        dispatch('isShown', false);
     }
 </script>
 

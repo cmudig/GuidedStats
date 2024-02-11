@@ -28,7 +28,7 @@
     const builtinAssumptions: Writable<Array<string>> =
         getContext('builtinAssumptions');
 
-    function stopInspectingAssumption() {
+    function execute() {
         let info: Workflow = deepCopy($workflowInfo);
         info.steps[stepIndex].toExecute = true;
         workflowInfo.set(info);
@@ -76,7 +76,7 @@
         <div class="flex">
             <div class="grow" />
             <Tooltip title="Done">
-                <button on:click={stopInspectingAssumption}><Done /></button>
+                <button on:click={execute}><Done /></button>
             </Tooltip>
         </div>
     {:else}

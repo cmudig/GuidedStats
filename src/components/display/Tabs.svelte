@@ -3,10 +3,8 @@
     import embed from 'vega-embed';
     import Hint from '../tooltip/Hint.svelte';
     import type { AssumptionResult } from '../../interface/interfaces';
-    import Tooltip from '../tooltip/Tooltip.svelte';
-    import ExportIcon from '../icons/ExportIcon.svelte';
     import type { Writable } from 'svelte/store';
-    import { getContext } from 'svelte';
+    import { afterUpdate, getContext } from 'svelte';
     export let num: number = undefined;
     export let stepIndex: number = undefined;
     export let assumptionResults: AssumptionResult[] = undefined;
@@ -24,11 +22,13 @@
 
     function updateChart(specs: Array<any>, activeTabValue: number) {
         if (!_.isUndefined(specs)) {
-            embed(
-                `#vis-${$serial}-${stepIndex}-${activeTabValue}`,
-                specs[activeTabValue],
-                { actions: false }
-            );
+            afterUpdate(() => {
+                embed(
+                    `#vis-${$serial}-${stepIndex}-${activeTabValue}`,
+                    specs[activeTabValue],
+                    { actions: false }
+                );
+            });
         }
     }
 
@@ -62,7 +62,6 @@
                     <div class="grow" />
                     <div style="flex-wrap: wrap;width:300px">
                         <Hint text={assumptionResults[activeTabValue].prompt} />
-                        <!-- {assumptionResults[activeTabValue].prompt} -->
                     </div>
                     <div class="grow" />
                 </div>
@@ -72,9 +71,6 @@
                         id="vis-{$serial}-{stepIndex}-{i}"
                         style="width:300px"
                     />
-                    <!-- <Tooltip title="Export Visualization">
-                        <button on:click={() => exportViz(stepIndex,i)}><ExportIcon /></button>
-                    </Tooltip> -->
                     <div class="grow" />
                 </div>
             </div>
