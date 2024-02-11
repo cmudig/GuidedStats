@@ -28,19 +28,19 @@
 
     const newStepPos: Writable<number> = getContext('newStepPos');
 
-    let isShown: boolean = false;
-
     let buttonHeight: number;
     let cardHeight: number;
     let height: number;
 
     let isLast: boolean = $workflowInfo.steps.length - 1 === stepIndex;
 
-    function unfold() {
-        isShown = !isShown;
-        console.log(isShown);
+    const closeStepAfterExecution = (event: CustomEvent) => {
+        unfold(event.detail);
+    };
+
+    function unfold(newIsShown: boolean) {
         let updatedInfo = deepCopy($workflowInfo);
-        updatedInfo.steps[stepIndex].isShown = isShown;
+        updatedInfo.steps[stepIndex].isShown = newIsShown;
         workflowInfo.set(updatedInfo); // Update with the new object
     }
 
@@ -70,7 +70,7 @@
                     : ' opacity-20 pointer-events-none'}"
                 bind:clientHeight={buttonHeight}
             >
-                <button on:click={() => unfold()}>
+                <button on:click={() => unfold(!step.isShown)}>
                     <span class="inline-block align-top font-bold"
                         >Step {stepIndex + 1}: {step.stepName}</span
                     ></button
@@ -83,7 +83,7 @@
             </div>
             <!-- The panel -->
             <div
-                class="grow {isShown ? '' : ' hidden h-0'}"
+                class="grow {step.isShown ? '' : ' hidden h-0'}"
                 bind:clientHeight={cardHeight}
                 use:updateHeight
             >
@@ -93,22 +93,45 @@
                             <LoadDatasetStep {step} {stepIndex} />
                         {/if}
                         {#if step.stepType === 'VariableSelectionStep'}
-                            <VariableSelectionStep on:isShown={unfold} {step} {stepIndex} />
+                            <VariableSelectionStep
+                                on:isShown={closeStepAfterExecution}
+                                {step}
+                                {stepIndex}
+                            />
                         {/if}
                         {#if step.stepType === 'AssumptionCheckingStep'}
-                            <AssumptionCheckingStep {step} {stepIndex} />
+                            <AssumptionCheckingStep
+                                on:isShown={closeStepAfterExecution}
+                                {step}
+                                {stepIndex}
+                            />
                         {/if}
                         {#if step.stepType === 'TrainTestSplitStep'}
-                            <TrainTestSplitStep {step} {stepIndex} />
+                            <TrainTestSplitStep
+                                on:isShown={closeStepAfterExecution}
+                                {step}
+                                {stepIndex}
+                            />
                         {/if}
                         {#if step.stepType === 'ModelStep'}
-                            <ModelStep {step} {stepIndex} />
+                            <ModelStep
+                                on:isShown={closeStepAfterExecution}
+                                {step}
+                                {stepIndex}
+                            />
                         {/if}
                         {#if step.stepType === 'EvaluationStep'}
-                            <EvaluationStep {step} {stepIndex} />
+                            <EvaluationStep
+                                {step}
+                                {stepIndex}
+                            />
                         {/if}
                         {#if step.stepType === 'DataTransformationStep'}
-                            <DataTransformationStep {step} {stepIndex} />
+                            <DataTransformationStep
+                                on:isShown={closeStepAfterExecution}
+                                {step}
+                                {stepIndex}
+                            />
                         {/if}
                     </div>
                 {/if}

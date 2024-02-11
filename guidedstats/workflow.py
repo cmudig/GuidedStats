@@ -254,8 +254,6 @@ class WorkFlow(tl.HasTraits):
             step.forward(**parameters)
              
     def updateWorkflowInfo(self, change):
-        self.isUpdatingWorkflowInfo = True
-
         stepInfos = []
         for step in self.steps:
             stepInfo = {"stepId":step.stepId,"stepName":step.stepName,"stepType":step.stepType,"stepExplanation":step.stepExplanation,"done":step.done,"isProceeding":step.isProceeding,"toExecute":step.toExecute,"isShown":step.isShown,"config":step.config,"previousConfig":step.previousConfig,"groupConfig":step.groupConfig}
@@ -271,40 +269,35 @@ class WorkFlow(tl.HasTraits):
                         "flows":flowInfos}
         
         self.workflowInfo = info
-
-        self.isUpdatingWorkflowInfo = False
         
     @tl.observe("workflowInfo")
     def onObserveWorkflowInfo(self, change):
-        self.isObservingWorkflowInfo = True
-        if not self.isUpdatingWorkflowInfo:
-            if change["old"] != change["new"]:
-                workflowInfo = change["new"]
-                if self.workflowName != workflowInfo["workflowName"]:
-                    self.workflowName = workflowInfo["workflowName"]
-                    self.isObservingWorkflowInfo = False
-                    return
-                if self.currentStepId != workflowInfo["currentStepId"]:
-                    self.currentStepId = workflowInfo["currentStepId"]
-                    self.isObservingWorkflowInfo = False
-                    return
-                
-                for idx,stepInfo in enumerate(workflowInfo["steps"]):
-                    step = self.steps[idx]
-                    if step.isShown != stepInfo["isShown"]:
-                        step.isShown = stepInfo["isShown"]
-                        break
-                    if step.done != stepInfo["done"]:
-                        step.done = stepInfo["done"]
-                        break
-                    if step.toExecute != stepInfo["toExecute"]:
-                        step.toExecute = stepInfo["toExecute"]
-                        break
-                    configs = json.loads(json.dumps(stepInfo["config"]))
-                    if step.config != configs:
-                        step.config = configs
-                        break
-        self.isObservingWorkflowInfo = False
+        if change["old"] != change["new"]:
+            workflowInfo = change["new"]
+            if self.workflowName != workflowInfo["workflowName"]:
+                self.workflowName = workflowInfo["workflowName"]
+                self.isObservingWorkflowInfo = False
+                return
+            if self.currentStepId != workflowInfo["currentStepId"]:
+                self.currentStepId = workflowInfo["currentStepId"]
+                self.isObservingWorkflowInfo = False
+                return
+            
+            for idx,stepInfo in enumerate(workflowInfo["steps"]):
+                step = self.steps[idx]
+                if step.isShown != stepInfo["isShown"]:
+                    step.isShown = stepInfo["isShown"]
+                    break
+                if step.done != stepInfo["done"]:
+                    step.done = stepInfo["done"]
+                    break
+                if step.toExecute != stepInfo["toExecute"]:
+                    step.toExecute = stepInfo["toExecute"]
+                    break
+                configs = json.loads(json.dumps(stepInfo["config"]))
+                if step.config != configs:
+                    step.config = configs
+                    break
                    
     def constructSteps(self):        
         # construct all Steps

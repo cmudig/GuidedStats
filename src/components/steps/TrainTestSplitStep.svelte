@@ -4,10 +4,12 @@
     import Tooltip from '../tooltip/Tooltip.svelte';
     import type { Step, Workflow } from '../../interface/interfaces';
     import type { Writable } from 'svelte/store';
-    import { afterUpdate, getContext } from 'svelte';
+    import { afterUpdate, createEventDispatcher, getContext, type EventDispatcher } from 'svelte';
     import Done from '../icons/Done.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
+
+    const dispatch: EventDispatcher<any> = createEventDispatcher();
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
     
@@ -31,6 +33,7 @@
         let info = deepCopy($workflowInfo);
         info.steps[stepIndex].toExecute = true;
         workflowInfo.set(info);
+        dispatch('isShown', false);
     }
 </script>
 

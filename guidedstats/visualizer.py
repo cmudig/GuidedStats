@@ -68,6 +68,7 @@ class GuidedStats(DOMWidget):
         self.datasetName = datasetName
         
         self.serial = ''.join(random.choices(string.ascii_letters + string.digits, k=4))
+        self.ignore_update = False
         
         self.observe(self.addWorkFlow, names='selectedWorkflow')
         
@@ -184,16 +185,18 @@ class GuidedStats(DOMWidget):
         self.workflow.startGuiding()
     
     def updateWorkflowInfo(self, change):
+        self.ignore_update = True
         new_info = self.workflow.workflowInfo
         if new_info != self.workflowInfo:
             self.workflowInfo = new_info
+        self.ignore_update = False
 
     @tl.observe("workflowInfo")
     def onObserveWorkflowInfo(self, change):
-        if self.workflow.isUpdatingWorkflowInfo == False:
-            new_info = change["new"]
-            if new_info != self.workflow.workflowInfo:
-                self.workflow.workflowInfo = new_info
+        if self.ignore_update:
+            return
+        new_info = change["new"]
+        self.workflow.workflowInfo = new_info
 
     def deleteFlow(self,workflow:WorkFlow):
         #TODO

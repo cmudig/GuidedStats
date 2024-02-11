@@ -12,7 +12,11 @@
         Visualization,
         Workflow
     } from '../../interface/interfaces';
-    import { getContext } from 'svelte';
+    import {
+        getContext,
+        type EventDispatcher,
+        createEventDispatcher
+    } from 'svelte';
     import type { Writable } from 'svelte/store';
     import Done from '../icons/Done.svelte';
     import Tabs from '../display/Tabs.svelte';
@@ -23,6 +27,8 @@
 
     let assumptionName: string = undefined;
 
+    const dispatch: EventDispatcher<any> = createEventDispatcher();
+
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
     const builtinAssumptions: Writable<Array<string>> =
@@ -32,6 +38,7 @@
         let info: Workflow = deepCopy($workflowInfo);
         info.steps[stepIndex].toExecute = true;
         workflowInfo.set(info);
+        dispatch('isShown', false);
     }
 
     function updateAssumption() {

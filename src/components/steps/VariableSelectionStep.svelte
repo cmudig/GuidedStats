@@ -2,7 +2,11 @@
     import _ from 'lodash';
     import type { Step, Workflow, Option } from '../../interface/interfaces';
     import type { Writable } from 'svelte/store';
-    import { createEventDispatcher, getContext, type EventDispatcher } from 'svelte';
+    import {
+        createEventDispatcher,
+        getContext,
+        type EventDispatcher
+    } from 'svelte';
     import { deepCopy } from '../../utils';
     import Done from '../icons/Done.svelte';
     import Tooltip from '../tooltip/Tooltip.svelte';
