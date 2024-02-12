@@ -35,7 +35,10 @@
 </script>
 
 <div class="flex flex-col">
-    <div class="card place-content-center flex">
+    <div
+        class="overflow-y-scroll place-content-center flex"
+        style="scrollbar-width: none"
+    >
         <div class="w-3/4 p-4 overflow-hidden bg-white border-2">
             <div class="flex slider-container">
                 <span>Train Percentage: {percentage} %</span>
@@ -60,21 +63,3 @@
         </Tooltip>
     </div>
 </div>
-
-<style>
-    div {
-        --progress-bg: #377eb8;
-        --track-bg: #e41a1c;
-    }
-
-    .card {
-        overflow-y: scroll;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-
-    .card::-webkit-scrollbar {
-        width: 0;
-        height: 0;
-    }
-</style>

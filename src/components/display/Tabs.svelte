@@ -44,11 +44,11 @@
 </script>
 
 <div class="flex-col p-2 w-3/4">
-    <ul>
+    <ul class="flex flex-wrap list-none pl-0 mb-0 border-b border-gray-300">
         {#each assumptionResults as assumptionResult, i}
             <li class={activeTabValue === i ? 'active' : ''}>
                 <button on:click={handleClick(i)}
-                    ><span class="font-bold" style="color:#008AFE"
+                    ><span class={`font-bold rounded-t-md block py-2 px-4 cursor-pointer ${activeTabValue === i ? 'text-gray-600 bg-white border border-gray-300' : 'hover:border-gray-200'}`} style="color:#008AFE"
                         >{assumptionResult.name}</span
                     ></button
                 >
@@ -57,7 +57,7 @@
     </ul>
     {#each Array(num) as _, i}
         {#if activeTabValue == i}
-            <div class="box">
+            <div class="mb-2 p-2 border border-gray-300 rounded-b-lg border-t-0">
                 <div class="flex">
                     <div class="grow" />
                     <div style="flex-wrap: wrap;width:300px">
@@ -77,43 +77,3 @@
         {/if}
     {/each}
 </div>
-
-<style>
-    .box {
-        margin-bottom: 10px;
-        padding: 10px;
-        border: 1px solid #dee2e6;
-        border-radius: 0 0 0.5rem 0.5rem;
-        border-top: 0;
-    }
-    ul {
-        display: flex;
-        flex-wrap: wrap;
-        padding-left: 0;
-        margin-bottom: 0;
-        list-style: none;
-        border-bottom: 1px solid #dee2e6;
-    }
-    li {
-        margin-bottom: -1px;
-    }
-
-    span {
-        border: 1px solid transparent;
-        border-top-left-radius: 0.25rem;
-        border-top-right-radius: 0.25rem;
-        display: block;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-    }
-
-    span:hover {
-        border-color: #e9ecef #e9ecef #dee2e6;
-    }
-
-    li.active > button > span {
-        color: #495057;
-        background-color: #fff;
-        border-color: #dee2e6 #dee2e6 #fff;
-    }
-</style>

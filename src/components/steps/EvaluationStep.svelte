@@ -41,7 +41,7 @@
     let width: number = 450;
 </script>
 
-<div class="card overflow-x-scroll">
+<div class="overflow-y-scroll overflow-x-scroll" style="scrollbar-width: none">
     <div class="flex">
         <div class="grow" />
         <div class="place-content-center flex p-4" style="width:{width}px">
@@ -83,16 +83,3 @@
         <div class="grow" />
     </div>
 </div>
-
-<style>
-    .card {
-        overflow-y: scroll;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-
-    .card::-webkit-scrollbar {
-        width: 0;
-        height: 0;
-    }
-</style>
