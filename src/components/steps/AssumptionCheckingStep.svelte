@@ -75,6 +75,9 @@
             </div>
         </div>
         <div class="flex">
+            <Tooltip title="Hint">
+                <button><HintIcon /></button>
+            </Tooltip>
             <div class="grow" />
             <Tooltip title="Execute">
                 <button on:click={execute}><Done /></button>

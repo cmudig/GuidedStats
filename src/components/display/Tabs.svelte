@@ -1,7 +1,6 @@
 <script lang="ts">
     import _ from 'lodash';
     import embed from 'vega-embed';
-    import Hint from '../tooltip/Hint.svelte';
     import type { AssumptionResult } from '../../interface/interfaces';
     import type { Writable } from 'svelte/store';
     import { afterUpdate, getContext, onMount } from 'svelte';
@@ -74,7 +73,7 @@
                 <div class="flex">
                     <div class="grow" />
                     <div style="flex-wrap: wrap;width:300px">
-                        <Hint text={assumptionResults[activeTabValue].prompt} />
+                        {assumptionResults[activeTabValue].prompt}
                     </div>
                     <div class="grow" />
                 </div>

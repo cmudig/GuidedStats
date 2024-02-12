@@ -7,7 +7,7 @@
     } from '../viz/action/visualization';
     import Done from '../icons/Done.svelte';
     import embed from 'vega-embed';
-    import { getContext } from 'svelte';
+    import { afterUpdate, getContext } from 'svelte';
     import type { Writable } from 'svelte/store';
     import Table from '../display/Table.svelte';
     import HintIcon from '../icons/HintIcon.svelte';
@@ -17,6 +17,8 @@
 
     let width: number = 450;
     let active: boolean = false;
+
+    let group: string = 'Train';
 
     const exportingItem: Writable<string> = getContext('exportingItem');
 
@@ -29,20 +31,26 @@
     }
 
     //buttons
-    function renderViz(vizs: Visualization[], width: number) {
-        if (!_.isUndefined(vizs)) {
-            let viz = vizs[0];
-            let spec;
-            if (viz.vizType === 'scatter') {
-                spec = getScatterPlotStats(viz, width * 0.6);
-            } else if (viz.vizType === 'ttest') {
-                spec = getTTestPlotStats(viz, (width = width * 0.6));
+    function renderViz(
+        vizs: Visualization[],
+        width: number,
+        group: string = 'Train'
+    ) {
+        afterUpdate(() => {
+            if (!_.isUndefined(vizs)) {
+                let viz = vizs[0];
+                let spec;
+                if (viz.vizType === 'scatter') {
+                    spec = getScatterPlotStats(viz, (group = group));
+                } else if (viz.vizType === 'ttest') {
+                    spec = getTTestPlotStats(viz);
+                }
+                embed(`#vis-${stepIndex}`, spec, { actions: false });
             }
-            embed(`#vis-${stepIndex}`, spec, { actions: false });
-        }
+        });
     }
 
-    $: renderViz(step?.config?.viz, width);
+    $: renderViz(step?.config?.viz, width, group);
 </script>
 
 <div class="overflow-y-scroll overflow-x-scroll">
@@ -54,6 +62,21 @@
                 <div class="grow" />
                 <!-- Visualization -->
                 <div id="vis-{stepIndex}" style="width:220px" />
+                <!-- create a select menu to select Train or Test-->
+                {#if !_.isUndefined(step.config?.viz) && step.config?.viz.length > 0 && step.config?.viz[0]?.vizType === 'scatter'}
+                    <div class="p-2 flex">
+                        <div class="grow" />
+                        Select:
+                        <select
+                            class="rounded appearance-auto py-1 px-2 mx-1 bg-white border-solid border border-gray-300 focus:border-blue-500"
+                            bind:value={group}
+                        >
+                            <option value="Train">Train</option>
+                            <option value="Test">Test</option>
+                        </select>
+                        <div class="grow" />
+                    </div>
+                {/if}
                 <div class="grow" />
             </div>
             <div class="flex flex-col">
@@ -91,7 +114,7 @@
             <div class="grow" />
         </div>
         {#if active}
-            <div class="bg-gray-100 p-5 rounded-lg font-sans text-gray-800">
+            <div class="bg-gray-100 p-5 m-1 rounded-lg font-sans text-gray-800">
                 <h6 class="text-blue-700">Export Options</h6>
                 <p>
                     Here are the available commands for exporting various

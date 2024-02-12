@@ -56,21 +56,38 @@ export function getBoxplotStats(
 
 export function getScatterPlotStats(
     viz: Visualization,
+    group: string = '',
     width: number = 200,
     height: number = 120
 ) {
     let spec;
-    spec = {
-        $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
-        width: 'container',
-        height: height,
-        data: { values: viz.vizStats },
-        mark: { type: 'point', tooltip: true },
-        encoding: {
-            x: { field: 'x', title: viz.xLabel, type: 'quantitative' },
-            y: { field: 'y', title: viz.yLabel, type: 'quantitative' }
-        }
-    };
+    if (group.length === 0) {
+        spec = {
+            $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+            width: 'container',
+            height: height,
+            data: { values: viz.vizStats },
+            mark: { type: 'point', tooltip: true },
+            encoding: {
+                x: { field: 'x', title: viz.xLabel, type: 'quantitative' },
+                y: { field: 'y', title: viz.yLabel, type: 'quantitative' }
+            }
+        };
+    } else {
+        spec = {
+            $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+            width: 'container',
+            height: height,
+            data: {
+                values: viz.vizStats.filter((d: any) => d.group === group)
+            },
+            mark: { type: 'point', tooltip: true },
+            encoding: {
+                x: { field: 'x', title: viz.xLabel, type: 'quantitative' },
+                y: { field: 'y', title: viz.yLabel, type: 'quantitative' }
+            }
+        };
+    }
     return spec;
 }
 
