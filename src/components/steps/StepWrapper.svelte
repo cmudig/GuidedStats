@@ -34,10 +34,6 @@
 
     let isLast: boolean = $workflowInfo.steps.length - 1 === stepIndex;
 
-    const closeStepAfterExecution = (event: CustomEvent) => {
-        unfold(event.detail);
-    };
-
     function unfold(newIsShown: boolean) {
         let updatedInfo = deepCopy($workflowInfo);
         updatedInfo.steps[stepIndex].isShown = newIsShown;
@@ -93,45 +89,22 @@
                             <LoadDatasetStep {step} {stepIndex} />
                         {/if}
                         {#if step.stepType === 'VariableSelectionStep'}
-                            <VariableSelectionStep
-                                on:isShown={closeStepAfterExecution}
-                                {step}
-                                {stepIndex}
-                            />
+                            <VariableSelectionStep {step} {stepIndex} />
                         {/if}
                         {#if step.stepType === 'AssumptionCheckingStep'}
-                            <AssumptionCheckingStep
-                                on:isShown={closeStepAfterExecution}
-                                {step}
-                                {stepIndex}
-                            />
+                            <AssumptionCheckingStep {step} {stepIndex} />
                         {/if}
                         {#if step.stepType === 'TrainTestSplitStep'}
-                            <TrainTestSplitStep
-                                on:isShown={closeStepAfterExecution}
-                                {step}
-                                {stepIndex}
-                            />
+                            <TrainTestSplitStep {step} {stepIndex} />
                         {/if}
                         {#if step.stepType === 'ModelStep'}
-                            <ModelStep
-                                on:isShown={closeStepAfterExecution}
-                                {step}
-                                {stepIndex}
-                            />
+                            <ModelStep {step} {stepIndex} />
                         {/if}
                         {#if step.stepType === 'EvaluationStep'}
-                            <EvaluationStep
-                                {step}
-                                {stepIndex}
-                            />
+                            <EvaluationStep {step} {stepIndex} />
                         {/if}
                         {#if step.stepType === 'DataTransformationStep'}
-                            <DataTransformationStep
-                                on:isShown={closeStepAfterExecution}
-                                {step}
-                                {stepIndex}
-                            />
+                            <DataTransformationStep {step} {stepIndex} />
                         {/if}
                     </div>
                 {/if}

@@ -150,8 +150,6 @@
     }
 
     $: exportCodeToCell($exportCode);
-
-    $: console.log($workflowInfo);
 </script>
 
 <div class="bg-slate-50 rounded-xl w-full h-1/2 p-4 flex flex-row">

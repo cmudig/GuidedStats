@@ -2,19 +2,13 @@
     import _ from 'lodash';
     import type { Step, Workflow, Parameter } from '../../interface/interfaces';
     import type { Writable } from 'svelte/store';
-    import {
-        createEventDispatcher,
-        getContext,
-        type EventDispatcher
-    } from 'svelte';
+    import { getContext } from 'svelte';
     import { deepCopy } from '../../utils';
     import Tooltip from '../tooltip/Tooltip.svelte';
     import Done from '../icons/Done.svelte';
     import SelectionBoard from '../display/SelectionBoard.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
-
-    const dispatch: EventDispatcher<any> = createEventDispatcher();
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
     const builtinTransformations: Writable<Array<string>> = getContext(
@@ -69,20 +63,22 @@
         }
         info.steps[stepIndex].done = true;
         workflowInfo.set(info);
-        dispatch('isShown', false);
     }
 </script>
 
 <div class="flex flex-col h-full">
-    <div class="card place-content-center flex">
+    <div class="overflow-y-scroll place-content-center flex"
+    style="scrollbar-width: none"
+    >
         <div
-            class="parameter-container w-5/6 flex flex-col p-2 overflow-hidden bg-white border-2"
-        >
+            class="overflow-y-scroll w-5/6 flex flex-col p-2 overflow-hidden bg-white border-2"
+            style="scrollbar-width: none"
+            >
             <div class="flex">
                 <span class="p-2">Select the transformation: </span>
                 <div class="grow" />
                 <select
-                    class="m-2"
+                    class="m-2 rounded py-2 px-4 bg-white border-2 border-gray-300 focus:border-blue-500"
                     bind:value={transformationName}
                     on:change={updateTransformation}
                 >
@@ -97,7 +93,7 @@
                 <div class="grow" />
                 {#if !_.isUndefined(step?.config?.variableCandidates)}
                     <select
-                        class="m-2"
+                        class="m-2 rounded py-2 px-4 bg-white border-2 border-gray-300 focus:border-blue-500"
                         bind:value={variableName}
                         on:change={updateVariableResult}
                     >
@@ -124,37 +120,3 @@
         </Tooltip>
     </div>
 </div>
-
-<style>
-    .card {
-        overflow-y: scroll;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-
-    .card::-webkit-scrollbar {
-        width: 0;
-        height: 0;
-    }
-
-    .card span {
-        color: #333; /* Consistent text color */
-        padding: 10px;
-    }
-    .card select {
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        padding: 5px 10px;
-        background-color: white;
-    }
-    .card select:focus {
-        border-color: #007bff;
-        outline: none;
-    }
-
-    .parameter-container {
-        overflow-y: scroll;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-</style>
