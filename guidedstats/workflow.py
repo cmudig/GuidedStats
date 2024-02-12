@@ -218,15 +218,16 @@ class WorkFlow(tl.HasTraits):
         step.toExecute = False
         
         if self.stepList.index(self.currentStep) > stepIdx+1:
-            #rerun the workflow
-            self.stepList[stepIdx+1].done = False
-            self.stepList[stepIdx+1].isProceeding = True
-            self.callStepForward(self.stepList[stepIdx+1])
-            self.stepList[stepIdx+1].toExecute = True
-        elif self.stepList.index(self.currentStep) <= stepIdx+1:
-            self.currentStep = self.stepList[stepIdx+1]
-            self.currentStep.isProceeding = True
-            self.callStepForward(self.currentStep)
+            # reconstruct the steps after the current step
+            for i in range(stepIdx+1,len(self.stepList)):
+                newStep = self.constructStep(self.configFile[i])
+                self.stepList[i] = newStep
+                self.outputsStorage[self.stepList[i].stepId] = {}
+            self.steps = self.stepList
+
+        self.currentStep = self.stepList[stepIdx+1]
+        self.currentStep.isProceeding = True
+        self.callStepForward(self.currentStep)
 
     def callStepForward(self,step: Step):
         if step.succeedPreviousStepOutput:
@@ -253,7 +254,7 @@ class WorkFlow(tl.HasTraits):
             
             step.forward(**parameters)
              
-    def updateWorkflowInfo(self, change):
+    def updateWorkflowInfo(self, change = None):
         stepInfos = []
         for step in self.steps:
             stepInfo = {"stepId":step.stepId,"stepName":step.stepName,"stepType":step.stepType,"stepExplanation":step.stepExplanation,"done":step.done,"isProceeding":step.isProceeding,"toExecute":step.toExecute,"isShown":step.isShown,"config":step.config,"previousConfig":step.previousConfig,"groupConfig":step.groupConfig}
@@ -298,18 +299,21 @@ class WorkFlow(tl.HasTraits):
                 if step.config != configs:
                     step.config = configs
                     break
-                   
+    
+    def constructStep(self, stepInfo: dict):
+        cls = globals()[stepInfo["stepType"]]          
+        parameters = {param:value for param,value in stepInfo["stepConfig"].items() if param != "previousStepsConfigs"}
+        if stepInfo.get("stepExplanation") is not None:
+            parameters["stepExplanation"] = stepInfo["stepExplanation"]
+        step = cls(**parameters)
+        step.stepId = stepInfo["id"]
+        return step
+    
     def constructSteps(self):        
         # construct all Steps
-        for config in self.configFile:
-            cls = globals()[config["stepType"]]          
-            parameters = {param:value for param,value in config["stepConfig"].items() if param != "previousStepsConfigs"}
-            if config.get("stepExplanation") is not None:
-                parameters["stepExplanation"] = config["stepExplanation"]
-            step = cls(**parameters)
-            step.stepId = config["id"]
-            self.stepList.append(step)
-                
+        for stepInfo in self.configFile:
+            step = self.constructStep(stepInfo)
+            self.stepList.append(step)                
                         
     def constructFlows(self):
         for config in self.configFile:

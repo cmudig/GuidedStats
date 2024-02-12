@@ -123,7 +123,7 @@ class Step(tl.HasTraits):
 
     @abstractmethod
     # clear all inputs from UI
-    def clearUIinputs(self):
+    def clear(self):
         pass
 
 
@@ -195,10 +195,13 @@ class DataTransformationStep(SucccessorStep):
         self.selfDefinedTransformations = {}
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
 
-    def clearUIinputs(self):
+    def clear(self):
         self.config.pop("variableCandidates", None)
         self.config.pop("transformationName", None)
         self.config.pop("variableResults", None)
+        self.outputs = {}
+        self.done = False
+        
 
     @tl.observe("config")
     def setTransformation(self, change):
@@ -350,9 +353,16 @@ class VariableSelectionStep(GuidedStep):
 
         self.groupCandidates = None
 
-    def clearUIinputs(self):
+    def clear(self):
+        #clear all after forward
         self.config.pop("variableCandidates", None)
         self.config.pop("variableResults", None)
+        self.config.pop("groupCandidates", None)
+        self.config.pop("groupResults", None)
+        self.inputs = {}
+        self.outputs = {}
+        self.done = False
+        
 
     def findVariableCandidates(self, dataset: pd.DataFrame, referenceDataset: pd.DataFrame = None) -> pd.DataFrame:
         if self._compare:
@@ -368,27 +378,27 @@ class VariableSelectionStep(GuidedStep):
         else:
             candidateColumns = [{"name": col} for col in dataset.columns if dataset[col].dtype in QUANTITATIVE_DTYPES]
         self.changeConfig("variableCandidates", candidateColumns)
-        # self.workflow.onProceeding = False
 
     @tl.observe("config")
     def onObserveConfig(self, change):
-        hasGroupResults = "groupResults" in change["new"] and len(
-            change["new"]["groupResults"]) == 2
-        hasVariableResults = "variableResults" in change["new"] and len(
-            change["new"]["variableResults"]) != 0
+        newConfig = change["new"]
+        hasGroupResults = "groupResults" in newConfig and len(
+            newConfig["groupResults"]) == 2
+        hasVariableResults = "variableResults" in newConfig and len(
+            newConfig["variableResults"]) != 0
         if self.requireVarCategory:
             if hasGroupResults and hasVariableResults:  # 2. after selecting groupby options
                 selectedColumns = [result["name"]
-                                   for result in change["new"]["variableResults"]]
+                                   for result in newConfig["variableResults"]]
                 self.outputs = {}
                 for i in range(len(self.outputNames)):
-                    group = change["new"]["groupResults"][i]["name"]
+                    group = newConfig["groupResults"][i]["name"]
                     self.outputs[self.outputNames[i]
                                  ] = self.inputs["Y1"][self.inputs["dataset"][selectedColumns[0]] == group]
             else:
                 if hasVariableResults:  # 1. display groupby options
                     selectedColumns = [result["name"]
-                                       for result in change["new"]["variableResults"]]
+                                       for result in newConfig["variableResults"]]
                     values = getUniqueValues(
                         self.inputs["dataset"], selectedColumns[0])
                     options = [{"name": value} for value in values]
@@ -398,7 +408,7 @@ class VariableSelectionStep(GuidedStep):
         else:
             if hasVariableResults:
                 selectedColumns = [result["name"]
-                                   for result in change["new"]["variableResults"]]
+                                   for result in newConfig["variableResults"]]
                 subset = self.inputs["dataset"][selectedColumns]
                 if self._variableType == "independent variables":
                     self.outputs = {
@@ -440,7 +450,7 @@ class AssumptionCheckingStep(SucccessorStep):
             self.assumption = AssumptionWrapper()
             self.assumption.setAssumption(assumptionName)
 
-    def clearUIinputs(self):
+    def clear(self):
         self.config.pop("assumptionResults", None)
         self.config.pop("viz", None)
 
@@ -504,7 +514,7 @@ class TrainTestSplitStep(Step):
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
         self.previousSteps = kwargs.get("inputNames", None)
 
-    def clearUIinputs(self):
+    def clear(self):
         self.config.pop("trainSize", None)
 
     @tl.observe("toExecute")
@@ -551,7 +561,7 @@ class ModelStep(GuidedStep):
         if modelCandidates is not None:
             self.changeConfig("modelCandidates", modelCandidates)
 
-    def clearUIinputs(self):
+    def clear(self):
         self.config.pop("modelName", None)
 
     @tl.observe("toExecute")
@@ -599,7 +609,7 @@ class EvaluationStep(GuidedStep):
                 metricWrapper.setMetric(metricName)
                 self.metricWrappers.append(metricWrapper)
 
-    def clearUIinputs(self):
+    def clear(self):
         self.config.pop("modelParameters", None)
         self.config.pop("modelResults", None)
         self.config.pop("viz", None)
