@@ -16,6 +16,7 @@
     import type { Writable } from 'svelte/store';
     import Done from '../icons/Done.svelte';
     import Tabs from '../display/Tabs.svelte';
+    import HintIcon from '../icons/HintIcon.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
 
@@ -75,7 +76,7 @@
         </div>
         <div class="flex">
             <div class="grow" />
-            <Tooltip title="Done">
+            <Tooltip title="Execute">
                 <button on:click={execute}><Done /></button>
             </Tooltip>
         </div>
@@ -94,7 +95,10 @@
                             >Select the assumption you would like to check:
                         </span>
                         <div class="grow" />
-                        <select class="rounded py-2 px-4 bg-white border-2 border-gray-300 focus:border-blue-500" bind:value={assumptionName}>
+                        <select
+                            class="rounded py-2 px-4 bg-white border-solid border border-gray-300 focus:border-blue-500"
+                            bind:value={assumptionName}
+                        >
                             <option disabled selected value>
                                 -- option --
                             </option>
@@ -108,8 +112,11 @@
             </div>
             <div class="grow" />
             <div class="flex">
+                <Tooltip title="Hint">
+                    <button><HintIcon /></button>
+                </Tooltip>
                 <div class="grow" />
-                <Tooltip title="Execute">
+                <Tooltip title="Done">
                     <button on:click={updateAssumption}><Done /></button>
                 </Tooltip>
             </div>

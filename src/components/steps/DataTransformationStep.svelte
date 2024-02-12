@@ -7,6 +7,7 @@
     import Tooltip from '../tooltip/Tooltip.svelte';
     import Done from '../icons/Done.svelte';
     import SelectionBoard from '../display/SelectionBoard.svelte';
+    import HintIcon from '../icons/HintIcon.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
 
@@ -67,18 +68,19 @@
 </script>
 
 <div class="flex flex-col h-full">
-    <div class="overflow-y-scroll place-content-center flex"
-    style="scrollbar-width: none"
+    <div
+        class="overflow-y-scroll place-content-center flex"
+        style="scrollbar-width: none"
     >
         <div
             class="overflow-y-scroll w-5/6 flex flex-col p-2 overflow-hidden bg-white border-2"
             style="scrollbar-width: none"
-            >
+        >
             <div class="flex">
                 <span class="p-2">Select the transformation: </span>
                 <div class="grow" />
                 <select
-                    class="m-2 rounded py-2 px-4 bg-white border-2 border-gray-300 focus:border-blue-500"
+                    class="m-2 rounded py-2 px-4 bg-white border-solid border border-gray-300 focus:border-blue-500"
                     bind:value={transformationName}
                     on:change={updateTransformation}
                 >
@@ -93,7 +95,7 @@
                 <div class="grow" />
                 {#if !_.isUndefined(step?.config?.variableCandidates)}
                     <select
-                        class="m-2 rounded py-2 px-4 bg-white border-2 border-gray-300 focus:border-blue-500"
+                        class="m-2 rounded py-2 px-4 bg-white border-solid border border-gray-300 focus:border-blue-500"
                         bind:value={variableName}
                         on:change={updateVariableResult}
                     >
@@ -114,6 +116,9 @@
     </div>
     <div class="grow" />
     <div class="flex">
+        <Tooltip title="Hint">
+            <button><HintIcon /></button>
+        </Tooltip>
         <div class="grow" />
         <Tooltip title="Execute">
             <button on:click={execute}><Done /></button>

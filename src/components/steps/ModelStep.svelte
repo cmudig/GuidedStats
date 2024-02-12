@@ -7,6 +7,7 @@
     import Tooltip from '../tooltip/Tooltip.svelte';
     import Done from '../icons/Done.svelte';
     import SelectionBoard from '../display/SelectionBoard.svelte';
+    import HintIcon from '../icons/HintIcon.svelte';
 
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
@@ -50,15 +51,16 @@
 </script>
 
 <div class="flex flex-col h-full">
-    <div class="overflow-y-scroll place-content-center flex"
+    <div
+        class="overflow-y-scroll place-content-center flex"
         style="scrollbar-width: none"
     >
-        <div class="w-3/4 flex flex-col p-4 overflow-scroll bg-white border-2">
+        <div class="w-3/4 flex flex-col p-4 bg-white border-2">
             <div class="flex">
-                <span class="p-2">Model: </span>
+                <span class="p-1">Model: </span>
                 <div class="grow" />
                 <select
-                    class="m-2 rounded py-2 px-4 bg-white border-2 border-gray-300 focus:border-blue-500"
+                    class="rounded appearance-auto py-1 px-2 bg-white border-solid border border-gray-300 focus:border-blue-500"
                     bind:value={modelName}
                     on:change={updateModelName}
                 >
@@ -76,6 +78,9 @@
     </div>
     <div class="grow" />
     <div class="flex">
+        <Tooltip title="Hint">
+            <button><HintIcon /></button>
+        </Tooltip>
         <div class="grow" />
         <Tooltip title="Execute">
             <button on:click={execute}><Done /></button>

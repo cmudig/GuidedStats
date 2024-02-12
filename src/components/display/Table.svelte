@@ -6,8 +6,8 @@
     export let data: Parameter[] = undefined;
 </script>
 
-<table class="border-collapse divide-y divide-gray-200">
-    <thead class="bg-green-600 font-bold">
+<table class="border-collapse divide-y divide-gray-200 text-center">
+    <thead class="text-white bg-green-600 font-bold">
         <tr>
             {#if !_.isUndefined(headers)}
                 {#each headers as header}

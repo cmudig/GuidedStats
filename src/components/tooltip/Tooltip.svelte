@@ -29,7 +29,7 @@
 {#if isHovered}
     <div
         style="top: {y}px; left: {x}px;"
-        class="absolute border border-gray-300 bg-white shadow p-1 rounded text-black opacity-100"
+        class="absolute border border-gray-300 bg-white shadow px-2 py-1 rounded text-black opacity-100"
     >
         {title}
     </div>

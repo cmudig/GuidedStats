@@ -4,7 +4,7 @@
     import Hint from '../tooltip/Hint.svelte';
     import type { AssumptionResult } from '../../interface/interfaces';
     import type { Writable } from 'svelte/store';
-    import { afterUpdate, getContext } from 'svelte';
+    import { afterUpdate, getContext, onMount } from 'svelte';
     export let num: number = undefined;
     export let stepIndex: number = undefined;
     export let assumptionResults: AssumptionResult[] = undefined;
@@ -22,17 +22,21 @@
 
     function updateChart(specs: Array<any>, activeTabValue: number) {
         if (!_.isUndefined(specs)) {
-            afterUpdate(() => {
-                embed(
-                    `#vis-${$serial}-${stepIndex}-${activeTabValue}`,
-                    specs[activeTabValue],
-                    { actions: false }
-                );
-            });
+            embed(
+                `#vis-${$serial}-${stepIndex}-${activeTabValue}`,
+                specs[activeTabValue],
+                { actions: false }
+            );
         }
     }
 
-    $: updateChart(specs, activeTabValue);
+    onMount(() => {
+        updateChart(specs, activeTabValue);
+    });
+
+    afterUpdate(() => {
+        updateChart(specs, activeTabValue);
+    });
 
     const handleClick = tabValue => () => (activeTabValue = tabValue);
 
@@ -46,10 +50,17 @@
 <div class="flex-col p-2 w-3/4">
     <ul class="flex flex-wrap list-none pl-0 mb-0 border-b border-gray-300">
         {#each assumptionResults as assumptionResult, i}
-            <li class={activeTabValue === i ? 'active' : ''}>
+            <li>
                 <button on:click={handleClick(i)}
-                    ><span class={`font-bold rounded-t-md block py-2 px-4 cursor-pointer ${activeTabValue === i ? 'text-gray-600 bg-white border border-gray-300' : 'hover:border-gray-200'}`} style="color:#008AFE"
-                        >{assumptionResult.name}</span
+                    ><span
+                        class={`font-bold rounded-t-md block py-2 px-4 cursor-pointer ${
+                            activeTabValue === i
+                                ? 'text-gray-600 bg-white border border-b-0 border-gray-300'
+                                : 'hover:border-gray-200'
+                        }`}
+                        style={activeTabValue === i
+                            ? ' margin-bottom:-1px'
+                            : ''}>{assumptionResult.name}</span
                     ></button
                 >
             </li>
@@ -57,7 +68,9 @@
     </ul>
     {#each Array(num) as _, i}
         {#if activeTabValue == i}
-            <div class="mb-2 p-2 border border-gray-300 rounded-b-lg border-t-0">
+            <div
+                class="mb-2 p-2 border border-gray-300 rounded-b-lg border-t-0"
+            >
                 <div class="flex">
                     <div class="grow" />
                     <div style="flex-wrap: wrap;width:300px">

@@ -1,7 +1,7 @@
 <!-- Copyright: CC Attribution License https://www.svgrepo.com/svg/533720/circle-exclamation -->
 <script lang="ts">
-    export let width: string = '1em';
-    export let height: string = '1em';
+    export let width: string = '1.5em';
+    export let height: string = '1.5em';
     export let fill: string = '#3276c3';
 </script>
 

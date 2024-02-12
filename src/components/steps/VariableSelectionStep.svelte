@@ -7,6 +7,7 @@
     import Done from '../icons/Done.svelte';
     import Tooltip from '../tooltip/Tooltip.svelte';
     import Selection from '../display/Selection.svelte';
+    import HintIcon from '../icons/HintIcon.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
 
@@ -122,6 +123,9 @@
     </div>
     <div class="grow" />
     <div class="flex">
+        <Tooltip title="Hint">
+            <button><HintIcon /></button>
+        </Tooltip>
         <div class="grow" />
         <Tooltip title="Execute">
             <button on:click={execute}><Done /></button>

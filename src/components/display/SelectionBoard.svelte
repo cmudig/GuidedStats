@@ -27,7 +27,7 @@
                         />
                     {:else}
                         <select
-                            class="m-2 rounded py-2 px-4 bg-white border-2 border-gray-300 focus:border-blue-500"
+                            class="m-2 rounded py-2 px-4 bg-white border-solid border border-gray-300 focus:border-blue-500"
                             on:change={event =>
                                 handleInputChange(
                                     parameter.name,
