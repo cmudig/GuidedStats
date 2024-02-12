@@ -153,7 +153,10 @@
 </script>
 
 <div class="bg-slate-50 rounded-xl w-full h-1/2 p-4 flex flex-row">
-    <div bind:clientHeight={height} class="w-1/4 h-full mr-2 float-left flex flex-col">
+    <div
+        bind:clientHeight={height}
+        class="w-1/4 h-full mr-2 float-left flex flex-col"
+    >
         <WorkflowSelectionPanel
             workflows={$builtinWorkflows}
             on:message={getWorkflow}
