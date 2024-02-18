@@ -376,7 +376,12 @@ class VariableSelectionStep(GuidedStep):
                 candidateColumns = self.compare(
                     dataset, dataset.columns, self.candidateNum)
         else:
-            candidateColumns = [{"name": col} for col in dataset.columns if dataset[col].dtype in QUANTITATIVE_DTYPES]
+            if self.requireVarCategory:
+                candidateColumns = [{"name": col} for col in dataset.columns]
+            else:
+                candidateColumns = [{"name": col}
+                                    for col in dataset.columns if dataset[col].dtype in QUANTITATIVE_DTYPES]
+            
         self.changeConfig("variableCandidates", candidateColumns)
 
     @tl.observe("config")

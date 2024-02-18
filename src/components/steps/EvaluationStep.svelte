@@ -79,6 +79,7 @@
                 {/if}
                 <div class="grow" />
             </div>
+            <div class="grow" />
             <div class="flex flex-col">
                 {#if !_.isUndefined(step?.config?.modelResults) && step?.config?.modelResults.length > 0}
                     <div class="flex">

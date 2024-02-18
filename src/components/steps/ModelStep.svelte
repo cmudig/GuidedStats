@@ -56,7 +56,7 @@
         style="scrollbar-width: none"
     >
         <div class="w-3/4 flex flex-col p-4 bg-white border-2">
-            <div class="flex">
+            <div class="flex mb-2">
                 <span class="p-1">Model: </span>
                 <div class="grow" />
                 <select

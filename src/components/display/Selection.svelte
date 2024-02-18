@@ -32,7 +32,7 @@
 
 <MaterialApp>
     <div
-        class="p-2 m-2 overflow-hidden overflow-y-scroll bg-white border-2 flex flex-col"
+        class="p-2 m-2 overflow-hidden overflow-y-scroll bg-white border-2 flex flex-col max-h-96"
     >
         {#if !_.isUndefined(options)}
             {#each options as option}

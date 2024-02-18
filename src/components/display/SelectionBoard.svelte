@@ -8,10 +8,10 @@
 </script>
 
 {#if !_.isUndefined(parameters)}
-    <div class="bg-white border-2 border-gray-300">
+    <div class="bg-white">
         {#each parameters as parameter}
-            <div class="flex items-center mb-2 bg-white border-2 border-gray-300">
-                <span class="p-2"
+            <div class="flex items-center mb-2 bg-white">
+                <span class="p-1"
                     >{_.isUndefined(parameter.displayName)
                         ? parameter.name
                         : parameter.displayName}:
@@ -27,7 +27,7 @@
                         />
                     {:else}
                         <select
-                            class="m-2 rounded py-2 px-4 bg-white border-solid border border-gray-300 focus:border-blue-500"
+                            class="rounded py-1 px-2 bg-white appearance-auto border-solid border border-gray-300 focus:border-blue-500"
                             on:change={event =>
                                 handleInputChange(
                                     parameter.name,
@@ -46,7 +46,7 @@
                     {/if}
                 {:else}
                     <input
-                        class="parameter-input m-2"
+                        class="rounded py-1 px-2 bg-white appearance-auto border-solid border border-gray-300 focus:border-blue-500"
                         type="number"
                         on:input={event =>
                             handleInputChange(
