@@ -1,6 +1,10 @@
 <script lang="ts">
     import _ from 'lodash';
-    import type { Step, Visualization } from '../../interface/interfaces';
+    import type {
+        Step,
+        Visualization,
+        ModelResult
+    } from '../../interface/interfaces';
     import {
         getScatterPlotStats,
         getTTestPlotStats
@@ -19,6 +23,7 @@
     let active: boolean = false;
 
     let group: string = 'Train';
+    let modelResults: ModelResult[];
 
     const exportingItem: Writable<string> = getContext('exportingItem');
 
@@ -50,7 +55,25 @@
         });
     }
 
+    function renderModelResults(
+        results: ModelResult[],
+        group: string = 'Train'
+    ) {
+        afterUpdate(() => {
+            if (!_.isUndefined(results)) {
+                if (!_.isUndefined(results[0]?.group)) {
+                    console.log(results);
+                    modelResults = results.filter(d => d.group === group);
+                } else {
+                    modelResults = results;
+                }
+            }
+        });
+    }
+
     $: renderViz(step?.config?.viz, width, group);
+
+    $: renderModelResults(step?.config?.modelResults, group);
 </script>
 
 <div class="overflow-y-scroll overflow-x-scroll">
@@ -66,7 +89,7 @@
                 {#if !_.isUndefined(step.config?.viz) && step.config?.viz.length > 0 && step.config?.viz[0]?.vizType === 'scatter'}
                     <div class="p-2 flex">
                         <div class="grow" />
-                        Select:
+                        <span class="py-1 px-2">Select:</span>
                         <select
                             class="rounded appearance-auto py-1 px-2 mx-1 bg-white border-solid border border-gray-300 focus:border-blue-500"
                             bind:value={group}
@@ -81,14 +104,14 @@
             </div>
             <div class="grow" />
             <div class="flex flex-col">
-                {#if !_.isUndefined(step?.config?.modelResults) && step?.config?.modelResults.length > 0}
+                {#if !_.isUndefined(modelResults) && modelResults.length > 0}
                     <div class="flex">
                         <div class="grow" />
                         <div class="p-2">
                             <Table
                                 headers={['Metric', 'Score']}
                                 keys={['name', 'score']}
-                                data={step?.config?.modelResults}
+                                data={modelResults}
                             />
                         </div>
                         <div class="grow" />

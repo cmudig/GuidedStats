@@ -18,6 +18,12 @@ export type Model = {
     parameters: Parameter[];
 };
 
+export type ModelResult = {
+    name: string;
+    score: number;
+    group?: string;
+};
+
 export type Transformation = {
     name: string;
     parameters: Parameter[];
@@ -69,7 +75,7 @@ export type StepConfig = {
     modelName?: string;
     modelParameters?: Parameter[];
     modelCandidates?: Model[];
-    modelResults?: Option[];
+    modelResults?: ModelResult[];
     viz?: Visualization[];
     evaluationMetricNames?: string[];
 };

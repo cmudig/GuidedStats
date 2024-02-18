@@ -100,7 +100,7 @@ class Step(tl.HasTraits):
     @abstractmethod
     def onObserveConfig(self, change):
         pass
-    
+
     @abstractmethod
     def onObserveToExecute(self, change):
         pass
@@ -201,7 +201,6 @@ class DataTransformationStep(SucccessorStep):
         self.config.pop("variableResults", None)
         self.outputs = {}
         self.done = False
-        
 
     @tl.observe("config")
     def setTransformation(self, change):
@@ -354,7 +353,7 @@ class VariableSelectionStep(GuidedStep):
         self.groupCandidates = None
 
     def clear(self):
-        #clear all after forward
+        # clear all after forward
         self.config.pop("variableCandidates", None)
         self.config.pop("variableResults", None)
         self.config.pop("groupCandidates", None)
@@ -362,7 +361,6 @@ class VariableSelectionStep(GuidedStep):
         self.inputs = {}
         self.outputs = {}
         self.done = False
-        
 
     def findVariableCandidates(self, dataset: pd.DataFrame, referenceDataset: pd.DataFrame = None) -> pd.DataFrame:
         if self._compare:
@@ -381,7 +379,7 @@ class VariableSelectionStep(GuidedStep):
             else:
                 candidateColumns = [{"name": col}
                                     for col in dataset.columns if dataset[col].dtype in QUANTITATIVE_DTYPES]
-            
+
         self.changeConfig("variableCandidates", candidateColumns)
 
     @tl.observe("config")
@@ -662,19 +660,32 @@ class EvaluationStep(GuidedStep):
         # viz
         if self.inputs["model"]._canPredict:
             if self.visType is not None and self.visType == "residual":
-                
+                modelResults = []
+
                 X_wconstant = sm.add_constant(self.inputs["XTest"])
                 Y_hat = self.inputs["results"].predict(X_wconstant)
                 Y_hat = Y_hat.to_numpy().reshape((-1))
                 Y_true = self.inputs["yTest"].to_numpy().reshape((-1))
-                vizStats = VIZ[self.visType](Y_hat, Y_true, group = "Test")
+                vizStats = VIZ[self.visType](Y_hat, Y_true, group="Test")
+
+                for metric in self.metricWrappers:
+                    outputs = metric.compute(Y_true, Y_hat)
+                    modelResults.append(
+                        {"name": metric._metricName, "score": round(outputs["statistics"], 4), "group": "Test"})
 
                 X_wconstant = sm.add_constant(self.inputs["XTrain"])
                 Y_hat = self.inputs["results"].predict(X_wconstant)
                 Y_hat = Y_hat.to_numpy().reshape((-1))
                 Y_true = self.inputs["yTrain"].to_numpy().reshape((-1))
-                vizStats.extend(VIZ[self.visType](Y_hat, Y_true, group = "Train"))
-                
+                vizStats.extend(VIZ[self.visType](
+                    Y_hat, Y_true, group="Train"))
+
+                for metric in self.metricWrappers:
+                    outputs = metric.compute(Y_true, Y_hat)
+                    modelResults.append(
+                        {"name": metric._metricName, "score": round(outputs["statistics"], 4), "group": "Train"})
+                self.changeConfig("modelResults", modelResults)
+
                 viz = {
                     "vizType": "scatter",
                     "xLabel": "Predicted {}".format(self.inputs["yTest"].columns[0]),
@@ -705,12 +716,4 @@ class EvaluationStep(GuidedStep):
                 vizs = [viz]
                 self.changeConfig("viz", vizs)
 
-        modelResults = []
-        # TBC, decide what to display
-        for metric in self.metricWrappers:
-            outputs = metric.compute(Y_true, Y_hat)
-            modelResults.append(
-                {"name": metric._metricName, "score": round(outputs["statistics"], 4)})
-
-        self.changeConfig("modelResults", modelResults)
         self.done = True
