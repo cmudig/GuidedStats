@@ -77,7 +77,8 @@ def mse(y_true,y_pred,*args):
     
     
 def r2(y_true,y_pred,*args):
-    r2_score(y_true,y_pred)
+    stats = r2_score(y_true,y_pred)
+    return (stats,)
     
 def VIF(exog:pd.DataFrame,design_matrix:pd.DataFrame,*args):
     #find the index of exog in design_matrix

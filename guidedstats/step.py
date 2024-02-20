@@ -661,17 +661,19 @@ class EvaluationStep(GuidedStep):
         if self.inputs["model"]._canPredict:
             if self.visType is not None and self.visType == "residual":
                 modelResults = []
-
+                
                 X_wconstant = sm.add_constant(self.inputs["XTest"])
                 Y_hat = self.inputs["results"].predict(X_wconstant)
                 Y_hat = Y_hat.to_numpy().reshape((-1))
                 Y_true = self.inputs["yTest"].to_numpy().reshape((-1))
+                
                 vizStats = VIZ[self.visType](Y_hat, Y_true, group="Test")
-
-                for metric in self.metricWrappers:
-                    outputs = metric.compute(Y_true, Y_hat)
-                    modelResults.append(
-                        {"name": metric._metricName, "score": round(outputs["statistics"], 4), "group": "Test"})
+                
+                if len(self.inputs["yTest"]) != 0:
+                    for metric in self.metricWrappers:
+                        outputs = metric.compute(Y_true, Y_hat)
+                        modelResults.append(
+                            {"name": metric._metricName, "score": round(outputs["statistics"], 4), "group": "Test"})
 
                 X_wconstant = sm.add_constant(self.inputs["XTrain"])
                 Y_hat = self.inputs["results"].predict(X_wconstant)
@@ -679,11 +681,13 @@ class EvaluationStep(GuidedStep):
                 Y_true = self.inputs["yTrain"].to_numpy().reshape((-1))
                 vizStats.extend(VIZ[self.visType](
                     Y_hat, Y_true, group="Train"))
-
-                for metric in self.metricWrappers:
-                    outputs = metric.compute(Y_true, Y_hat)
-                    modelResults.append(
-                        {"name": metric._metricName, "score": round(outputs["statistics"], 4), "group": "Train"})
+                
+                if len(self.inputs["yTrain"]) != 0:
+                    for metric in self.metricWrappers:
+                        outputs = metric.compute(Y_true, Y_hat)
+                        modelResults.append(
+                            {"name": metric._metricName, "score": round(outputs["statistics"], 4), "group": "Train"})
+                        
                 self.changeConfig("modelResults", modelResults)
 
                 viz = {

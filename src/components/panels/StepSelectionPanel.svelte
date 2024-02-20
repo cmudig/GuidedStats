@@ -18,6 +18,7 @@
     class={'grow bg-white w-full mt-2 border-2 rounded-lg overflow-y-scroll' +
         ($onSelectingStep ? ' ring-4' : '')}
     style="scrollbar-width: none"
+    aria-disabled="true"
 >
     <div class="flex p-2">
         <span class="font-bold">Step</span>
@@ -31,7 +32,7 @@
     <div class="p-2">
         {#each steps as step}
             <button
-                class="w-full flex px-2 py-1 hover:bg-slate-100 overflow-hidden"
+                class="w-full flex px-2 py-1 overflow-hidden"
                 on:click={() => {
                     newStepType.set(step);
                     onSelectingStep.set(false);

@@ -7,12 +7,14 @@
     import { afterUpdate, getContext } from 'svelte';
     import Done from '../icons/Done.svelte';
     import HintIcon from '../icons/HintIcon.svelte';
+    import Explanation from '../explanation/Explanation.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
     let percentage: number = 80;
+    let active = false;
 
     // update percentage value before adjusting the slider
     afterUpdate(() => {
@@ -56,10 +58,20 @@
             </div>
         </div>
     </div>
+    {#if active}
+    <Explanation>
+        <div slot="step">
+            <span>{step?.stepExplanation}</span>
+        </div>
+    </Explanation>
+{/if}
     <div class="grow" />
     <div class="flex">
         <Tooltip title="Hint">
-            <button><HintIcon /></button>
+            <button
+                on:click={() => {
+                    active = !active;
+                }}><HintIcon /></button>
         </Tooltip>
         <div class="grow" />
         <Tooltip title="Execute">

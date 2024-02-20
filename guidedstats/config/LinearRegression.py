@@ -1,6 +1,9 @@
 _regressionConfig = [
     {"id": 0,
      "stepType": "LoadDatasetStep",  # for workflow
+     "stepExplanation": "Load the dataset that will be used for the regression analysis. \
+       This is the first step in the workflow and is essential for \
+         initializing the dataset for subsequent steps.",
      "stepConfig":  # for step itself
      {
          "stepName": "Load Dataset",
@@ -8,6 +11,8 @@ _regressionConfig = [
      },
     {"id": 1,
      "stepType": "VariableSelectionStep",
+     "stepExplanation": "Select the dependent variable (also known as the target variable) from the dataset. \
+       This variable is what the model will try to predict based on the independent variables.",
      "stepConfig":  # This is for the initialization of Steps
      {"stepName": "Select Dependent Variable",
       "outputNames": ["Y"],
@@ -18,6 +23,8 @@ _regressionConfig = [
       }},
     {"id": 2,
      "stepType": "AssumptionCheckingStep",
+     "stepExplanation": "Check for outliers in the dependent variable. \
+       Outliers can significantly affect the regression model, and this step helps to identify and handle them appropriately.",
      "stepConfig":
      {"stepName": "Check Outliers",
       "inputNames": ["Y"],
@@ -29,6 +36,9 @@ _regressionConfig = [
      },
     {"id": 3,
      "stepType": "VariableSelectionStep",
+     "stepExplanation": "Select the independent variables (also known as the predictors or features) \
+       that will be used to predict the dependent variable. \
+         This step involves choosing the relevant variables based on certain criteria.",
      "stepConfig":
      {"stepName": "Select Independent Variables",
       "outputNames": ["X"],
@@ -41,6 +51,8 @@ _regressionConfig = [
       }},
     {"id": 4,
      "stepType": "AssumptionCheckingStep",
+     "stepExplanation": "Check for outliers in the independent variables. \
+       Outliers can significantly affect the regression model, and this step helps to identify and handle them appropriately.",
      "stepConfig":
      {"stepName": "Check Outliers",
       "assumptionName": "outlier",
@@ -52,6 +64,9 @@ _regressionConfig = [
      },
     {"id": 5,
      "stepType": "AssumptionCheckingStep",
+     "stepExplanation": "Check for multicollinearity among the independent variables. \
+       Multicollinearity occurs when two or more independent variables are highly correlated, \
+         which can affect the stability and interpretation of the regression model.",
      "stepConfig":
      {"stepName": "Check Multicollinearity",
       "assumptionName": "multicollinearity",
@@ -63,6 +78,9 @@ _regressionConfig = [
      },
     {"id": 6,
      "stepType": "TrainTestSplitStep",
+     "stepExplanation": "Split the dataset into training and testing sets. \
+       The training set is used to train the regression model, \
+         while the testing set is used to evaluate its generalizability performance.",
      "stepConfig":
      {"stepName": "Do train test split",
       "inputNames": ["X", "Y"],
@@ -70,6 +88,7 @@ _regressionConfig = [
      },
     {"id": 7,
      "stepType": "ModelStep",
+     "stepExplanation": "Train the regression model using the selected independent variables and the dependent variable.",
      "stepConfig":
      {"stepName": "Train model",
       "inputNames": ["XTrain", "yTrain"],
@@ -80,10 +99,12 @@ _regressionConfig = [
       }},
     {"id": 8,
      "stepType": "EvaluationStep",
+     "stepExplanation": "Evaluate the performance of the trained regression model using the testing set. \
+       This step involves calculating evaluation metrics like Mean Squared Error (MSE) and R-squared (R2) to assess the model's accuracy and goodness of fit.",
      "stepConfig":
      {"stepName": "Evaluate the model",
       "inputNames": ["model", "results", "XTest", "yTest", "XTrain", "yTrain"],
       "visType": "residual",
-      "evaluationMetricNames": ["mse"],
+      "evaluationMetricNames": ["mse", "r2"],
       }},
 ]

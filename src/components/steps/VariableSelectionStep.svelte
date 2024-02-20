@@ -8,6 +8,8 @@
     import Tooltip from '../tooltip/Tooltip.svelte';
     import Selection from '../display/Selection.svelte';
     import HintIcon from '../icons/HintIcon.svelte';
+    import Explanation from '../explanation/Explanation.svelte';
+    import VariableSelectionExp from '../explanation/VariableSelectionExp.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
 
@@ -15,6 +17,7 @@
 
     let variableResults = new Array<string>();
     let groupResults = new Array<string>();
+    let active = false;
 
     function handleInputChange(parameterName: string, value: Option[]) {
         if (parameterName === 'variableResults') {
@@ -72,18 +75,18 @@
             >
                 <div>
                     {#if !_.isUndefined(step.config.metric)}
-                        We find these variables have high {step.config.metric} with
-                        the target variable
+                        The below variables are ranked by their {step.config
+                            .metric} correlation with the target variable
                         <span class="font-bold" style="color:#008AFE"
                             >{step.config.referenceVariables?.reduce(
                                 (previousValue, currentValue) =>
                                     previousValue + ', ' + currentValue
                             )}</span
-                        >:
+                        >. Please select one or more as independent
+                        variables(shift click to select multiple variables)
                     {:else}
-                        Please select <span
-                            class="font-bold"
-                            style="color:#008AFE"
+                        Please select {step.config.variableNum}
+                        <span class="font-bold" style="color:#008AFE"
                             >{step.config.variableName}</span
                         > from below:
                     {/if}
@@ -121,10 +124,20 @@
             {/if}
         </div>
     </div>
+    {#if active}
+        <Explanation>
+            <div slot="step">{step?.stepExplanation}</div>
+            <VariableSelectionExp slot="concept" />
+        </Explanation>
+    {/if}
     <div class="grow" />
     <div class="flex">
         <Tooltip title="Hint">
-            <button><HintIcon /></button>
+            <button
+                on:click={() => {
+                    active = !active;
+                }}><HintIcon /></button
+            >
         </Tooltip>
         <div class="grow" />
         <Tooltip title="Execute">

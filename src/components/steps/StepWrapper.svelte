@@ -71,7 +71,6 @@
                         >Step {stepIndex + 1}: {step.stepName}</span
                     ></button
                 >
-                <WordWithHint explanation={step?.stepExplanation} />
                 <div class="grow" />
                 <button on:click={addStep}>
                     <Tooltip title="Add Step Below"><AddIcon /></Tooltip>
