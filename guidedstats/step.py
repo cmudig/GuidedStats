@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
-from .utils import checkPRange, getUniqueValues
+from .utils import CATEGORICAL_DTYPES, checkPRange, getUniqueValues
 from .metrics import MetricWrapper
 from .assumptions import AssumptionWrapper
 from .transformations import TransformationWrapper
@@ -375,7 +375,7 @@ class VariableSelectionStep(GuidedStep):
                     dataset, dataset.columns, self.candidateNum)
         else:
             if self.requireVarCategory:
-                candidateColumns = [{"name": col} for col in dataset.columns]
+                candidateColumns = [{"name": col} for col in dataset.columns if dataset[col].dtype in CATEGORICAL_DTYPES]
             else:
                 candidateColumns = [{"name": col}
                                     for col in dataset.columns if dataset[col].dtype in QUANTITATIVE_DTYPES]
@@ -624,21 +624,17 @@ class EvaluationStep(GuidedStep):
 
         # update model parameters
         if self.inputs["model"]._modelName in ("Simple Linear Regression", "Ridge Regression", "Lasso Regression"):
-            if hasattr(self.inputs["results"], "params"):
-                params = self.inputs["results"].params
-            if hasattr(self.inputs["results"], "pvalues"):
-                p_values = self.inputs["results"].pvalues
+            params = self.inputs["results"].getStat("params")
+            p_values = self.inputs["results"].getStat("pvalues")
         elif self.inputs["model"]._modelName == "T Test":
-            if self.inputs["results"].getStat("tstat"):
-                params = [self.inputs["results"].getStat("tstat")]
-            if self.inputs["results"].getStat("pvalue"):
-                p_values = [self.inputs["results"].getStat("pvalue")]
+            params = self.inputs["results"].getStat("tstat")
+            p_values = self.inputs["results"].getStat("pvalue")
         if len(params) != 0:
             rows = []
             if self.inputs["model"]._modelName in ("Simple Linear Regression", "Ridge Regression", "Lasso Regression"):
                 columns = ["const"] + list(self.inputs["XTest"].columns)
                 for i, col in enumerate(columns):
-                    if hasattr(self.inputs["results"], "pvalues"):
+                    if p_values is not None:
                         rows.append({"name": col, "value": round(
                             params[i], 4), "pvalue": round(p_values[i], 6)})
                     else:
@@ -646,24 +642,17 @@ class EvaluationStep(GuidedStep):
                             {"name": col, "value": round(params[i], 4)})
                 self.changeConfig("modelParameters", rows)
             elif self.inputs["model"]._modelName == "T Test":
-                columns = list(["T Statistic"])
-                for i, col in enumerate(columns):
-                    if hasattr(self.inputs["results"], "pvalues"):
-                        rows.append({"name": col, "value": round(
-                            params[i], 4), "pvalue": round(p_values[i], 6)})
-                    else:
-                        rows.append(
-                            {"name": col, "value": round(params[i], 4)})
+                rows.append({"name": "T Statistic", "value": round(
+                    params, 4), "pvalue": round(p_values, 6)})
             self.changeConfig("modelParameters", rows)
 
-        # TBC, apply the test dataset
         # viz
         if self.inputs["model"]._canPredict:
             if self.visType is not None and self.visType == "residual":
                 modelResults = []
                 
                 X_wconstant = sm.add_constant(self.inputs["XTest"])
-                Y_hat = self.inputs["results"].predict(X_wconstant)
+                Y_hat = self.inputs["model"].predict(X_wconstant)
                 Y_hat = Y_hat.to_numpy().reshape((-1))
                 Y_true = self.inputs["yTest"].to_numpy().reshape((-1))
                 
@@ -676,7 +665,7 @@ class EvaluationStep(GuidedStep):
                             {"name": metric._metricName, "score": round(outputs["statistics"], 4), "group": "Test"})
 
                 X_wconstant = sm.add_constant(self.inputs["XTrain"])
-                Y_hat = self.inputs["results"].predict(X_wconstant)
+                Y_hat = self.inputs["model"].predict(X_wconstant)
                 Y_hat = Y_hat.to_numpy().reshape((-1))
                 Y_true = self.inputs["yTrain"].to_numpy().reshape((-1))
                 vizStats.extend(VIZ[self.visType](

@@ -85,6 +85,17 @@
                     />
                     <div class="grow" />
                 </div>
+                <div class="p-2 flex">
+                    <div class="grow" />
+                    <span class="py-1 px-2">Select Data Transformation If Applicable:</span>
+                    <select
+                        class="rounded appearance-auto py-1 px-2 mx-1 bg-white border-solid border border-gray-300 focus:border-blue-500"
+                    >
+                        <option value="Train">Train</option>
+                        <option value="Test">Test</option>
+                    </select>
+                    <div class="grow" />
+                </div>
             </div>
         {/if}
     {/each}

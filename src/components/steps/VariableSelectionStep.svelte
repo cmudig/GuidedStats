@@ -9,7 +9,8 @@
     import Selection from '../display/Selection.svelte';
     import HintIcon from '../icons/HintIcon.svelte';
     import Explanation from '../explanation/Explanation.svelte';
-    import VariableSelectionExp from '../explanation/VariableSelectionExp.svelte';
+    import LinearRegressionExp from '../explanation/LinearRegressionExp.svelte';
+    import TTestExp from '../explanation/TTestExp.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
 
@@ -108,7 +109,7 @@
             {#if !_.isUndefined(step?.config?.groupCandidates) && step.config.groupCandidates.length > 0}
                 <div class="transition duration-500 flex flex-col w-1/2">
                     <div>
-                        Please select <span
+                        Please select 2 <span
                             class="font-bold"
                             style="color:#008AFE">groups</span
                         > from below:
@@ -125,10 +126,17 @@
         </div>
     </div>
     {#if active}
-        <Explanation>
-            <div slot="step">{step?.stepExplanation}</div>
-            <VariableSelectionExp slot="concept" />
-        </Explanation>
+        {#if $workflowInfo?.workflowName === 'Linear Regression'}
+            <Explanation>
+                <div slot="step">{step?.stepExplanation}</div>
+                <LinearRegressionExp slot="concept" />
+            </Explanation>
+        {:else if $workflowInfo?.workflowName === 'T Test'}
+            <Explanation>
+                <div slot="step">{step?.stepExplanation}</div>
+                <TTestExp slot="concept" />
+            </Explanation>
+        {/if}
     {/if}
     <div class="grow" />
     <div class="flex">

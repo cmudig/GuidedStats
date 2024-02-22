@@ -24,7 +24,10 @@ _regressionConfig = [
     {"id": 2,
      "stepType": "AssumptionCheckingStep",
      "stepExplanation": "Check for outliers in the dependent variable. \
-       Outliers can significantly affect the regression model, and this step helps to identify and handle them appropriately.",
+       Outliers can significantly affect the regression model, and this step helps to identify and handle them appropriately.\
+    One of the least squares assumptions is that large outliers are unlikely. \
+      Even if it seems like extreme observations have been recorded correctly, it is advisable to exclude \
+    them before estimating a model since OLS suffers from sensitivity to outliers.",
      "stepConfig":
      {"stepName": "Check Outliers",
       "inputNames": ["Y"],
@@ -52,7 +55,10 @@ _regressionConfig = [
     {"id": 4,
      "stepType": "AssumptionCheckingStep",
      "stepExplanation": "Check for outliers in the independent variables. \
-       Outliers can significantly affect the regression model, and this step helps to identify and handle them appropriately.",
+       Outliers can significantly affect the regression model, and this step helps to identify and handle them appropriately.\
+      One of the least squares assumptions is that large outliers are unlikely. \
+      Even if it seems like extreme observations have been recorded correctly, it is advisable to exclude \
+    them before estimating a model since OLS suffers from sensitivity to outliers.",
      "stepConfig":
      {"stepName": "Check Outliers",
       "assumptionName": "outlier",

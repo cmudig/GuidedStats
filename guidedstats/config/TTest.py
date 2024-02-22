@@ -1,6 +1,8 @@
 _ttestConfig = [
     {"id": 0,
      "stepType": "LoadDatasetStep",
+     "stepExplanation": "Initiate the analysis by loading the dataset to be used in the t-test. \
+         This initial step is crucial for setting up the data for the steps that follow.",
      "stepConfig":
      {
          "stepName": "Load Dataset",
@@ -8,6 +10,8 @@ _ttestConfig = [
      },
     {"id": 1,
      "stepType": "VariableSelectionStep",
+     "stepExplanation": "Identify the independent variable for the t-test.\
+         This variable is the focus of the analysis and the basis for comparison between groups.",
      "stepConfig":  # This is for the initialization of Steps
      {"stepName": "Select Independent Variable",
       "outputNames": ["Y1"],
@@ -18,6 +22,8 @@ _ttestConfig = [
       }},
     {"id": 2,
      "stepType": "AssumptionCheckingStep",
+      "stepExplanation": "Examine the data for outliers that could potentially skew the results.\
+          Outliers are extreme values that deviate from other observations in the dataset.",
      "stepConfig":
      {"stepName": "Check Outliers",
       "inputNames": ["Y1"],
@@ -29,6 +35,7 @@ _ttestConfig = [
      },
     {"id": 3,
      "stepType": "VariableSelectionStep",
+     "stepExplanation": "Select the group variable which categorizes data into groups for comparison. This step is about defining the groups that will be compared in the t-test.",
      "stepConfig":
      {"stepName": "Select Group Variable",
       "outputNames": ["Y1", "Y2"],
@@ -40,6 +47,7 @@ _ttestConfig = [
       }},
     {"id": 4,
      "stepType": "AssumptionCheckingStep",
+     "stepExplanation": "Assess the homogeneity of variances between the two groups using Levene's test.",
      "stepConfig":
      {"stepName": "Check Homogeneity of Variance",
       "inputNames": ["Y1", "Y2"],
@@ -52,7 +60,9 @@ _ttestConfig = [
     {
         "id": 5,
         "stepType": "AssumptionCheckingStep",
-        "stepExplanation": "Two independent samples t-Test requires the two groups have normal distributions. In practice, the method is robust to violations of the normal population assumption. This is especially true when both n1 and n2 are at least about 30, by the Central Limit Theorem.",
+        "stepExplanation": "Two independent samples t-Test requires the two groups have normal distributions. \
+            In practice, the method is robust to violations of the normal population assumption. \
+                This is especially true when both n1 and n2 are at least about 30, by the Central Limit Theorem.",
         "stepConfig":
         {"stepName": "Check Normality of the First Group",
          "inputNames": ["Y1"],
@@ -65,6 +75,8 @@ _ttestConfig = [
     {
         "id": 6,
         "stepType": "AssumptionCheckingStep",
+        "stepExplanation": "Check the normality of the second group's distribution. \
+            This step complements the previous normality check to ensure that both groups are suitable for the t-test analysis.",
         "stepConfig":
         {"stepName": "Check Normality of the Second Group",
          "inputNames": ["Y2"],
@@ -76,11 +88,13 @@ _ttestConfig = [
     },
     {"id": 7,
      "stepType": "ModelStep",
+     "stepExplanation": "Formulate the null and alternative hypotheses for the t-test and define the Type I Error (alpha).\
+         This step is crucial as it frames the statistical test and sets the significance level at which the null hypothesis will be tested against the alternative.",
      "stepConfig":
-     {"stepName": "State Hypothesis and Type I Error",
+     {"stepName": "State Hypothesis and Alpha Level",
       "inputNames": ["Y1", "Y2"],
       "modelCandidates": [{"name": "T Test",
-                           "parameters": [{"name": "alpha", "displayName": "Type I Error Rate"},
+                           "parameters": [{"name": "alpha", "displayName": "Alpha Level Rate"},
                                           {"name": "alternative", "displayName": "Alternative Hypothesis", "options": [
                                               {"name": "two-sided"}, {"name": "smaller"}, {"name": "larger"}]},
                                           {"name": "equal_var", "displayName": "Equal Variance", "options": [
@@ -90,6 +104,8 @@ _ttestConfig = [
       }},
     {"id": 8,
      "stepType": "EvaluationStep",
+     "stepExplanation": "Conduct the t-test to evaluate the statistical significance of the difference between the two groups.\
+         This step will compare the observed test statistic to the critical value determined by the Alpha Level rate, leading to a decision on the null hypothesis.",
      "stepConfig":
      {"stepName": "Evaluate the model",
       "inputNames": ["model", "results", "Y1", "Y2"],

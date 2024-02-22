@@ -78,12 +78,12 @@
             </div>
             <!-- The panel -->
             <div
-                class="grow {step.isShown ? '' : ' hidden h-0'}"
+                class="grow{step.isShown ? '' : ' hidden h-0'}"
                 bind:clientHeight={cardHeight}
                 use:updateHeight
             >
                 {#if step.done || step.isProceeding}
-                    <div class="px-6 py-2">
+                    <div class="p-2">
                         {#if step.stepType === 'LoadDatasetStep'}
                             <LoadDatasetStep {step} {stepIndex} />
                         {/if}

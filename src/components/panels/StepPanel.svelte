@@ -7,7 +7,7 @@
     export let workflowInfo: Writable<Workflow>;
 </script>
 
-<div class="grow step-container" style="margin-top:10px">
+<div class="w-full grow step-container mt-2">
     {#if steps !== undefined}
         {#each steps as step, idx}
             <StepWrapper {step} stepIndex={idx} />

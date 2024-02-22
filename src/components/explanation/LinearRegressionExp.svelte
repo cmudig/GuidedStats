@@ -7,7 +7,7 @@
 <p>The linear regression model is:</p>
 <Katex displayMode>{equation}</Katex>
 <p>where:</p>
-<ul>
+<ul class="list-disc list-inside">
     <li>
         The index <Katex>i</Katex> runs over the observations, <Katex
             >i = 1, \cdots, n</Katex

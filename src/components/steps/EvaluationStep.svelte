@@ -9,7 +9,6 @@
         getScatterPlotStats,
         getTTestPlotStats
     } from '../viz/action/visualization';
-    import Done from '../icons/Done.svelte';
     import embed from 'vega-embed';
     import { afterUpdate, getContext } from 'svelte';
     import type { Writable } from 'svelte/store';

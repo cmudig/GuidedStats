@@ -1,7 +1,3 @@
-<script lang="ts">
-    import Katex from 'svelte-katex';
-</script>
-
 <h7 class="text-blue-700">Box Plot Interpretation</h7>
 <p>This box plot provides a visual summary of the variable(s)</p>
 <ul class="list-disc list-inside">
@@ -33,10 +29,3 @@
     </li>
 </ul>
 <br />
-<p class="italic">
-    One of the least squares assumptions is that large outliers are unlikely: <Katex
-        >X_i</Katex
-    > and <Katex>Y_i</Katex> have nonzero finite fourth moments. Even if it seems
-    like extreme observations have been recorded correctly, it is advisable to exclude
-    them before estimating a model since OLS suffers from sensitivity to outliers.
-</p>

@@ -5,9 +5,19 @@ import pandas as pd
 
 def naiveLR(X, Y=None):
     X_wconstant = sm.add_constant(X)
-    model = sm.OLS(Y, X_wconstant)
-    results = model.fit()
+    model = sm.OLS(Y, X_wconstant).fit()
+    results = Results()
+    results.setStat("params", model.params)
+    results.setStat("pvalues", model.pvalues)
+    results.setStat("rsquared", model.rsquared)
+    results.setStat("rsquared_adj", model.rsquared_adj)
+    results.setStat("fvalue", model.fvalue)
+    results.setStat("f_pvalue", model.f_pvalue)
+    results.setStat("llf", model.llf)
+    results.setStat("aic", model.aic)
+    results.setStat("bic", model.bic)
     return (model, results)
+
 
 
 def RidgeLR(X, Y=None, alpha=1.0):

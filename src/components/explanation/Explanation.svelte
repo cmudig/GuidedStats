@@ -10,7 +10,7 @@
 />
 
 <div
-    class="bg-gray-100 p-5 m-1 w-rounded-lg font-sans text-gray-800 overflow-y-scroll"
+    class="text-wrap bg-gray-100 p-2 m-1 w-rounded-lg font-sans text-gray-800 overflow-y-scroll"
     style="height:{height}px"
 >
     <h6 class="text-blue-700">What is this step for:</h6>
