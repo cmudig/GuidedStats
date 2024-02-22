@@ -1,24 +1,36 @@
 import numpy as np
+import pandas as pd
 
-def log_transform(data,columns,**kwargs):
-    data = np.log(data[columns] + 1)
-    outputName = kwargs.get("outputName",None)
-    return {outputName: data}
+def log_transform(data: pd.DataFrame,columns,**kwargs):
+    for col in columns:
+        data[col] = np.log(data[col])
+    return data
+
+#winsorization
+def winsorize(data: pd.DataFrame,columns,**kwargs):
+    for col in columns:
+        data[col] = data[col].clip(lower=data[col].quantile(0.05), upper=data[col].quantile(0.95))
+    return data
 
 TRANSFORMATIONS = {
-    "log": 
+    "Logarithmic Transform": 
         {
-            "displayName": "Logarithmic Transform",
             "func": log_transform,
             "requireVarCat": False,
             "requireGroupVariable": False,
+        },
+    "Winsorization":
+        {
+            "func": winsorize,
+            "requireVarCat": False,
+            "requireGroupVariable": False,
         }
+    
 }
 
 class TransformationWrapper:
     def __init__(self):
         self.name = None
-        self.displayName = None
         self.requireVarCat = False
         self.transformation = None
 
@@ -26,7 +38,6 @@ class TransformationWrapper:
         if transformationName in TRANSFORMATIONS.keys():            
             item = TRANSFORMATIONS[transformationName]
             self.name = transformationName
-            self.displayName = item["displayName"]
             self.requireVarCat = item["requireVarCat"]
             self.requireGroupVariable = item["requireGroupVariable"]
             self.transformation = item["func"]

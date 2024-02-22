@@ -1,13 +1,25 @@
 <script lang="ts">
     import _ from 'lodash';
     import embed from 'vega-embed';
-    import type { AssumptionResult } from '../../interface/interfaces';
+    import type {
+        AssumptionResult,
+        Workflow
+    } from '../../interface/interfaces';
     import type { Writable } from 'svelte/store';
     import { afterUpdate, getContext, onMount } from 'svelte';
+    import { deepCopy } from '../../utils';
+    import Tooltip from '../tooltip/Tooltip.svelte';
+    import Done from '../icons/Done.svelte';
     export let num: number = undefined;
     export let stepIndex: number = undefined;
     export let assumptionResults: AssumptionResult[] = undefined;
     export let specs: Array<any> = undefined;
+
+    const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
+
+    const builtinTransformations: Writable<Array<string>> = getContext(
+        'builtinTransformations'
+    );
 
     const exportVizStepIdx: Writable<number> = getContext('exportVizStepIdx');
 
@@ -18,6 +30,16 @@
     const exportingItem: Writable<string> = getContext('exportingItem');
 
     let activeTabValue = 0;
+
+    function updateTransformation(event: Event) {
+        let transformationName = (event.target as HTMLSelectElement).value;
+        let info = deepCopy($workflowInfo);
+        info.steps[stepIndex].config.transformationName = transformationName;
+        info.steps[stepIndex].config.variableResults = [
+            { name: assumptionResults[activeTabValue].name }
+        ];
+        workflowInfo.set(info);
+    }
 
     function updateChart(specs: Array<any>, activeTabValue: number) {
         if (!_.isUndefined(specs)) {
@@ -38,6 +60,12 @@
     });
 
     const handleClick = tabValue => () => (activeTabValue = tabValue);
+
+    function execute() {
+        let info = deepCopy($workflowInfo);
+        info.steps[stepIndex].isShown = false;
+        workflowInfo.set(info);
+    }
 
     function exportViz(stepIndex, vizIndex) {
         exportingItem.set('viz');
@@ -85,16 +113,45 @@
                     />
                     <div class="grow" />
                 </div>
-                <div class="p-2 flex">
-                    <div class="grow" />
-                    <span class="py-1 px-2">Select Data Transformation If Applicable:</span>
-                    <select
-                        class="rounded appearance-auto py-1 px-2 mx-1 bg-white border-solid border border-gray-300 focus:border-blue-500"
-                    >
-                        <option value="Train">Train</option>
-                        <option value="Test">Test</option>
-                    </select>
-                    <div class="grow" />
+                <div
+                    class="p-2 m-2 flex flex-col border border-gray-300 rounded"
+                >
+                    <div class="flex">
+                        <div class="grow" />
+                        <span class="py-1 px-2"
+                            >Select <span
+                                class="font-bold"
+                                style="color: rgb(0, 138, 254);"
+                                >data transformation</span
+                            >
+                            on column {assumptionResults[activeTabValue].name} if
+                            applicable:</span
+                        >
+                        <div class="flex flex-col">
+                            <div class="grow" />
+                            <select
+                                class="rounded appearance-auto py-1 px-2 m-2 bg-white border-solid border border-gray-300 focus:border-blue-500"
+                                on:change={updateTransformation}
+                            >
+                                <option disabled selected value>
+                                    -- option --
+                                </option>
+                                {#each $builtinTransformations as transformation}
+                                    <option value={transformation}
+                                        >{transformation}</option
+                                    >
+                                {/each}
+                            </select>
+                            <div class="grow" />
+                        </div>
+                        <div class="grow" />
+                    </div>
+                    <div class="flex">
+                        <div class="grow" />
+                        <Tooltip title="Update Visualization">
+                            <button on:click={execute}><Done /></button>
+                        </Tooltip>
+                    </div>
                 </div>
             </div>
         {/if}

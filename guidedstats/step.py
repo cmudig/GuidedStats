@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from collections import OrderedDict
 import json
 import copy
 import traitlets as tl
@@ -375,7 +376,8 @@ class VariableSelectionStep(GuidedStep):
                     dataset, dataset.columns, self.candidateNum)
         else:
             if self.requireVarCategory:
-                candidateColumns = [{"name": col} for col in dataset.columns if dataset[col].dtype in CATEGORICAL_DTYPES]
+                candidateColumns = [
+                    {"name": col} for col in dataset.columns if dataset[col].dtype in CATEGORICAL_DTYPES]
             else:
                 candidateColumns = [{"name": col}
                                     for col in dataset.columns if dataset[col].dtype in QUANTITATIVE_DTYPES]
@@ -448,6 +450,7 @@ class AssumptionCheckingStep(SucccessorStep):
         self.assumption = None
         # get inputNames
         self.previousSteps = kwargs.get("inputNames", None)
+        self.transformedDataset = None
 
         if assumptionName is not None:
             self.assumption = AssumptionWrapper()
@@ -461,6 +464,13 @@ class AssumptionCheckingStep(SucccessorStep):
     def onObserveToExecute(self, change):
         if change["old"] == False and change["new"] == True:
             if self.config.get("assumptionResults", None) is not None:
+                
+                #update self.inputs andd dataframe
+                if self.transformedDataset is not None:
+                    for key in self.inputs.keys():
+                        self.inputs[key] = self.transformedDataset[self.inputs[key].columns]
+                    self.workflow.current_dataframe = self.transformedDataset
+                
                 if self.outputNames is not None:
                     self.outputs = {}
                     for i, outputName in enumerate(self.outputNames):
@@ -468,25 +478,34 @@ class AssumptionCheckingStep(SucccessorStep):
                             self.inputs.values())[i]
                 else:
                     self.outputs = self.getPreviousOutputs()
+                    
+                if self.transformedDataset is not None:
+                    self.outputs["dataset"] = self.transformedDataset
+                    
                 self.moveToNextStep()
             else:
                 self.toExecute = False
 
     @tl.observe("config")
     def onObserveConfig(self, change):
-        if "assumptionName" in self.config and self.config["assumptionName"] is not None:
-            assumption_dict = {
-                "Outliers Checking": "outlier",
-                "Levene Test": "levene",
-                "Normality Test": "normality",
-                "Multicollinearity Test": "multicollinearity"
-            }
-            self.assumption = AssumptionWrapper()
-            self.assumption.setAssumption(
-                assumption_dict[self.config["assumptionName"]])
+        if "variableResults" in change["new"] and "transformationName" in change["new"]:
+            transformationName = change["new"]["transformationName"]
+            self._transformation = TransformationWrapper()
+            self._transformation.setTransformation(transformationName)
+            self._transformationName = transformationName
 
-        if self.workflow is not None and self.workflow.currentStep is not None and self.workflow.currentStep == self:
-            self.checkAssumption(self.inputs)
+            columns = [option["name"]
+                       for option in self.config["variableResults"]]
+
+            dataset = self.workflow.current_dataframe
+
+            self.transformedDataset = self._transformation.transform(
+                dataset, columns)
+
+            inputs = copy.deepcopy(self.inputs)
+            for key in inputs.keys():
+                inputs[key] = self.transformedDataset[inputs[key].columns]
+            self.checkAssumption(inputs)
 
     def checkAssumption(self, inputs: dict):
         # 2. check assumption
@@ -650,14 +669,14 @@ class EvaluationStep(GuidedStep):
         if self.inputs["model"]._canPredict:
             if self.visType is not None and self.visType == "residual":
                 modelResults = []
-                
+
                 X_wconstant = sm.add_constant(self.inputs["XTest"])
                 Y_hat = self.inputs["model"].predict(X_wconstant)
                 Y_hat = Y_hat.to_numpy().reshape((-1))
                 Y_true = self.inputs["yTest"].to_numpy().reshape((-1))
-                
+
                 vizStats = VIZ[self.visType](Y_hat, Y_true, group="Test")
-                
+
                 if len(self.inputs["yTest"]) != 0:
                     for metric in self.metricWrappers:
                         outputs = metric.compute(Y_true, Y_hat)
@@ -670,13 +689,13 @@ class EvaluationStep(GuidedStep):
                 Y_true = self.inputs["yTrain"].to_numpy().reshape((-1))
                 vizStats.extend(VIZ[self.visType](
                     Y_hat, Y_true, group="Train"))
-                
+
                 if len(self.inputs["yTrain"]) != 0:
                     for metric in self.metricWrappers:
                         outputs = metric.compute(Y_true, Y_hat)
                         modelResults.append(
                             {"name": metric._metricName, "score": round(outputs["statistics"], 4), "group": "Train"})
-                        
+
                 self.changeConfig("modelResults", modelResults)
 
                 viz = {

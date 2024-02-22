@@ -13,20 +13,13 @@
     import EvaluationStep from './EvaluationStep.svelte';
     import DataTransformationStep from './DataTransformationStep.svelte';
 
-    import AddIcon from '../icons/AddIcon.svelte';
-    import Tooltip from '../tooltip/Tooltip.svelte';
     import { afterUpdate, getContext } from 'svelte';
-    import WordWithHint from '../tooltip/WordWithHint.svelte';
     import DotLine from '../viz/DotLine.svelte';
 
     export let step: Step;
     export let stepIndex: number;
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
-
-    const onSelectingStep: Writable<boolean> = getContext('onSelectingStep');
-
-    const newStepPos: Writable<number> = getContext('newStepPos');
 
     let buttonHeight: number;
     let cardHeight: number;
@@ -38,11 +31,6 @@
         let updatedInfo = deepCopy($workflowInfo);
         updatedInfo.steps[stepIndex].isShown = newIsShown;
         workflowInfo.set(updatedInfo); // Update with the new object
-    }
-
-    function addStep() {
-        onSelectingStep.set(true);
-        newStepPos.set(stepIndex);
     }
 
     function updateHeight(node: HTMLElement) {
@@ -72,9 +60,6 @@
                     ></button
                 >
                 <div class="grow" />
-                <button on:click={addStep}>
-                    <Tooltip title="Add Step Below"><AddIcon /></Tooltip>
-                </button>
             </div>
             <!-- The panel -->
             <div
