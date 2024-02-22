@@ -112,7 +112,7 @@
                         Please select 2 <span
                             class="font-bold"
                             style="color:#008AFE">groups</span
-                        > from below:
+                        > from below(shift click to select multiple variables):
                     </div>
 
                     <Selection

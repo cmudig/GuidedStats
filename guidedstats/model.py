@@ -22,17 +22,20 @@ def naiveLR(X, Y=None):
 
 def RidgeLR(X, Y=None, alpha=1.0):
     X_wconstant = sm.add_constant(X)
-    model = sm.OLS(Y, X_wconstant)
-    results = model.fit_regularized(
+    model = sm.OLS(Y, X_wconstant).fit_regularized(
         method='elastic_net', alpha=float(alpha), L1_wt=0.0)
+    #RegularizedResults
+    results = Results()
+    results.setStat("params", model.params)
     return (model, results)
 
 
 def LassoLR(X, Y=None, alpha=1.0):
     X_wconstant = sm.add_constant(X)
-    model = sm.OLS(Y, X_wconstant)
-    results = model.fit_regularized(
+    model = sm.OLS(Y, X_wconstant).fit_regularized(
         method='elastic_net', alpha=float(alpha), L1_wt=1.0)
+    results = Results()
+    results.setStat("params", model.params)
     return (model, results)
 
 

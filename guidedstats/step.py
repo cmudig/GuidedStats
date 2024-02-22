@@ -648,22 +648,21 @@ class EvaluationStep(GuidedStep):
         elif self.inputs["model"]._modelName == "T Test":
             params = self.inputs["results"].getStat("tstat")
             p_values = self.inputs["results"].getStat("pvalue")
-        if len(params) != 0:
-            rows = []
-            if self.inputs["model"]._modelName in ("Simple Linear Regression", "Ridge Regression", "Lasso Regression"):
-                columns = ["const"] + list(self.inputs["XTest"].columns)
-                for i, col in enumerate(columns):
-                    if p_values is not None:
-                        rows.append({"name": col, "value": round(
-                            params[i], 4), "pvalue": round(p_values[i], 6)})
-                    else:
-                        rows.append(
-                            {"name": col, "value": round(params[i], 4)})
-                self.changeConfig("modelParameters", rows)
-            elif self.inputs["model"]._modelName == "T Test":
-                rows.append({"name": "T Statistic", "value": round(
-                    params, 4), "pvalue": round(p_values, 6)})
+        rows = []
+        if self.inputs["model"]._modelName in ("Simple Linear Regression", "Ridge Regression", "Lasso Regression"):
+            columns = ["const"] + list(self.inputs["XTest"].columns)
+            for i, col in enumerate(columns):
+                if p_values is not None:
+                    rows.append({"name": col, "value": round(
+                        params[i], 4), "pvalue": round(p_values[i], 6)})
+                else:
+                    rows.append(
+                        {"name": col, "value": round(params[i], 4)})
             self.changeConfig("modelParameters", rows)
+        elif self.inputs["model"]._modelName == "T Test":
+            rows.append({"name": "T Statistic", "value": round(
+                params, 4), "pvalue": round(p_values, 6)})
+        self.changeConfig("modelParameters", rows)
 
         # viz
         if self.inputs["model"]._canPredict:

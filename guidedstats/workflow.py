@@ -29,7 +29,7 @@ class WorkFlow(tl.HasTraits):
     def __init__(self, dataset: pd.DataFrame, workflowName="workflow", datasetName="dataset"):
         
         self.workflowName = workflowName
-        self.dataset = dataset
+        self.dataset = copy.deepcopy(dataset)
         self.datasetName = datasetName
         self.stepList = []
         

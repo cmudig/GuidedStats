@@ -30,6 +30,7 @@
     const exportingItem: Writable<string> = getContext('exportingItem');
 
     let activeTabValue = 0;
+    let active = false;
 
     function updateTransformation(event: Event) {
         let transformationName = (event.target as HTMLSelectElement).value;
@@ -118,40 +119,60 @@
                 >
                     <div class="flex">
                         <div class="grow" />
-                        <span class="py-1 px-2"
-                            >Select <span
-                                class="font-bold"
-                                style="color: rgb(0, 138, 254);"
-                                >data transformation</span
-                            >
-                            on column {assumptionResults[activeTabValue].name} if
-                            applicable:</span
+                        <button
+                            on:click={() => {
+                                active = !active;
+                            }}
                         >
-                        <div class="flex flex-col">
-                            <div class="grow" />
-                            <select
-                                class="rounded appearance-auto py-1 px-2 m-2 bg-white border-solid border border-gray-300 focus:border-blue-500"
-                                on:change={updateTransformation}
+                            <span class="py-1 px-2">
+                                {#if active}
+                                    Select
+                                {:else}
+                                    Click to select
+                                {/if}
+                                <span
+                                    class="font-bold"
+                                    style="color: rgb(0, 138, 254);"
+                                    >data transformation</span
+                                >
+                                on column
+                                <span
+                                    class="font-bold"
+                                    style="color: rgb(0, 138, 254);"
+                                    >{assumptionResults[activeTabValue]
+                                        .name}</span
+                                ></span
                             >
-                                <option disabled selected value>
-                                    -- option --
-                                </option>
-                                {#each $builtinTransformations as transformation}
-                                    <option value={transformation}
-                                        >{transformation}</option
-                                    >
-                                {/each}
-                            </select>
+                        </button>
+                        {#if active}
+                            <div class="flex flex-col">
+                                <div class="grow" />
+                                <select
+                                    class="rounded appearance-auto py-1 px-2 m-2 bg-white border-solid border border-gray-300 focus:border-blue-500"
+                                    on:change={updateTransformation}
+                                >
+                                    <option disabled selected value>
+                                        -- option --
+                                    </option>
+                                    {#each $builtinTransformations as transformation}
+                                        <option value={transformation}
+                                            >{transformation}</option
+                                        >
+                                    {/each}
+                                </select>
+                                <div class="grow" />
+                            </div>
+                        {/if}
+                        <div class="grow" />
+                    </div>
+                    {#if active}
+                        <div class="flex">
                             <div class="grow" />
+                            <Tooltip title="Update Visualization">
+                                <button on:click={execute}><Done /></button>
+                            </Tooltip>
                         </div>
-                        <div class="grow" />
-                    </div>
-                    <div class="flex">
-                        <div class="grow" />
-                        <Tooltip title="Update Visualization">
-                            <button on:click={execute}><Done /></button>
-                        </Tooltip>
-                    </div>
+                    {/if}
                 </div>
             </div>
         {/if}
