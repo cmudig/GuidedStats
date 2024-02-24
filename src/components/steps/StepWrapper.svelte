@@ -14,7 +14,6 @@
     import DataTransformationStep from './DataTransformationStep.svelte';
 
     import { afterUpdate, getContext } from 'svelte';
-    import DotLine from '../viz/DotLine.svelte';
 
     export let step: Step;
     export let stepIndex: number;
@@ -25,7 +24,6 @@
     let cardHeight: number;
     let height: number;
 
-    let isLast: boolean = $workflowInfo.steps.length - 1 === stepIndex;
 
     function unfold(newIsShown: boolean) {
         let updatedInfo = deepCopy($workflowInfo);
@@ -43,8 +41,9 @@
 
 {#if !_.isUndefined(step)}
     <div class="flex px-2 w-full">
-        <DotLine {step} {height} {isLast} />
-        <div class="grow px-2 pb-2">
+        <div class="grow px-2 pb-2 border-l-4"
+        style="border-left-color:{step.done ? '#1d346e' : (step.isProceeding ? '#05a3da' : '#c3cece')}"
+        >
             <!-- Card -->
             <!-- if step.isProceeding is False then the div is disabled-->
             <div

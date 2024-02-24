@@ -3,17 +3,21 @@
     import embed from 'vega-embed';
     import type {
         AssumptionResult,
+        Visualization,
         Workflow
     } from '../../interface/interfaces';
     import type { Writable } from 'svelte/store';
     import { afterUpdate, getContext, onMount } from 'svelte';
     import { deepCopy } from '../../utils';
-    import Tooltip from '../tooltip/Tooltip.svelte';
-    import Done from '../icons/Done.svelte';
+    import {
+        getBoxplotStats,
+        getDensityPlotStats,
+        getHeatMapStats
+    } from '../viz/action/visualization';
     export let num: number = undefined;
     export let stepIndex: number = undefined;
     export let assumptionResults: AssumptionResult[] = undefined;
-    export let specs: Array<any> = undefined;
+    export let viz: Visualization[] = undefined;
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
@@ -21,13 +25,7 @@
         'builtinTransformations'
     );
 
-    const exportVizStepIdx: Writable<number> = getContext('exportVizStepIdx');
-
-    const exportVizIdx: Writable<number> = getContext('exportVizIdx');
-
     const serial: Writable<string> = getContext('serial');
-
-    const exportingItem: Writable<string> = getContext('exportingItem');
 
     let activeTabValue = 0;
     let active = false;
@@ -42,37 +40,39 @@
         workflowInfo.set(info);
     }
 
-    function updateChart(specs: Array<any>, activeTabValue: number) {
-        if (!_.isUndefined(specs)) {
-            embed(
-                `#vis-${$serial}-${stepIndex}-${activeTabValue}`,
-                specs[activeTabValue],
-                { actions: false }
-            );
+    function updateChart(viz: Visualization[], activeTabValue: number) {
+        if (!_.isUndefined(viz)) {
+            let specs = undefined;
+            specs = viz.map(v => {
+                if (v.vizType == 'density') {
+                    return getDensityPlotStats(v);
+                } else if (v.vizType == 'boxplot') {
+                    return getBoxplotStats(v);
+                } else if (v.vizType == 'heatmap') {
+                    return getHeatMapStats(v);
+                }
+            });
+            if (!_.isUndefined(specs)) {
+                embed(
+                    `#vis-${$serial}-${stepIndex}-${activeTabValue}`,
+                    specs[activeTabValue],
+                    { actions: false }
+                );
+            }
         }
     }
 
     onMount(() => {
-        updateChart(specs, activeTabValue);
+        updateChart(viz, activeTabValue);
     });
 
     afterUpdate(() => {
-        updateChart(specs, activeTabValue);
+        updateChart(viz, activeTabValue);
     });
 
+    $: updateChart(viz, activeTabValue);
+
     const handleClick = tabValue => () => (activeTabValue = tabValue);
-
-    function execute() {
-        let info = deepCopy($workflowInfo);
-        info.steps[stepIndex].isShown = false;
-        workflowInfo.set(info);
-    }
-
-    function exportViz(stepIndex, vizIndex) {
-        exportingItem.set('viz');
-        exportVizStepIdx.set(stepIndex);
-        exportVizIdx.set(vizIndex);
-    }
 </script>
 
 <div class="flex-col p-2 w-3/4">
@@ -165,14 +165,11 @@
                         {/if}
                         <div class="grow" />
                     </div>
-                    {#if active}
-                        <div class="flex">
-                            <div class="grow" />
-                            <Tooltip title="Update Visualization">
-                                <button on:click={execute}><Done /></button>
-                            </Tooltip>
-                        </div>
-                    {/if}
+                    <div class="text-xs text-gray-600 m-1">
+                        The visualization will refresh after selecting one
+                        transformation. Note: If the visualization does not
+                        refresh, fold the current step and unfold again.
+                    </div>
                 </div>
             </div>
         {/if}

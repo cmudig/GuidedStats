@@ -1,17 +1,8 @@
 <script lang="ts">
     import _ from 'lodash';
     import Tooltip from '../tooltip/Tooltip.svelte';
-    import {
-        getBoxplotStats,
-        getDensityPlotStats,
-        getHeatMapStats
-    } from '../viz/action/visualization';
     import { deepCopy } from '../../utils';
-    import type {
-        Step,
-        Visualization,
-        Workflow
-    } from '../../interface/interfaces';
+    import type { Step, Workflow } from '../../interface/interfaces';
     import { getContext } from 'svelte';
     import type { Writable } from 'svelte/store';
     import Done from '../icons/Done.svelte';
@@ -22,8 +13,6 @@
     import HeatmapExp from '../explanation/HeatmapExp.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
-
-    export let specs: Array<any> = undefined;
 
     let assumptionName: string = undefined;
     let active: boolean = false;
@@ -45,25 +34,6 @@
         info.steps[stepIndex].config.assumptionName = assumptionName;
         workflowInfo.set(info);
     }
-
-    function updateChart(vizs: Visualization[]) {
-        if (!_.isUndefined(vizs)) {
-            specs = undefined;
-            specs = vizs.map(viz => {
-                if (viz.vizType == 'density') {
-                    return getDensityPlotStats(viz);
-                } else if (viz.vizType == 'boxplot') {
-                    vizType = 'boxplot';
-                    return getBoxplotStats(viz);
-                } else if (viz.vizType == 'heatmap') {
-                    vizType = 'heatmap';
-                    return getHeatMapStats(viz);
-                }
-            });
-        }
-    }
-
-    $: updateChart(step?.config?.viz);
 </script>
 
 <div>
@@ -76,7 +46,7 @@
                     num={step?.config?.viz?.length}
                     {stepIndex}
                     assumptionResults={step.config.assumptionResults}
-                    {specs}
+                    viz={step.config.viz}
                 />
                 <div class="grow" />
             </div>

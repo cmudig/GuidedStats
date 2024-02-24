@@ -10,7 +10,7 @@
 </script>
 
 <div
-    class={'grow bg-white w-full mb-2 border-2 rounded-lg overflow-y-scroll' +
+    class={'bg-white w-full mb-2 border-2 rounded-lg overflow-y-scroll' +
         ($onSelectingStep ? ' opacity-40 pointer-events-none' : '')}
     style="scrollbar-width: none"
 >

@@ -152,19 +152,19 @@
     $: exportCodeToCell($exportCode);
 </script>
 
-<div class="bg-slate-50 rounded-xl w-full h-1/2 p-4 flex flex-row">
+<div class="bg-slate-50 rounded-xl w-full h-1/2 p-4 flex flex-row"
+    style="height:600px">
     <div
         bind:clientHeight={height}
-        class="w-1/4 h-full mr-2 float-left flex flex-col"
+        class="w-1/3 h-full mr-2 float-left flex flex-col"
     >
         <WorkflowSelectionPanel
             workflows={$builtinWorkflows}
             on:message={getWorkflow}
         />
-        <div class="grow" />
         <StepSelectionPanel steps={$builtinSteps} />
     </div>
-    <div class="w-3/5 h-full ml-2 float-left grow" style="height:{height}px">
+    <div class="w-1/2 h-full ml-2 float-left grow" style="height:{height}px">
         <DisplayPanel steps={$workflowInfo.steps} />
     </div>
 </div>
