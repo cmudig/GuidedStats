@@ -3,7 +3,7 @@
     import { WidgetWritable } from './stores';
     import type { Workflow, selectedStepInfo } from './interface/interfaces';
     import WorkflowSelectionPanel from './components/panels/WorkflowSelectionPanel.svelte';
-    import StepSelectionPanel from './components/panels/StepSelectionPanel.svelte';
+    import ExplanationPanel from './components/panels/ExplanationPanel.svelte';
     import DisplayPanel from './components/panels/DisplayPanel.svelte';
     import { writable } from 'svelte/store';
 
@@ -29,8 +29,6 @@
     );
 
     const exportVizIdx = WidgetWritable<number>('exportVizIdx', -1, model);
-
-    const exportCode = WidgetWritable<string>('exportCode', '', model);
 
     const builtinWorkflows = WidgetWritable<Array<string>>(
         'builtinWorkflows',
@@ -125,31 +123,6 @@
     function getWorkflow(event) {
         selectedWorkflow.set(event.detail.selectedWorkflow);
     }
-
-    function exportCodeToCell(code: string) {
-        if ($exportingItem == 'table') {
-            exportHTMLTable(code);
-        } else if ($exportingItem == 'viz') {
-            exportCodeViz(code);
-        }
-    }
-
-    function exportHTMLTable(code: string) {
-        if (code !== '') {
-            let cell = Jupyter.notebook.insert_cell_below('markdown');
-            cell.set_text(code);
-            cell.execute();
-        }
-    }
-
-    function exportCodeViz(code: string) {
-        if (code !== '') {
-            let cell = Jupyter.notebook.insert_cell_below('code');
-            cell.set_text(code);
-        }
-    }
-
-    $: exportCodeToCell($exportCode);
 </script>
 
 <div class="bg-slate-50 rounded-xl w-full h-1/2 p-4 flex flex-row"
@@ -162,7 +135,7 @@
             workflows={$builtinWorkflows}
             on:message={getWorkflow}
         />
-        <StepSelectionPanel steps={$builtinSteps} />
+        <ExplanationPanel steps={$workflowInfo.steps} />
     </div>
     <div class="w-1/2 h-full ml-2 float-left grow" style="height:{height}px">
         <DisplayPanel steps={$workflowInfo.steps} />

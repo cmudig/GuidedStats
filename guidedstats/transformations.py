@@ -19,7 +19,7 @@ TRANSFORMATIONS = {
             "requireVarCat": False,
             "requireGroupVariable": False,
         },
-    "Winsorization":
+    "Clip":
         {
             "func": winsorize,
             "requireVarCat": False,

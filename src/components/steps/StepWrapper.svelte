@@ -1,7 +1,8 @@
 <script lang="ts">
     import _ from 'lodash';
     import { deepCopy } from '../../utils';
-    import type { Writable } from 'svelte/store';
+    import { selectingStep } from '../../stores';
+    import { type Writable } from 'svelte/store';
 
     import type { Step, Workflow } from '../../interface/interfaces';
 
@@ -13,36 +14,32 @@
     import EvaluationStep from './EvaluationStep.svelte';
     import DataTransformationStep from './DataTransformationStep.svelte';
 
-    import { afterUpdate, getContext } from 'svelte';
+    import { getContext } from 'svelte';
 
     export let step: Step;
     export let stepIndex: number;
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
-    let buttonHeight: number;
-    let cardHeight: number;
-    let height: number;
-
-
-    function unfold(newIsShown: boolean) {
+    function unfold(newIsShown: boolean, stepIndex: number) {
         let updatedInfo = deepCopy($workflowInfo);
         updatedInfo.steps[stepIndex].isShown = newIsShown;
+        if (newIsShown) {
+            selectingStep.set(stepIndex);
+        }
         workflowInfo.set(updatedInfo); // Update with the new object
-    }
-
-    function updateHeight(node: HTMLElement) {
-        afterUpdate(() => {
-            cardHeight = node.clientHeight;
-            height = buttonHeight + cardHeight + 16; // 16 is the padding
-        });
     }
 </script>
 
 {#if !_.isUndefined(step)}
     <div class="flex px-2 w-full">
-        <div class="grow px-2 pb-2 border-l-4"
-        style="border-left-color:{step.done ? '#1d346e' : (step.isProceeding ? '#05a3da' : '#c3cece')}"
+        <div
+            class="grow px-2 pb-2 border-l-4"
+            style="border-left-color:{step.done
+                ? '#1d346e'
+                : step.isProceeding
+                ? '#05a3da'
+                : '#c3cece'}"
         >
             <!-- Card -->
             <!-- if step.isProceeding is False then the div is disabled-->
@@ -51,9 +48,8 @@
                 step.done
                     ? ''
                     : ' opacity-20 pointer-events-none'}"
-                bind:clientHeight={buttonHeight}
             >
-                <button on:click={() => unfold(!step.isShown)}>
+                <button on:click={() => unfold(!step.isShown, step.stepId)}>
                     <span class="inline-block align-top font-bold"
                         >Step {stepIndex + 1}: {step.stepName}</span
                     ></button
@@ -61,11 +57,7 @@
                 <div class="grow" />
             </div>
             <!-- The panel -->
-            <div
-                class="grow{step.isShown ? '' : ' hidden h-0'}"
-                bind:clientHeight={cardHeight}
-                use:updateHeight
-            >
+            <div class="grow{step.isShown ? '' : ' hidden h-0'}">
                 {#if step.done || step.isProceeding}
                     <div class="p-2">
                         {#if step.stepType === 'LoadDatasetStep'}

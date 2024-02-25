@@ -7,15 +7,12 @@
     import Tooltip from '../tooltip/Tooltip.svelte';
     import Done from '../icons/Done.svelte';
     import SelectionBoard from '../display/SelectionBoard.svelte';
-    import HintIcon from '../icons/HintIcon.svelte';
-    import Explanation from '../explanation/Explanation.svelte';
 
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
 
     let modelName: string = undefined;
     let parameterValues: Parameter[] = undefined;
-    let active = false;
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
@@ -78,20 +75,8 @@
             <div class="grow" />
         </div>
     </div>
-    {#if active}
-        <Explanation>
-            <div slot="step">{step?.stepExplanation}</div>
-        </Explanation>
-    {/if}
     <div class="grow" />
     <div class="flex">
-        <Tooltip title="Hint">
-            <button
-                on:click={() => {
-                    active = !active;
-                }}><HintIcon /></button
-            >
-        </Tooltip>
         <div class="grow" />
         <Tooltip title="Execute">
             <button on:click={execute}><Done /></button>

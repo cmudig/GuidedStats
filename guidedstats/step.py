@@ -455,6 +455,7 @@ class AssumptionCheckingStep(SucccessorStep):
         if assumptionName is not None:
             self.assumption = AssumptionWrapper()
             self.assumption.setAssumption(assumptionName)
+            self.changeConfig("assumptionName", assumptionName)
 
     def clear(self):
         self.config.pop("assumptionResults", None)

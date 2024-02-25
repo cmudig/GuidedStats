@@ -40,3 +40,5 @@ export function WidgetWritable<T>(
         }
     };
 }
+
+export const selectingStep: Writable<number> = writable(-1);

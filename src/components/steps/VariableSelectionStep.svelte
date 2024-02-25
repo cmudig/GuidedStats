@@ -7,10 +7,6 @@
     import Done from '../icons/Done.svelte';
     import Tooltip from '../tooltip/Tooltip.svelte';
     import Selection from '../display/Selection.svelte';
-    import HintIcon from '../icons/HintIcon.svelte';
-    import Explanation from '../explanation/Explanation.svelte';
-    import LinearRegressionExp from '../explanation/LinearRegressionExp.svelte';
-    import TTestExp from '../explanation/TTestExp.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
 
@@ -18,7 +14,6 @@
 
     let variableResults = new Array<string>();
     let groupResults = new Array<string>();
-    let active = false;
 
     function handleInputChange(parameterName: string, value: Option[]) {
         if (parameterName === 'variableResults') {
@@ -125,28 +120,8 @@
             {/if}
         </div>
     </div>
-    {#if active}
-        {#if $workflowInfo?.workflowName === 'Linear Regression'}
-            <Explanation>
-                <div slot="step">{step?.stepExplanation}</div>
-                <LinearRegressionExp slot="concept" />
-            </Explanation>
-        {:else if $workflowInfo?.workflowName === 'T Test'}
-            <Explanation>
-                <div slot="step">{step?.stepExplanation}</div>
-                <TTestExp slot="concept" />
-            </Explanation>
-        {/if}
-    {/if}
     <div class="grow" />
     <div class="flex">
-        <Tooltip title="Hint">
-            <button
-                on:click={() => {
-                    active = !active;
-                }}><HintIcon /></button
-            >
-        </Tooltip>
         <div class="grow" />
         <Tooltip title="Execute">
             <button on:click={execute}><Done /></button>

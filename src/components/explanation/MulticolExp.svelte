@@ -30,26 +30,6 @@
     all relevant variables (accepting higher variance) or simplify the model
     (potentially introducing bias).
 </p>
-<h7 class="text-blue-700">Box Plot Interpretation</h7>
-<ul class="list-disc list-inside">
-    <li>
-        <strong>Correlation Matrix Heatmap</strong>: This visual representation
-        shows the strength of the relationship between variables. The color
-        intensity reflects the correlation coefficient values between the
-        variables, where:
-        <ul class="list-disc list-inside">
-            <li>
-                A correlation of 1 (dark blue) indicates a perfect positive
-                correlation.
-            </li>
-            <li>
-                A correlation of -1 (lighter color) suggests a perfect negative
-                correlation.
-            </li>
-        </ul>
-    </li>
-</ul>
-<br />
 <h7 class="text-blue-700">Variance Inflation Factor (VIF)</h7>
 <p>
     The Variance Inflation Factor (VIF) quantifies the extent of

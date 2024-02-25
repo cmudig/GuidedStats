@@ -1,5 +1,8 @@
 <script lang="ts">
-    let height: number = 200;
+    import CollapseIcon from '../icons/CollapseIcon.svelte';
+    import ExpandIcon from '../icons/ExpandIcon.svelte';
+
+    let active = false;
 </script>
 
 <link
@@ -10,12 +13,29 @@
 />
 
 <div
-    class="text-wrap bg-gray-100 p-2 m-1 w-rounded-lg font-sans text-gray-800 overflow-y-scroll"
-    style="height:{height}px"
+    class="grow text-wrap bg-gray-100 p-2 m-1 w-rounded-lg font-sans text-gray-800 overflow-y-scroll"
 >
-    <h6 class="text-blue-700">What is this step for:</h6>
+    <span class="text-blue-700 font-bold">What is this step for:</span>
     <slot name="step" />
-    <br />
-    <h6 class="text-blue-700">Important concept:</h6>
-    <slot name="concept" />
+    {#if $$slots.concept}
+        <button
+            class="w-full my-2 hover:border-gray-300 text-white font-bold rounded"
+            on:click={() => {
+                active = !active;
+            }}
+        >
+            <div class="flex">
+                <span class="text-blue-700">More Information:</span>
+                <div class="grow" />
+                {#if active}
+                    <CollapseIcon width="1.2em" height="1.2em" />
+                {:else}
+                    <ExpandIcon width="1.2em" height="1.2em" />
+                {/if}
+            </div>
+        </button>
+        {#if active}
+            <slot name="concept" />
+        {/if}
+    {/if}
 </div>

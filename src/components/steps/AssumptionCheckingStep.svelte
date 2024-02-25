@@ -7,17 +7,10 @@
     import type { Writable } from 'svelte/store';
     import Done from '../icons/Done.svelte';
     import Tabs from '../display/Tabs.svelte';
-    import HintIcon from '../icons/HintIcon.svelte';
-    import Explanation from '../explanation/Explanation.svelte';
-    import BoxplotExp from '../explanation/BoxplotExp.svelte';
-    import HeatmapExp from '../explanation/HeatmapExp.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
 
     let assumptionName: string = undefined;
-    let active: boolean = false;
-    let vizType: string = '';
-
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
     const builtinAssumptions: Writable<Array<string>> =
@@ -51,32 +44,7 @@
                 <div class="grow" />
             </div>
         </div>
-        {#if active}
-            {#if vizType == 'boxplot'}
-                <Explanation>
-                    <div slot="step">
-                        <span>{step?.stepExplanation}</span>
-                    </div>
-                    <BoxplotExp slot="concept" /></Explanation
-                >
-            {/if}
-            {#if vizType == 'heatmap'}
-                <Explanation>
-                    <div slot="step">
-                        <span>{step?.stepExplanation}</span>
-                    </div>
-                    <HeatmapExp slot="concept" /></Explanation
-                >
-            {/if}
-        {/if}
         <div class="flex">
-            <Tooltip title="Hint">
-                <button
-                    on:click={() => {
-                        active = !active;
-                    }}><HintIcon /></button
-                >
-            </Tooltip>
             <div class="grow" />
             <Tooltip title="Execute">
                 <button on:click={execute}><Done /></button>
@@ -114,13 +82,6 @@
             </div>
             <div class="grow" />
             <div class="flex">
-                <Tooltip title="Hint">
-                    <button
-                        on:click={() => {
-                            active = !active;
-                        }}><HintIcon /></button
-                    >
-                </Tooltip>
                 <div class="grow" />
                 <Tooltip title="Done">
                     <button on:click={updateAssumption}><Done /></button>

@@ -94,7 +94,7 @@ _ttestConfig = [
      {"stepName": "State Hypothesis and Alpha Level",
       "inputNames": ["Y1", "Y2"],
       "modelCandidates": [{"name": "T Test",
-                           "parameters": [{"name": "alpha", "displayName": "Alpha Level Rate"},
+                           "parameters": [{"name": "alpha", "displayName": "Alpha Level"},
                                           {"name": "alternative", "displayName": "Alternative Hypothesis", "options": [
                                               {"name": "two-sided"}, {"name": "smaller"}, {"name": "larger"}]},
                                           {"name": "equal_var", "displayName": "Equal Variance", "options": [

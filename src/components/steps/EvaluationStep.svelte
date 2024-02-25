@@ -10,31 +10,15 @@
         getTTestPlotStats
     } from '../viz/action/visualization';
     import embed from 'vega-embed';
-    import { afterUpdate, getContext } from 'svelte';
-    import type { Writable } from 'svelte/store';
+    import { afterUpdate } from 'svelte';
     import Table from '../display/Table.svelte';
-    import HintIcon from '../icons/HintIcon.svelte';
-    import Tooltip from '../tooltip/Tooltip.svelte';
-    import Explanation from '../explanation/Explanation.svelte';
-    import ExportCode from '../explanation/ExportCode.svelte';
+
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
 
     let width: number = 450;
-    let active: boolean = false;
-
     let group: string = 'Train';
     let modelResults: ModelResult[];
-
-    const exportingItem: Writable<string> = getContext('exportingItem');
-
-    var exportTableStepIdx: Writable<number> = getContext('exportTableStepIdx');
-    var exportVizStepIdx: Writable<number> = getContext('exportVizStepIdx');
-
-    function exportViz() {
-        exportingItem.set('viz');
-        exportVizStepIdx.set(stepIndex);
-    }
 
     //buttons
     function renderViz(
@@ -137,24 +121,6 @@
             </div>
             <div class="grow" />
         </div>
-        {#if active}
-            <Explanation>
-                <div slot="step">
-                    <span>{step?.stepExplanation}</span>
-                    <ExportCode />
-                </div>
-            </Explanation>
-        {/if}
-        <div class="grow" />
-    </div>
-    <div class="flex">
-        <Tooltip title="Hint">
-            <button
-                on:click={() => {
-                    active = !active;
-                }}><HintIcon /></button
-            >
-        </Tooltip>
         <div class="grow" />
     </div>
 </div>

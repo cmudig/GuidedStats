@@ -114,63 +114,65 @@
                     />
                     <div class="grow" />
                 </div>
-                <div
-                    class="p-2 m-2 flex flex-col border border-gray-300 rounded"
-                >
-                    <div class="flex">
-                        <div class="grow" />
-                        <button
-                            on:click={() => {
-                                active = !active;
-                            }}
-                        >
-                            <span class="py-1 px-2">
-                                {#if active}
-                                    Select
-                                {:else}
-                                    Click to select
-                                {/if}
-                                <span
-                                    class="font-bold"
-                                    style="color: rgb(0, 138, 254);"
-                                    >data transformation</span
-                                >
-                                on column
-                                <span
-                                    class="font-bold"
-                                    style="color: rgb(0, 138, 254);"
-                                    >{assumptionResults[activeTabValue]
-                                        .name}</span
-                                ></span
+                {#if $workflowInfo.steps[stepIndex]?.config?.assumptionName === 'outlier'}
+                    <div
+                        class="p-2 m-2 flex flex-col border border-gray-300 rounded"
+                    >
+                        <div class="flex">
+                            <div class="grow" />
+                            <button
+                                on:click={() => {
+                                    active = !active;
+                                }}
                             >
-                        </button>
-                        {#if active}
-                            <div class="flex flex-col">
-                                <div class="grow" />
-                                <select
-                                    class="rounded appearance-auto py-1 px-2 m-2 bg-white border-solid border border-gray-300 focus:border-blue-500"
-                                    on:change={updateTransformation}
+                                <span class="py-1 px-2">
+                                    {#if active}
+                                        Select
+                                    {:else}
+                                        Click to select
+                                    {/if}
+                                    <span
+                                        class="font-bold"
+                                        style="color: rgb(0, 138, 254);"
+                                        >data transformation</span
+                                    >
+                                    on column
+                                    <span
+                                        class="font-bold"
+                                        style="color: rgb(0, 138, 254);"
+                                        >{assumptionResults[activeTabValue]
+                                            .name}</span
+                                    ></span
                                 >
-                                    <option disabled selected value>
-                                        -- option --
-                                    </option>
-                                    {#each $builtinTransformations as transformation}
-                                        <option value={transformation}
-                                            >{transformation}</option
-                                        >
-                                    {/each}
-                                </select>
-                                <div class="grow" />
-                            </div>
-                        {/if}
-                        <div class="grow" />
+                            </button>
+                            {#if active}
+                                <div class="flex flex-col">
+                                    <div class="grow" />
+                                    <select
+                                        class="rounded appearance-auto py-1 px-2 m-2 bg-white border-solid border border-gray-300 focus:border-blue-500"
+                                        on:change={updateTransformation}
+                                    >
+                                        <option disabled selected value>
+                                            -- option --
+                                        </option>
+                                        {#each $builtinTransformations as transformation}
+                                            <option value={transformation}
+                                                >{transformation}</option
+                                            >
+                                        {/each}
+                                    </select>
+                                    <div class="grow" />
+                                </div>
+                            {/if}
+                            <div class="grow" />
+                        </div>
+                        <div class="text-xs text-gray-600 m-1">
+                            The visualization will refresh after selecting one
+                            transformation. Note: If the visualization does not
+                            refresh, fold the current step and unfold again.
+                        </div>
                     </div>
-                    <div class="text-xs text-gray-600 m-1">
-                        The visualization will refresh after selecting one
-                        transformation. Note: If the visualization does not
-                        refresh, fold the current step and unfold again.
-                    </div>
-                </div>
+                {/if}
             </div>
         {/if}
     {/each}
