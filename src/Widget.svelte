@@ -1,10 +1,11 @@
 <script lang="ts">
     import { setContext } from 'svelte';
-    import { WidgetWritable } from './stores';
-    import type { Workflow, selectedStepInfo } from './interface/interfaces';
+    import { WidgetWritable, isBlocked } from './stores';
+    import type { Workflow } from './interface/interfaces';
     import WorkflowSelectionPanel from './components/panels/WorkflowSelectionPanel.svelte';
     import ExplanationPanel from './components/panels/ExplanationPanel.svelte';
     import DisplayPanel from './components/panels/DisplayPanel.svelte';
+    import Notification from './components/tooltip/Notification.svelte';
     import { writable } from 'svelte/store';
 
     export let model;
@@ -12,8 +13,6 @@
     let height: number;
 
     const onSelectingStep = writable(false);
-    const newStepPos = writable(-1);
-    const newStepType = writable('');
     const exportingItem = writable('');
 
     const exportTableStepIdx = WidgetWritable<number>(
@@ -32,12 +31,6 @@
 
     const builtinWorkflows = WidgetWritable<Array<string>>(
         'builtinWorkflows',
-        [],
-        model
-    );
-
-    const builtinSteps = WidgetWritable<Array<string>>(
-        'builtinSteps',
         [],
         model
     );
@@ -62,20 +55,12 @@
         model
     );
 
-    const selectedStepInfo = WidgetWritable<selectedStepInfo>(
-        'selectedStepInfo',
-        {
-            stepType: undefined,
-            stepPos: undefined
-        },
-        model
-    );
-
     const workflowInfo = WidgetWritable<Workflow>(
         'workflowInfo',
         {
             workflowName: '',
             currentStepId: undefined,
+            message: '',
             steps: [],
             flows: []
         },
@@ -83,8 +68,7 @@
     );
 
     setContext('onSelectingStep', onSelectingStep);
-    setContext('newStepPos', newStepPos);
-    setContext('newStepType', newStepType);
+
     setContext('exportingItem', exportingItem);
 
     setContext('workflowInfo', workflowInfo);
@@ -101,31 +85,13 @@
 
     setContext('serial', serial);
 
-    function addNewStep(stepType: string, stepPos: number) {
-        if ($builtinSteps.includes(stepType) && stepPos >= 0) {
-            let pos: number;
-            if (stepPos == $workflowInfo.steps.length - 1) {
-                pos = -1;
-            } else {
-                pos = stepPos + 1;
-            }
-            selectedStepInfo.set({
-                stepType: stepType,
-                stepPos: pos
-            });
-            newStepType.set('');
-            newStepPos.set(-1);
-        }
-    }
-
-    $: addNewStep($newStepType, $newStepPos);
-
     function getWorkflow(event) {
         selectedWorkflow.set(event.detail.selectedWorkflow);
     }
 </script>
 
-<div class="bg-slate-50 rounded-xl w-full h-1/2 p-4 flex flex-row"
+<Notification />
+<div class={"bg-slate-50 rounded-xl w-full h-1/2 p-4 flex flex-row" + ($isBlocked ? ' blur-sm pointer-events-none' : '')}
     style="height:600px">
     <div
         bind:clientHeight={height}

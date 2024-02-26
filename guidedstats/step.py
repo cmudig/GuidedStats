@@ -446,7 +446,6 @@ class AssumptionCheckingStep(SucccessorStep):
                          succeedPreviousStepOutput, previousSteps, **kwargs)
         self.isRelaxed = isRelaxed
         self.succeedPreviousStepOutput = succeedPreviousStepOutput
-        # TBC, if relaxed is True, then even the assumption does not meet the proess will continue
         self.assumption = None
         # get inputNames
         self.previousSteps = kwargs.get("inputNames", None)
@@ -500,13 +499,16 @@ class AssumptionCheckingStep(SucccessorStep):
 
             dataset = self.workflow.current_dataframe
 
-            self.transformedDataset = self._transformation.transform(
+            (transformedDataset,msg) = self._transformation.transform(
                 dataset, columns)
-
-            inputs = copy.deepcopy(self.inputs)
-            for key in inputs.keys():
-                inputs[key] = self.transformedDataset[inputs[key].columns]
-            self.checkAssumption(inputs)
+            if transformedDataset is not None:
+                self.transformedDataset = transformedDataset
+                inputs = copy.deepcopy(self.inputs)
+                for key in inputs.keys():
+                    inputs[key] = self.transformedDataset[inputs[key].columns]             
+                self.checkAssumption(inputs)
+            if msg is not None:
+                self.workflow.message = msg
 
     def checkAssumption(self, inputs: dict):
         # 2. check assumption

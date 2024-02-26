@@ -128,6 +128,7 @@ export type Flow = {
 export type Workflow = {
     workflowName: string;
     currentStepId: number;
+    message: string;
     steps: Step[];
     flows: Flow[];
 };
@@ -147,11 +148,6 @@ export type VariableSelectionStep = GuidedStep & {
 
 export type ModelStep = GuidedStep & {
     modelName: string;
-};
-
-export type selectedStepInfo = {
-    stepType: string;
-    stepPos: number;
 };
 
 export type Explanation = {

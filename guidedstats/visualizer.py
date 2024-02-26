@@ -8,21 +8,14 @@
 Visualizer module for widgets
 """
 
-import json
-import os
-from typing import Callable
 import pandas as pd
-from itertools import groupby
 import random
 import string
 
 from ipywidgets import DOMWidget
-from IPython.display import display, Javascript, HTML
 import traitlets as tl
-from traitlets import Int, Unicode, Dict, List, Bool, Instance, observe, link
-from varname import argname
+from traitlets import Int, Unicode, Dict, List, Instance
 from varname.utils import ImproperUseError
-from ipylab import JupyterFrontEnd
 
 from ._frontend import module_name, module_version
 
@@ -54,11 +47,6 @@ class GuidedStats(DOMWidget):
     workflow = Instance(WorkFlow)
     workflowInfo = Dict({}).tag(sync=True)
     
-    exportTableStepIdx = Int().tag(sync=True)
-    exportVizStepIdx = Int(-1).tag(sync=True)
-    exportVizIdx = Int(-1).tag(sync=True) 
-    exportCode = Unicode("").tag(sync=True)
-    
     serial = Unicode("").tag(sync=True)
     
     def __init__(self, dataset: pd.DataFrame, datasetName: str = "dataset", *args, **kwargs):
@@ -76,9 +64,6 @@ class GuidedStats(DOMWidget):
         self.getBuiltinSteps()
         self.getBuiltinAssumptions()
         self.getBuiltinTransformations()
-        
-        self.observe(self._handle_exportTable, names='exportTableStepIdx')
-        self.observe(self._handle_exportViz, names='exportVizIdx')
         
     def _handle_exportTable(self, change):
         idx = change["new"] #evaluation step
@@ -197,25 +182,7 @@ class GuidedStats(DOMWidget):
             return
         new_info = change["new"]
         self.workflow.workflowInfo = new_info
-
-    def deleteFlow(self,workflow:WorkFlow):
-        #TODO
-        pass
-    
-    @tl.observe("selectedStepInfo")
-    def addStep(self,change):
-        stepInfo = change["new"]
-        self.workflow.addStep(stepInfo["stepType"],stepInfo["stepPos"])
-        
-        
-    def defineStep(self,transformationName:str,transformation:Callable):
-        #TBC
-        step = DataTransformationStep()
-        step.addTransformation(transformationName,transformation)
-        step.setTransformation(transformationName)
-        
-        self.builtinSteps = [*self.builtinSteps,transformationName]
-        
+  
     #add property "currentDF" to workflow
     @property
     def current_dataframe(self):
