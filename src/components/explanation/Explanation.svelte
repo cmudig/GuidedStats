@@ -30,7 +30,7 @@
                 {#if active}
                     <CollapseIcon width="1.2em" height="1.2em" />
                 {:else}
-                    <ExpandIcon width="1.2em" height="1.2em" />
+                    <ExpandIcon width="1.2em" height="1.3em" />
                 {/if}
             </div>
         </button>

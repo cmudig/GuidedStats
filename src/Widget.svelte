@@ -13,21 +13,6 @@
     let height: number;
 
     const onSelectingStep = writable(false);
-    const exportingItem = writable('');
-
-    const exportTableStepIdx = WidgetWritable<number>(
-        'exportTableStepIdx',
-        -1,
-        model
-    );
-
-    const exportVizStepIdx = WidgetWritable<number>(
-        'exportVizStepIdx',
-        -1,
-        model
-    );
-
-    const exportVizIdx = WidgetWritable<number>('exportVizIdx', -1, model);
 
     const builtinWorkflows = WidgetWritable<Array<string>>(
         'builtinWorkflows',
@@ -69,15 +54,8 @@
 
     setContext('onSelectingStep', onSelectingStep);
 
-    setContext('exportingItem', exportingItem);
-
     setContext('workflowInfo', workflowInfo);
 
-    setContext('exportTableStepIdx', exportTableStepIdx);
-
-    setContext('exportVizStepIdx', exportVizStepIdx);
-
-    setContext('exportVizIdx', exportVizIdx);
 
     setContext('builtinAssumptions', builtinAssumptions);
 

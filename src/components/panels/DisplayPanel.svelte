@@ -15,5 +15,13 @@
         ($onSelectingStep ? ' opacity-40 pointer-events-none' : '')}
     style="scrollbar-width: none"
 >
-    <StepPanel {workflowInfo} {steps} />
+    {#if $workflowInfo.steps?.length > 0}
+        <StepPanel {steps} />
+    {:else}
+        <div class="flex flex-col items-center justify-center w-full h-full">
+            <div class="text-rose-500 text-xl font-bold">
+                Click on a workflow on upper left side to start the analysis
+            </div>
+        </div>
+    {/if}
 </div>

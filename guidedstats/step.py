@@ -464,13 +464,13 @@ class AssumptionCheckingStep(SucccessorStep):
     def onObserveToExecute(self, change):
         if change["old"] == False and change["new"] == True:
             if self.config.get("assumptionResults", None) is not None:
-                
-                #update self.inputs andd dataframe
+
+                # update self.inputs andd dataframe
                 if self.transformedDataset is not None:
                     for key in self.inputs.keys():
                         self.inputs[key] = self.transformedDataset[self.inputs[key].columns]
                     self.workflow.current_dataframe = self.transformedDataset
-                
+
                 if self.outputNames is not None:
                     self.outputs = {}
                     for i, outputName in enumerate(self.outputNames):
@@ -478,10 +478,10 @@ class AssumptionCheckingStep(SucccessorStep):
                             self.inputs.values())[i]
                 else:
                     self.outputs = self.getPreviousOutputs()
-                    
+
                 if self.transformedDataset is not None:
                     self.outputs["dataset"] = self.transformedDataset
-                    
+
                 self.moveToNextStep()
             else:
                 self.toExecute = False
@@ -499,13 +499,13 @@ class AssumptionCheckingStep(SucccessorStep):
 
             dataset = self.workflow.current_dataframe
 
-            (transformedDataset,msg) = self._transformation.transform(
+            (transformedDataset, msg) = self._transformation.transform(
                 dataset, columns)
             if transformedDataset is not None:
                 self.transformedDataset = transformedDataset
                 inputs = copy.deepcopy(self.inputs)
                 for key in inputs.keys():
-                    inputs[key] = self.transformedDataset[inputs[key].columns]             
+                    inputs[key] = self.transformedDataset[inputs[key].columns]
                 self.checkAssumption(inputs)
             if msg is not None:
                 self.workflow.message = msg
@@ -588,12 +588,19 @@ class ModelStep(GuidedStep):
 
     def clear(self):
         self.config.pop("modelName", None)
+        self.config.pop("modelParameters", None)
+
+    @tl.observe("config")
+    def onObserveConfig(self, change):
+        if "modelName" in change["new"] and change["new"].get("modelName",None) != change["old"].get("modelName",None):
+            self.config.pop("modelParameters", None)
+            modelName = change["new"]["modelName"]
+            self.modelWrapper.setModel(modelName)
 
     @tl.observe("toExecute")
     def onObserveToExecute(self, change):
         if change["old"] == False and change["new"] == True:
             if self.config.get("modelName", None) is not None:
-                self.modelWrapper.setModel(self.config["modelName"])
                 if self.config.get("modelParameters", None) is not None:
                     args = {}
                     for parameter in self.config["modelParameters"]:
