@@ -63,7 +63,7 @@
 <div class="overflow-y-scroll">
     <div class="flex flex-col">
         <div class="grow" />
-        <div class="place-content-center flex p-4" style="width:{width}px">
+        <div class="place-content-center flex p-4">
             <div class="grow" />
             <div class="flex flex-col">
                 <div class="grow" />

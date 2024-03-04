@@ -13,7 +13,8 @@
 />
 
 <div
-    class="grow text-wrap bg-gray-100 p-2 m-1 w-rounded-lg font-sans text-gray-800 overflow-y-scroll"
+    class="grow text-wrap p-2 m-1 w-rounded-lg font-sans text-gray-800 overflow-y-scroll"
+    style="scrollbar-width: none"
 >
     <span class="text-blue-700 font-bold">What is this step for:</span>
     <slot name="step" />

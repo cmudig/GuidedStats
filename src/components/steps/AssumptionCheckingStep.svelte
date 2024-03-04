@@ -46,7 +46,7 @@
         </div>
         <div class="flex">
             <div class="grow" />
-            <Tooltip title="Execute">
+            <Tooltip title="Apply Transformation/Skip">
                 <button on:click={execute}><Done /></button>
             </Tooltip>
         </div>

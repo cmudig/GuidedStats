@@ -19,7 +19,6 @@
     }
 
     $: updateMessage($workflowInfo.message);
-    $: console.log($isBlocked);
 </script>
 
 {#if $isBlocked}

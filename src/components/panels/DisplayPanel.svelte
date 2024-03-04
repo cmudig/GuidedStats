@@ -18,8 +18,8 @@
     {#if $workflowInfo.steps?.length > 0}
         <StepPanel {steps} />
     {:else}
-        <div class="flex flex-col items-center justify-center w-full h-full">
-            <div class="text-rose-500 text-xl font-bold">
+        <div class="flex flex-col w-full h-full">
+            <div class="text-gray-400">
                 Click on a workflow on upper left side to start the analysis
             </div>
         </div>

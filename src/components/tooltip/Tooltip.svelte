@@ -6,11 +6,11 @@
 
     function mouseOver(event) {
         isHovered = true;
-        x = event.layerX - 20;
+        x = event.layerX - 80;
         y = event.layerY + 5;
     }
     function mouseMove(event) {
-        x = event.layerX - 20;
+        x = event.layerX - 80;
         y = event.layerY + 5;
     }
     function mouseLeave() {

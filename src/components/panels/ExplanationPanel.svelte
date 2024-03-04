@@ -4,6 +4,7 @@
     import { selectingStep } from '../../stores';
     import Explanation from '../explanation/Explanation.svelte';
     import MulticolExp from '../explanation/MulticolExp.svelte';
+    import ExportCode from '../explanation/ExportCode.svelte';
 
     export let steps: Array<Step> = undefined;
 </script>
@@ -21,6 +22,11 @@
                 <Explanation>
                     <div slot="step">{steps[$selectingStep].stepExplanation}</div>
                     <MulticolExp slot="concept" />
+                </Explanation>
+            {:else if steps[$selectingStep].stepName == "Evaluate the model"}
+                <Explanation>
+                    <div slot="step">{steps[$selectingStep].stepExplanation}</div>
+                    <ExportCode slot="concept" />
                 </Explanation>
             {:else}
                 <Explanation>
