@@ -23,11 +23,11 @@ _regressionConfig = [
       }},
     {"id": 2,
      "stepType": "AssumptionCheckingStep",
-     "stepExplanation": "Check for outliers in the dependent variable. \
-       Outliers can significantly affect the regression model, and this step helps to identify and handle them appropriately.\
-    One of the least squares assumptions is that large outliers are unlikely. \
+     "stepExplanation": "Check for outliers in the independent variables. \
+        One of the least squares assumptions is that large outliers are unlikely. \
+       Outliers can significantly affect the regression model.\
       Even if it seems like extreme observations have been recorded correctly, it is advisable to exclude \
-    them before estimating a model since OLS suffers from sensitivity to outliers.",
+    them or perform data transformation on them before estimating.",
      "stepConfig":
      {"stepName": "Check Outliers",
       "inputNames": ["Y"],
@@ -55,10 +55,10 @@ _regressionConfig = [
     {"id": 4,
      "stepType": "AssumptionCheckingStep",
      "stepExplanation": "Check for outliers in the independent variables. \
-       Outliers can significantly affect the regression model, and this step helps to identify and handle them appropriately.\
-      One of the least squares assumptions is that large outliers are unlikely. \
+        One of the least squares assumptions is that large outliers are unlikely. \
+       Outliers can significantly affect the regression model.\
       Even if it seems like extreme observations have been recorded correctly, it is advisable to exclude \
-    them before estimating a model since OLS suffers from sensitivity to outliers.",
+    them or perform data transformation on them before estimating.",
      "stepConfig":
      {"stepName": "Check Outliers",
       "assumptionName": "outlier",
@@ -70,9 +70,7 @@ _regressionConfig = [
      },
     {"id": 5,
      "stepType": "AssumptionCheckingStep",
-     "stepExplanation": "Check for multicollinearity among the independent variables. \
-       Multicollinearity occurs when two or more independent variables are highly correlated, \
-         which can affect the stability and interpretation of the regression model.",
+     "stepExplanation": "Check for multicollinearity among independent variables.",
      "stepConfig":
      {"stepName": "Check Multicollinearity",
       "assumptionName": "multicollinearity",
@@ -94,7 +92,7 @@ _regressionConfig = [
      },
     {"id": 7,
      "stepType": "ModelStep",
-     "stepExplanation": "Train the regression model using the selected independent variables and the dependent variable.",
+     "stepExplanation": "Use independent and dependent variables to train the model and predict the outcome.",
      "stepConfig":
      {"stepName": "Train model",
       "inputNames": ["XTrain", "yTrain"],

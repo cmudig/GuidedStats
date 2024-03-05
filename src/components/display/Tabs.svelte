@@ -9,6 +9,7 @@
     import type { Writable } from 'svelte/store';
     import { afterUpdate, getContext, onMount } from 'svelte';
     import { deepCopy } from '../../utils';
+    import { activeTabValue } from '../../stores';
     import {
         getBoxplotStats,
         getDensityPlotStats,
@@ -27,7 +28,6 @@
 
     const serial: Writable<string> = getContext('serial');
 
-    let activeTabValue = 0;
     let active = false;
 
     function updateTransformation(event: Event) {
@@ -35,7 +35,7 @@
         let info = deepCopy($workflowInfo);
         info.steps[stepIndex].config.transformationName = transformationName;
         info.steps[stepIndex].config.variableResults = [
-            { name: assumptionResults[activeTabValue].name }
+            { name: assumptionResults[$activeTabValue].name }
         ];
         workflowInfo.set(info);
     }
@@ -63,16 +63,16 @@
     }
 
     onMount(() => {
-        updateChart(viz, activeTabValue);
+        updateChart(viz, $activeTabValue);
     });
 
     afterUpdate(() => {
-        updateChart(viz, activeTabValue);
+        updateChart(viz, $activeTabValue);
     });
 
-    $: updateChart(viz, activeTabValue);
+    $: updateChart(viz, $activeTabValue);
 
-    const handleClick = tabValue => () => (activeTabValue = tabValue);
+    const handleClick = tabValue => () => activeTabValue.set(tabValue);
 </script>
 
 <div class="flex-col p-2 w-3/4">
@@ -82,11 +82,11 @@
                 <button on:click={handleClick(i)}
                     ><span
                         class={`font-bold rounded-t-md block py-2 px-4 cursor-pointer ${
-                            activeTabValue === i
+                            $activeTabValue === i
                                 ? 'text-gray-600 bg-white border border-b-0 border-gray-300'
                                 : 'hover:border-gray-200'
                         }`}
-                        style={activeTabValue === i
+                        style={$activeTabValue === i
                             ? ' margin-bottom:-1px'
                             : ''}>{assumptionResult.name}</span
                     ></button
@@ -95,14 +95,14 @@
         {/each}
     </ul>
     {#each Array(num) as _, i}
-        {#if activeTabValue == i}
+        {#if $activeTabValue == i}
             <div
                 class="mb-2 p-2 border border-gray-300 rounded-b-lg border-t-0"
             >
                 <div class="flex">
                     <div class="grow" />
                     <div style="flex-wrap: wrap;width:300px">
-                        {assumptionResults[activeTabValue].prompt}
+                        {assumptionResults[$activeTabValue].prompt}
                     </div>
                     <div class="grow" />
                 </div>
@@ -140,7 +140,7 @@
                                     <span
                                         class="font-bold"
                                         style="color: rgb(0, 138, 254);"
-                                        >{assumptionResults[activeTabValue]
+                                        >{assumptionResults[$activeTabValue]
                                             .name}</span
                                     ></span
                                 >
@@ -165,11 +165,6 @@
                                 </div>
                             {/if}
                             <div class="grow" />
-                        </div>
-                        <div class="text-xs text-gray-600 m-1">
-                            The visualization will refresh after selecting one
-                            transformation. Note: If the visualization does not
-                            refresh, fold the current step and unfold again.
                         </div>
                     </div>
                 {/if}

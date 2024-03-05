@@ -1,4 +1,4 @@
-<h6 class="text-blue-700">Export Options</h6>
+<h7 class="text-blue-700">Export Options</h7>
 <p>
     Here are the available commands for exporting various elements of your
     analysis:

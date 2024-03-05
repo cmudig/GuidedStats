@@ -1,8 +1,9 @@
 _ttestConfig = [
     {"id": 0,
      "stepType": "LoadDatasetStep",
-     "stepExplanation": "Initiate the analysis by loading the dataset to be used in the t-test. \
-         This initial step is crucial for setting up the data for the steps that follow.",
+     "stepExplanation":  "Load the dataset that will be used for t-test. \
+       This is the first step in the workflow and is essential for \
+         initializing the dataset for subsequent steps.",
      "stepConfig":
      {
          "stepName": "Load Dataset",
@@ -23,7 +24,8 @@ _ttestConfig = [
     {"id": 2,
      "stepType": "AssumptionCheckingStep",
       "stepExplanation": "Examine the data for outliers that could potentially skew the results.\
-          Outliers are extreme values that deviate from other observations in the dataset.",
+          Outliers are extreme values that deviate from other observations in the dataset.\
+              They may make the mean unsuitable as a summary measure.",
      "stepConfig":
      {"stepName": "Check Outliers",
       "inputNames": ["Y1"],
@@ -47,7 +49,7 @@ _ttestConfig = [
       }},
     {"id": 4,
      "stepType": "AssumptionCheckingStep",
-     "stepExplanation": "Assess the homogeneity of variances between the two groups using Levene's test.",
+     "stepExplanation": "Assess the homogeneity of variances between the two groups using Levene's test. Equal variances across samples is called homogeneity of variance. Levene's test is used to test if samples have equal variances.",
      "stepConfig":
      {"stepName": "Check Homogeneity of Variance",
       "inputNames": ["Y1", "Y2"],
@@ -62,7 +64,8 @@ _ttestConfig = [
         "stepType": "AssumptionCheckingStep",
         "stepExplanation": "Two independent samples t-Test requires the two groups have normal distributions. \
             In practice, the method is robust to violations of the normal population assumption. \
-                This is especially true when both n1 and n2 are at least about 30, by the Central Limit Theorem.",
+                This is especially true when both n1 and n2 are at least about 30, by the Central Limit Theorem.\
+                    The Shapiro-Wilk test tests whether a random sample comes from a normal distribution.",
         "stepConfig":
         {"stepName": "Check Normality of the First Group",
          "inputNames": ["Y1"],
@@ -75,8 +78,10 @@ _ttestConfig = [
     {
         "id": 6,
         "stepType": "AssumptionCheckingStep",
-        "stepExplanation": "Check the normality of the second group's distribution. \
-            This step complements the previous normality check to ensure that both groups are suitable for the t-test analysis.",
+        "stepExplanation": "Two independent samples t-Test requires the two groups have normal distributions. \
+            In practice, the method is robust to violations of the normal population assumption. \
+                This is especially true when both n1 and n2 are at least about 30, by the Central Limit Theorem.\
+                    The Shapiro-Wilk test tests whether a random sample comes from a normal distribution.",
         "stepConfig":
         {"stepName": "Check Normality of the Second Group",
          "inputNames": ["Y2"],

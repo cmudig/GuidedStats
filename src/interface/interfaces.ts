@@ -32,6 +32,9 @@ export type Transformation = {
 export type AssumptionResult = {
     name: string;
     prompt: string;
+    stats: number;
+    pvalue: number;
+    rejectIndicator: string;
 };
 
 export type Step = {

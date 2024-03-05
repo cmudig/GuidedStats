@@ -163,7 +163,7 @@ class GuidedStep(Step):
                     result = {"name": column}
                     outputs = self.computeMetric(
                         dataframe, column, *referenceColumns)
-                    result["score"] = outputs["statistics"]
+                    result["score"] = outputs["stats"]
                     if "pvalue" in outputs:
                         pvalue = outputs["pvalue"]
                         result["pvalue"] = pvalue
@@ -592,7 +592,7 @@ class ModelStep(GuidedStep):
 
     @tl.observe("config")
     def onObserveConfig(self, change):
-        if "modelName" in change["new"] and change["new"].get("modelName",None) != change["old"].get("modelName",None):
+        if "modelName" in change["new"] and change["new"].get("modelName", None) != change["old"].get("modelName", None):
             self.config.pop("modelParameters", None)
             modelName = change["new"]["modelName"]
             self.modelWrapper.setModel(modelName)
@@ -690,7 +690,7 @@ class EvaluationStep(GuidedStep):
                     for metric in self.metricWrappers:
                         outputs = metric.compute(Y_true, Y_hat)
                         modelResults.append(
-                            {"name": metric._metricName, "score": round(outputs["statistics"], 4), "group": "Test"})
+                            {"name": metric._metricName, "score": round(outputs["stats"], 4), "group": "Test"})
 
                 X_wconstant = sm.add_constant(self.inputs["XTrain"])
                 Y_hat = self.inputs["model"].predict(X_wconstant)
@@ -703,7 +703,7 @@ class EvaluationStep(GuidedStep):
                     for metric in self.metricWrappers:
                         outputs = metric.compute(Y_true, Y_hat)
                         modelResults.append(
-                            {"name": metric._metricName, "score": round(outputs["statistics"], 4), "group": "Train"})
+                            {"name": metric._metricName, "score": round(outputs["stats"], 4), "group": "Train"})
 
                 self.changeConfig("modelResults", modelResults)
 
