@@ -29,6 +29,7 @@
     const serial: Writable<string> = getContext('serial');
 
     let active = false;
+    let vizSubType = 'density';
 
     function updateTransformation(event: Event) {
         let transformationName = (event.target as HTMLSelectElement).value;
@@ -45,7 +46,7 @@
             let specs = undefined;
             specs = viz.map(v => {
                 if (v.vizType == 'density') {
-                    return getDensityPlotStats(v);
+                    return getDensityPlotStats(v, vizSubType);
                 } else if (v.vizType == 'boxplot') {
                     return getBoxplotStats(v);
                 } else if (v.vizType == 'heatmap') {
@@ -114,6 +115,20 @@
                     />
                     <div class="grow" />
                 </div>
+                {#if $workflowInfo.steps[stepIndex]?.config?.viz[$activeTabValue].vizType == 'density'}
+                    <div class="p-2 flex">
+                        <div class="grow" />
+                        <span class="py-1 px-2">Select:</span>
+                        <select
+                            class="rounded appearance-auto py-1 px-2 mx-1 bg-white border-solid border border-gray-300 focus:border-blue-500"
+                            bind:value={vizSubType}
+                        >
+                            <option value="qq">QQ Plot</option>
+                            <option value="density">Density Plot</option>
+                        </select>
+                        <div class="grow" />
+                    </div>
+                {/if}
                 {#if $workflowInfo.steps[stepIndex]?.config?.assumptionName === 'outlier'}
                     <div
                         class="p-2 m-2 flex flex-col border border-gray-300 rounded"

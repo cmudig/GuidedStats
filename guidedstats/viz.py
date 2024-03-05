@@ -53,33 +53,13 @@ def multiBoxplotVizStats(*args, **kwargs):
 
 def residVizStats(Y_hat: Iterable, Y_true: Iterable, **kwargs):
     max_point = kwargs.get("max_point", 100)
-    group = kwargs.get("group","group")
+    group = kwargs.get("group", "group")
     resid = Y_hat - Y_true
     vizStats = []
     for i in range(len(Y_hat)):
         vizStats.append({"x": Y_hat[i], "y": resid[i], "group": group})
     sample = random.sample(vizStats, min(max_point, len(vizStats)))
     return sample
-
-
-def densityVizStats(Y1: Iterable, Y2: Iterable, **kwargs):
-    max_point = kwargs.get("max_point", 100)
-    group_label = kwargs.get("group_label", ["group1", "group2"])
-
-    stats = []
-    Y1 = np.array(Y1).reshape(-1).tolist()
-    Y2 = np.array(Y2).reshape(-1).tolist()
-    # randomly sample min(max_point,len(X)) points
-    sample_num = min(max_point, len(Y1))
-    sample_index = np.random.choice(len(Y1), sample_num, replace=False)
-    for i in sample_index:
-        stats.append({"group": group_label[0], "value": Y1[i]})
-    sample_num = min(max_point, len(Y2))
-    sample_index = np.random.choice(len(Y2), sample_num, replace=False)
-    for i in sample_index:
-        stats.append({"group": group_label[1], "value": Y2[i]})
-    del Y1, Y2
-    return stats
 
 
 def multicollinearityVizStats(X: Iterable, df: pd.DataFrame, **kwargs):
@@ -97,18 +77,35 @@ def multicollinearityVizStats(X: Iterable, df: pd.DataFrame, **kwargs):
 
 def normalityVizStats(X: Iterable, **kwargs):
     max_point = kwargs.get("max_point", 150)
-    # generate normally distributed data with mean = mean(X) and std = std(X)
-    mean = np.mean(X)
-    std = np.std(X)
-    Y = np.random.normal(mean, std, len(X))
-    stats = densityVizStats(X, Y, max_point=max_point, group_label=[
-                            "current data column", "normally distributed data"])
+
+    stats = []
+    X = np.array(X).reshape(-1).tolist()
+    # randomly sample min(max_point,len(X)) points
+    sample_num = min(max_point, len(X))
+    sample_index = np.random.choice(len(X), sample_num, replace=False)
+    for i in sample_index:
+        stats.append({"value": X[i]})
+    del X
     return stats
 
 
 def tTestVizStats(Y1: Iterable, Y2: Iterable, **kwargs):
     max_point = kwargs.get("max_point", 150)
-    stats = densityVizStats(Y1, Y2, max_point=max_point, **kwargs)
+    group_label = kwargs.get("group_label", ["group1", "group2"])
+
+    stats = []
+    Y1 = np.array(Y1).reshape(-1).tolist()
+    Y2 = np.array(Y2).reshape(-1).tolist()
+    # randomly sample min(max_point,len(X)) points
+    sample_num = min(max_point, len(Y1))
+    sample_index = np.random.choice(len(Y1), sample_num, replace=False)
+    for i in sample_index:
+        stats.append({"group": group_label[0], "value": Y1[i]})
+    sample_num = min(max_point, len(Y2))
+    sample_index = np.random.choice(len(Y2), sample_num, replace=False)
+    for i in sample_index:
+        stats.append({"group": group_label[1], "value": Y2[i]})
+    del Y1, Y2
     return stats
 
 

@@ -93,33 +93,141 @@ export function getScatterPlotStats(
 
 export function getDensityPlotStats(
     viz: Visualization,
-    width: number = 200,
+    subvizType: string = 'density',
+    width: number = 300,
     height: number = 120
 ) {
-    const maximum = Math.max(...viz.vizStats.map((d: any) => d.value));
-    const minimum = Math.min(...viz.vizStats.map((d: any) => d.value));
-    const spec = {
-        $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
-        width: 'container',
-        height: height,
-        data: {
-            values: viz.vizStats
-        },
-        mark: 'area',
-        transform: [
-            {
-                density: 'value',
-                groupby: ['group'],
-                extent: [minimum, maximum]
+    if (subvizType === 'density') {
+        const spec = {
+            $schema: 'https://vega.github.io/schema/vega/v5.json',
+            description:
+                'Area chart using density estimation to show a probability density or cumulative distribution.',
+            width: width,
+            height: height,
+            padding: 5,
+            data: [
+                {
+                    name: 'points',
+                    values: viz.vizStats
+                },
+                {
+                    name: 'summary',
+                    source: 'points',
+                    transform: [
+                        {
+                            type: 'aggregate',
+                            fields: ['value', 'value'],
+                            ops: ['mean', 'stdev'],
+                            as: ['mean', 'stdev']
+                        }
+                    ]
+                },
+                {
+                    name: 'density',
+                    source: 'points',
+                    transform: [
+                        {
+                            type: 'density',
+                            extent: { signal: "domain('xscale')" },
+                            distribution: { function: 'kde', field: 'value' }
+                        }
+                    ]
+                },
+                {
+                    name: 'normal',
+                    transform: [
+                        {
+                            type: 'density',
+                            extent: { signal: "domain('xscale')" },
+                            distribution: {
+                                function: 'normal',
+                                mean: { signal: "data('summary')[0].mean" },
+                                stdev: { signal: "data('summary')[0].stdev" }
+                            }
+                        }
+                    ]
+                }
+            ],
+            scales: [
+                {
+                    name: 'xscale',
+                    type: 'linear',
+                    range: 'width',
+                    domain: { data: 'points', field: 'value' },
+                    nice: true
+                },
+                {
+                    name: 'yscale',
+                    type: 'linear',
+                    range: 'height',
+                    round: true,
+                    domain: {
+                        fields: [
+                            { data: 'density', field: 'density' },
+                            { data: 'normal', field: 'density' }
+                        ]
+                    }
+                },
+                {
+                    name: 'color',
+                    type: 'ordinal',
+                    domain: ['Normal Estimate', 'Sample Density'],
+                    range: ['#444', 'steelblue']
+                }
+            ],
+            axes: [
+                { orient: 'bottom', scale: 'xscale', zindex: 1 },
+                { orient: 'left', scale: 'yscale', tickCount: 5, zindex: 1 }
+            ],
+            legends: [
+                { orient: 'top-left', fill: 'color', offset: 0, zindex: 1 }
+            ],
+            marks: [
+                {
+                    type: 'area',
+                    from: { data: 'density' },
+                    encode: {
+                        update: {
+                            x: { scale: 'xscale', field: 'value' },
+                            y: { scale: 'yscale', field: 'density' },
+                            y2: { scale: 'yscale', value: 0 },
+                            fill: { signal: "scale('color', 'Sample Density')" }
+                        }
+                    }
+                },
+                {
+                    type: 'line',
+                    from: { data: 'normal' },
+                    encode: {
+                        update: {
+                            x: { scale: 'xscale', field: 'value' },
+                            y: { scale: 'yscale', field: 'density' },
+                            stroke: {
+                                signal: "scale('color', 'Normal Estimate')"
+                            },
+                            strokeWidth: { value: 2 }
+                        }
+                    }
+                }
+            ]
+        };
+        return spec;
+    } else if (subvizType === 'qq') {
+        const specs = {
+            $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+            data: { values: viz.vizStats },
+            transform: [
+                { quantile: 'value', step: 0.01, as: ['p', 'v'] },
+                { calculate: 'quantileNormal(datum.p)', as: 'norm' }
+            ],
+            mark: 'point',
+            encoding: {
+                x: { field: 'norm', type: 'quantitative' },
+                y: { field: 'v', type: 'quantitative' }
             }
-        ],
-        encoding: {
-            x: { field: 'value', type: 'quantitative' },
-            y: { field: 'density', type: 'quantitative', stack: 'zero' },
-            color: { field: 'group', type: 'nominal' }
-        }
-    };
-    return spec;
+        };
+        return specs;
+    }
 }
 
 export function getTTestPlotStats(
@@ -142,15 +250,15 @@ export function getTTestPlotStats(
             {
                 mark: 'boxplot',
                 encoding: {
-                    x: { field: 'group', type: 'nominal' },
-                    y: { field: 'value', type: 'quantitative' }
+                    y: { field: 'group', type: 'nominal' },
+                    x: { field: 'value', type: 'quantitative' }
                 }
             },
             {
                 mark: 'point',
                 encoding: {
-                    x: { field: 'group', type: 'nominal' },
-                    y: { field: 'value', type: 'quantitative' }
+                    y: { field: 'group', type: 'nominal' },
+                    x: { field: 'value', type: 'quantitative' }
                 }
             }
         ],

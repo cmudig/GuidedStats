@@ -113,7 +113,7 @@ export type ScatterPlotStats = {
 };
 
 export type DensityPlotStats = {
-    group: number | string;
+    group?: number | string;
     value: number;
 };
 
