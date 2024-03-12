@@ -28,6 +28,7 @@
                     {:else}
                         <select
                             class="rounded py-1 px-2 bg-white appearance-auto border-solid border border-gray-300 focus:border-blue-500"
+                            value={(parameter?.default)? parameter.default : parameter?.options[0]?.name}
                             on:change={event =>
                                 handleInputChange(
                                     parameter.name,
@@ -48,6 +49,7 @@
                     <input
                         class="rounded py-1 px-2 bg-white appearance-auto border-solid border border-gray-300 focus:border-blue-500"
                         type="number"
+                        value={(parameter?.default)? parameter.default : 0}
                         on:input={event =>
                             handleInputChange(
                                 parameter.name,

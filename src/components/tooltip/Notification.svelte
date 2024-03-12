@@ -12,7 +12,6 @@
 
     function updateMessage(msg: string) {
         if (!_.isUndefined(msg) && !_.isEmpty(msg)) {
-            console.log('message:', msg);
             isBlocked.set(true);
             message = msg;
         }
@@ -28,7 +27,6 @@
             let info = deepCopy($workflowInfo);
             info.message = '';
             workflowInfo.set(info);
-            console.log($workflowInfo);
             isBlocked.set(false);
         }}
     >

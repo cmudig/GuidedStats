@@ -13,7 +13,7 @@ ASSUMPTIONS = {
         "vis_type": "boxplot",
         "vis_func": viz.boxplotVizStats,
         "metric_func": METRICS["outlier"],
-        "prompt": 'There are {stats} outliers fall outside of the "interquartile range" (IQR)',
+        "prompt": '{stats} outlier(s) fall outside of the "interquartile range" (IQR)',
     },
     "levene": {
         "display": "Levene Test",
@@ -38,7 +38,7 @@ ASSUMPTIONS = {
         "vis_func": viz.multicollinearityVizStats,
         "metric_func": METRICS["VIF"],
         # A VIF of 1 means that there is no correlation among the jth predictor and the remaining predictor variables, and hence the variance of bj is not inflated at all. The general rule of thumb is that VIFs exceeding 4 warrant further investigation, while VIFs exceeding 10 are signs of serious multicollinearity requiring correction.
-        "prompt": "The VIF of the predictor is {stats}",
+        "prompt": "The VIF of the predictor is {stats}. {annotation}",
     }
 }
 
@@ -72,18 +72,24 @@ class AssumptionWrapper(object):
         else:
             raise KeyError("The assumption does not exist")
 
-    def checkAssumption(self, X: pd.DataFrame, *referenceXs: pd.DataFrame):
+    def checkAssumption(self, X: pd.DataFrame, *referenceXs: pd.DataFrame, **kwargs):
         # TBC
         assumptionResults = []
         vizStats = []
         if self._assumption["isSingleColumn"]:
             for col in X.columns:
+                previousInputs = kwargs.get("previousInputs", None)
+                if previousInputs is not None:
+                    previousX = list(previousInputs.values())[0][col]
+                else:
+                    previousX = None
                 if self._assumption["vis_func"] is not None:
-                    stats = self._assumption["vis_func"](X[col], *referenceXs)
+                    stats = self._assumption["vis_func"](
+                        X[col], *referenceXs, previousX=previousX)
                     vizStats.append(stats)
                 if self._assumption["metric_func"] is not None:
                     outputs = self._assumption["metric_func"](
-                        X[[col]], *referenceXs)
+                        X[[col]], *referenceXs, previousX=previousX)
                     prompt = self._assumption["prompt"].format(**outputs)
                     assumptionResults.append(
                         {**outputs, "name": str(col), "prompt": prompt})

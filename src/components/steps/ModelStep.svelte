@@ -16,12 +16,10 @@
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
-    $: if (!_.isUndefined(modelName)) {
-        const foundParameters = step.config.modelCandidates.find(
-            x => x.name == modelName
-        )?.parameters;
-        parameterValues = foundParameters;
-    }
+    step.config.modelCandidates.filter(x => x?.isDefault)?.length > 0
+        ? (modelName = step.config.modelCandidates.filter(x => x?.isDefault)[0]
+              .name)
+        : (modelName = undefined);
 
     function handleInputChange(parameterName: string, value: any) {
         let parameter = parameterValues?.find(
@@ -35,11 +33,17 @@
         workflowInfo.set(info);
     }
 
-    function updateModelName(event) {
-        modelName = event.target.value;
-        let info: Workflow = deepCopy($workflowInfo);
-        info.steps[stepIndex].config.modelName = modelName;
-        workflowInfo.set(info);
+    function updateModelName(modelName: string) {
+        if (!_.isUndefined(modelName)) {
+            const foundParameters = step.config.modelCandidates.find(
+                x => x.name == modelName
+            )?.parameters;
+            parameterValues = foundParameters;
+
+            let info: Workflow = deepCopy($workflowInfo);
+            info.steps[stepIndex].config.modelName = modelName;
+            workflowInfo.set(info);
+        }
     }
 
     function execute(event) {
@@ -47,6 +51,8 @@
         info.steps[stepIndex].toExecute = true;
         workflowInfo.set(info);
     }
+
+    $: updateModelName(modelName);
 </script>
 
 <div class="flex flex-col h-full">
@@ -61,7 +67,6 @@
                 <select
                     class="rounded appearance-auto py-1 px-2 bg-white border-solid border border-gray-300 focus:border-blue-500"
                     bind:value={modelName}
-                    on:change={updateModelName}
                 >
                     <option disabled selected value> -- option -- </option>
                     {#each step.config.modelCandidates as modelCandidate}

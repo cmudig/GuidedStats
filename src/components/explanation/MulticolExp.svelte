@@ -27,7 +27,7 @@
         {:else if assumptionResult?.stats > 4}
             A VIF of <span class="font-bold" style="color:#008AFE"
                 >{assumptionResult?.name}</span
-            > above 4 raises concerns, but it is not a big issue.
+            > above 4 raises concerns, but it may not be a big issue.
         {:else}
             A VIF of <span class="font-bold" style="color:#008AFE"
                 >{assumptionResult?.name}</span

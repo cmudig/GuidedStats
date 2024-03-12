@@ -3,7 +3,7 @@ from statsmodels.stats.weightstats import ttest_ind
 import pandas as pd
 
 
-def naiveLR(X, Y=None):
+def naiveLR(X, Y):
     X_wconstant = sm.add_constant(X)
     model = sm.OLS(Y, X_wconstant).fit()
     results = Results()
@@ -19,18 +19,17 @@ def naiveLR(X, Y=None):
     return (model, results)
 
 
-
-def RidgeLR(X, Y=None, alpha=1.0):
+def RidgeLR(X, Y, alpha=1.0):
     X_wconstant = sm.add_constant(X)
     model = sm.OLS(Y, X_wconstant).fit_regularized(
         method='elastic_net', alpha=float(alpha), L1_wt=0.0)
-    #RegularizedResults
+    # RegularizedResults
     results = Results()
     results.setStat("params", model.params)
     return (model, results)
 
 
-def LassoLR(X, Y=None, alpha=1.0):
+def LassoLR(X, Y, alpha=1.0):
     X_wconstant = sm.add_constant(X)
     model = sm.OLS(Y, X_wconstant).fit_regularized(
         method='elastic_net', alpha=float(alpha), L1_wt=1.0)
@@ -41,7 +40,8 @@ def LassoLR(X, Y=None, alpha=1.0):
 
 def TTest(X1, X2, alpha=0.05, alternative="two-sided", equal_var=True):
     usevar = "unequal" if equal_var is False else "pooled"
-    tstats, pvalue, df = ttest_ind(X1, X2, alternative=alternative, usevar = usevar)
+    tstats, pvalue, df = ttest_ind(
+        X1, X2, alternative=alternative, usevar=usevar)
     results = Results()
     results.setStat("tstat", float(tstats))
     results.setStat("pvalue", float(pvalue))
@@ -67,17 +67,18 @@ models = {
 
 class Results(object):
     def __init__(self):
-        self.stats = {}   
-        
-    def setStat(self,statName:str,statValue):
+        self.stats = {}
+
+    def setStat(self, statName: str, statValue):
         self.stats[statName] = statValue
-    
-    def getStat(self,statName:str):
+
+    def getStat(self, statName: str):
         if statName in self.stats:
             return self.stats[statName]
         else:
             return None
-    
+
+
 class ModelWrapper(object):
     def __init__(self):
         self._model = None
@@ -109,11 +110,6 @@ class ModelWrapper(object):
         if self._results is None or modelwrapper._results is None:
             raise TypeError("Both models must be fitted first")
 
-        def format_output(value):
-            if isinstance(value, float):
-                return f'{value:.4f}'
-            return value
-
         # Function to format the output with significance stars
         def significance_stars(pvalue):
             if pvalue < 0.001:
@@ -138,13 +134,15 @@ class ModelWrapper(object):
 
         # General metrics
         metrics = [
-            ('R-squared', result1.rsquared, result2.rsquared),
-            ('Adjusted R-squared', result1.rsquared_adj, result2.rsquared_adj),
-            ('F-statistic', result1.fvalue, result2.fvalue),
-            ('Prob (F-statistic)', result1.f_pvalue, result2.f_pvalue),
-            ('Log-Likelihood', result1.llf, result2.llf),
-            ('AIC', result1.aic, result2.aic),
-            ('BIC', result1.bic, result2.bic)
+            ('R-squared', result1.getStat("rsquared"), result2.getStat("rsquared")),
+            ('Adjusted R-squared', result1.getStat("rsquared_adj"),
+             result2.getStat("rsquared_adj")),
+            ('F-statistic', result1.getStat("fvalue"), result2.getStat("fvalue")),
+            ('Prob (F-statistic)', result1.getStat("f_pvalue"),
+             result2.getStat("f_pvalue")),
+            ('Log-Likelihood', result1.getStat("llf"), result2.getStat("llf")),
+            ('AIC', result1.getStat("aic"), result2.getStat("aic")),
+            ('BIC', result1.getStat("bic"), result2.getStat("bic"))
         ]
 
         for metric, value1, value2 in metrics:
@@ -155,22 +153,23 @@ class ModelWrapper(object):
                 f"{value2:.4f}" if isinstance(value2, float) else value2)
 
         # Coefficient comparisons
-        all_params = set(result1.params.index) | set(result2.params.index)
+        all_params = set(result1.getStat("params").index) | set(
+            result2.getStat("params").index)
         for param in all_params:
             comparison_dict['Metric'].append(f'Coefficient ({param})')
             # Model 1 coefficients, p-values, and significance
-            if param in result1.params:
-                stars = significance_stars(result1.pvalues[param])
+            if param in result1.getStat("params"):
+                stars = significance_stars(result1.getStat("pvalues")[param])
                 comparison_dict['Model 1'].append(
-                    f"{result1.params[param]:.4f}{stars}")
+                    f"{result1.getStat('params')[param]:.4f}{stars}")
             else:
                 comparison_dict['Model 1'].append('')
 
             # Model 2 coefficients, p-values, and significance
-            if param in result2.params:
-                stars = significance_stars(result2.pvalues[param])
+            if param in result2.getStat("params"):
+                stars = significance_stars(result2.getStat("pvalues")[param])
                 comparison_dict['Model 2'].append(
-                    f"{result2.params[param]:.4f}{stars}")
+                    f"{result2.getStat('params')[param]:.4f}{stars}")
             else:
                 comparison_dict['Model 2'].append('')
 
@@ -192,55 +191,40 @@ class ModelWrapper(object):
                      .set_properties(subset=['Metric'], **{'text-align': 'left', 'font-weight': 'bold'})
                      .set_properties(subset=['Model 1', 'Model 2'], **{'text-align': 'right'}))
 
+        html = styled_df.to_html()
+        # Add notes to asterisks
+        html = html + "<p>Note: *** < 0.001, ** < 0.01, * < 0.05, . < 0.1 </p>"
         # Displaying the styled comparison table
-        display(HTML(styled_df.to_html()))
+        display(HTML(html))
 
     def fit(self, X: pd.DataFrame, Y: pd.Series | pd.DataFrame = None, **kwargs):
-        if Y is None:
-            outputs = self._model(X, Y, **kwargs)
+        if self._model is None:
+            raise ValueError("The model has not been set")
 
+        if not isinstance(Y, pd.Series) and not isinstance(Y, pd.DataFrame):
+            raise TypeError("Y should be a pandas Series or DataFrame")
+
+        outputs = self._model(X, Y, **kwargs)
+
+        if len(outputs) == 2:
             self.num_exog = X.shape[1]
-
-            if len(outputs) == 2:
-                (self.fittedModel, self._results) = outputs
-                
-                if hasattr(self._results, "rsquared"):
-                    self.stats = {
-                        "r_squared": self._results.rsquared,
-                        "adj_r_squared": self._results.rsquared_adj,
-                        "f_statistic": self._results.fvalue,
-                        "f_pvalue": self._results.f_pvalue,
-                        "log_likelihood": self._results.llf,
-                        "aic": self._results.aic,
-                        "bic": self._results.bic,
-                    }
-
-            else:
-                (self._results,) = outputs                          
-            return self, self._results
+            (self.fittedModel, self._results) = outputs
+            if self._results.getStat("rsquared"):
+                self.stats = {
+                    "r_squared": self._results.getStat("rsquared"),
+                    "adj_r_squared": self._results.getStat("rsquared_adj"),
+                    "f_statistic": self._results.getStat("fvalue"),
+                    "f_pvalue": self._results.getStat("f_pvalue"),
+                    "log_likelihood": self._results.getStat("llf"),
+                    "aic": self._results.getStat("aic"),
+                    "bic": self._results.getStat("bic"),
+                }
         else:
-            if isinstance(Y, pd.Series) or isinstance(Y, pd.DataFrame):
-                outputs = self._model(X, Y, **kwargs)
-
-                if len(outputs) == 2:
-                    (self.fittedModel, self._results) = outputs
-                    
-                    if hasattr(self._results, "rsquared"):                   
-                        self.stats = {
-                            "r_squared": self._results.rsquared,
-                            "adj_r_squared": self._results.rsquared_adj,
-                            "f_statistic": self._results.fvalue,
-                            "f_pvalue": self._results.f_pvalue,
-                            "log_likelihood": self._results.llf,
-                            "aic": self._results.aic,
-                            "bic": self._results.bic,
-                        }
-                else:
-                    (self._results,) = outputs
-                    group_stats1 = (X.mean().get(key=0), X.std().get(key=0), X.shape[0])
-                    group_stats2 = (Y.mean().get(key=0), Y.std().get(key=0), Y.shape[0])
-                    self._results.setStat("group_stats1", group_stats1)
-                    self._results.setStat("group_stats2", group_stats2)
-                return self, self._results
-            else:
-                raise TypeError("Y should be a pandas Series or DataFrame")
+            (self._results,) = outputs
+            group_stats1 = (X.mean().get(key=0),
+                            X.std().get(key=0), X.shape[0])
+            group_stats2 = (Y.mean().get(key=0),
+                            Y.std().get(key=0), Y.shape[0])
+            self._results.setStat("group_stats1", group_stats1)
+            self._results.setStat("group_stats2", group_stats2)
+        return self, self._results

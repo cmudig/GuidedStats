@@ -11,7 +11,7 @@
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
-    let percentage: number = 80;
+    let percentage: number = 100;
 
     // update percentage value before adjusting the slider
     afterUpdate(() => {

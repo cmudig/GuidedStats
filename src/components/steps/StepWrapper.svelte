@@ -24,9 +24,7 @@
     function unfold(newIsShown: boolean, stepIndex: number) {
         let updatedInfo = deepCopy($workflowInfo);
         updatedInfo.steps[stepIndex].isShown = newIsShown;
-        if (newIsShown) {
-            selectingStep.set(stepIndex);
-        }
+        selectingStep.set(stepIndex);
         workflowInfo.set(updatedInfo); // Update with the new object
     }
 </script>

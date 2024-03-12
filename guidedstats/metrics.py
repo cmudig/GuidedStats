@@ -21,8 +21,8 @@ format of a metric function:
 """
 
 
-def pearson(x, y, *args):
-    stats, pvalue = spstats.pearsonr(x, y.to_numpy().reshape((-1)))
+def pearson(X, Y, *args, **kwargs):
+    stats, pvalue = spstats.pearsonr(X, np.array(Y).reshape((-1)))
     return {
         "stats": stats,
         "pvalue": pvalue,
@@ -30,8 +30,8 @@ def pearson(x, y, *args):
     }
 
 
-def skewness(x, y: Iterable = None, *args):
-    stats, pvalue = spstats.skew(x)
+def skewness(X, Y: Iterable = None, *args, **kwargs):
+    stats, pvalue = spstats.skew(X)
     return {
         "stats": stats,
         "pvalue": pvalue,
@@ -39,8 +39,8 @@ def skewness(x, y: Iterable = None, *args):
     }
 
 
-def kurtosis(x, y: Iterable = None, *args):
-    stats = spstats.kurtosis(x)
+def kurtosis(X, Y: Iterable = None, *args, **kwargs):
+    stats = spstats.kurtosis(X)
     return {
         "stats": stats,
         "pvalue": None,
@@ -48,18 +48,25 @@ def kurtosis(x, y: Iterable = None, *args):
     }
 
 
-def outlier(x, y: Iterable = None, *args):
-    x = x.to_numpy().reshape((-1))
-    Q1 = np.percentile(x, 25)
-    Q3 = np.percentile(x, 75)
-    IQR = Q3 - Q1
+def outlier(X, Y: Iterable = None, *args, **kwargs):
+    X = X.to_numpy().reshape((-1))
+    previousX = kwargs.get("previousX", None)
+    if previousX is not None:
+        previousX = previousX.to_numpy().reshape((-1))
+        Q1 = np.percentile(previousX, 25)
+        Q3 = np.percentile(previousX, 75)
+        IQR = Q3 - Q1
+    else:
+        Q1 = np.percentile(X, 25)
+        Q3 = np.percentile(X, 75)
+        IQR = Q3 - Q1
 
     # Define the outlier thresholds
     lower_threshold = Q1 - 1.5 * IQR
     upper_threshold = Q3 + 1.5 * IQR
 
     count = 0
-    for item in x:
+    for item in X:
         if item < lower_threshold or item > upper_threshold:
             count += 1
     return {
@@ -69,7 +76,7 @@ def outlier(x, y: Iterable = None, *args):
     }
 
 
-def levene(Y1: Iterable, Y2: Iterable, *args):
+def levene(Y1: Iterable, Y2: Iterable, *args, **kwargs):
     # Perform Levene test for testing equal variances.
     Y1 = np.array(Y1).reshape(-1).tolist()
     Y2 = np.array(Y2).reshape(-1).tolist()
@@ -87,8 +94,8 @@ def levene(Y1: Iterable, Y2: Iterable, *args):
     }
 
 
-def sharpiro(x, y: Iterable = None, *args):
-    stats, p = spstats.shapiro(x)
+def sharpiro(X, Y: Iterable = None, *args, **kwargs):
+    stats, p = spstats.shapiro(X)
     stats, p = round(stats, 6), round(p, 6)
 
     if p < 0.05:
@@ -102,7 +109,7 @@ def sharpiro(x, y: Iterable = None, *args):
     }
 
 
-def mse(y_true, y_pred, *args):
+def mse(y_true, y_pred, *args, **kwargs):
     stats = np.mean((np.array(y_true)-np.array(y_pred))**2)
     return {
         "stats": stats,
@@ -111,7 +118,7 @@ def mse(y_true, y_pred, *args):
     }
 
 
-def r2(y_true, y_pred, *args):
+def r2(y_true, y_pred, *args, **kwargs):
     stats = r2_score(y_true, y_pred)
     return {
         "stats": stats,
@@ -120,22 +127,45 @@ def r2(y_true, y_pred, *args):
     }
 
 
-def VIF(exog: pd.DataFrame, design_matrix: pd.DataFrame, *args):
+def adjusted_r2(y_true, y_pred, *args, **kwargs):
+    n = len(y_true)
+    exogs = args[0]
+    p = exogs.shape[1] - 1
+    r2 = r2_score(y_true, y_pred)
+    stats = 1 - (1-r2)*(n-1)/(n-p-1)
+    return {
+        "stats": stats,
+        "pvalue": None,
+        "rejectIndicator": None
+    }
+
+
+def VIF(exog: pd.DataFrame, design_matrix: pd.DataFrame, *args, **kwargs):
     # find the index of exog in design_matrix
     other_exogs = []
     for i in range(design_matrix.shape[1]):
         if design_matrix.columns[i] != exog.columns[0] and design_matrix.iloc[:, i].dtype in QUANTITATIVE_DTYPES:
             other_exogs.append(design_matrix.iloc[:, i])
     # concatenate other exogs with exog
-    design_matrix = pd.concat(other_exogs, axis=1)
-    design_matrix = pd.concat([exog, design_matrix], axis=1)
-    vif = variance_inflation_factor(design_matrix.values, 0)
-    vif = round(vif, 6)
+    if len(other_exogs) != 0:
+        design_matrix = pd.concat(other_exogs, axis=1)
+        design_matrix = pd.concat([exog, design_matrix], axis=1)
+        vif = variance_inflation_factor(design_matrix.values, 0)
+        vif = round(vif, 6)
+        return {
+            "stats": vif,
+            "pvalue": None,
+            "rejectIndicator": None,
+            "annotation": ""
+        }
+    else:
+        vif = None
 
     return {
         "stats": vif,
         "pvalue": None,
-        "rejectIndicator": None
+        "rejectIndicator": None,
+        "annotation": "for one predictor, there is no need to check multicollinearity"
     }
 
 
@@ -148,6 +178,7 @@ METRICS = {
     "sharpiro": sharpiro,
     "mse": mse,
     "r2": r2,
+    "adjusted_r2": adjusted_r2,
     "VIF": VIF,
 }
 # TBC, currently we only support metrics for quantitative variables
@@ -181,8 +212,8 @@ class MetricWrapper(object):
         else:
             raise KeyError("The metric does not exist")
 
-    def compute(self, X: Iterable, *referenceXs: Iterable):
-        outputs = self._metric(X, *referenceXs)
+    def compute(self, X: Iterable, Y: Iterable, *referenceXs: Iterable):
+        outputs = self._metric(X, Y, *referenceXs)
         return outputs
 
 

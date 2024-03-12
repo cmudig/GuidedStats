@@ -23,7 +23,7 @@ _ttestConfig = [
       }},
     {"id": 2,
      "stepType": "AssumptionCheckingStep",
-      "stepExplanation": "Examine the data for outliers that could potentially skew the results.\
+     "stepExplanation": "Examine the data for outliers that could potentially skew the results.\
           Outliers are extreme values that deviate from other observations in the dataset.\
               They may make the mean unsuitable as a summary measure.",
      "stepConfig":
@@ -99,12 +99,13 @@ _ttestConfig = [
      {"stepName": "State Hypothesis and Alpha Level",
       "inputNames": ["Y1", "Y2"],
       "modelCandidates": [{"name": "T Test",
-                           "parameters": [{"name": "alpha", "displayName": "Alpha Level"},
+                           "parameters": [{"name": "alpha", "displayName": "Alpha Level", "default": 0.05},
                                           {"name": "alternative", "displayName": "Alternative Hypothesis", "options": [
-                                              {"name": "two-sided"}, {"name": "smaller"}, {"name": "larger"}]},
+                                              {"name": "two-sided"}, {"name": "smaller"}, {"name": "larger"}], "default": "two-sided"},
                                           {"name": "equal_var", "displayName": "Equal Variance", "options": [
-                                              {"name": "True"}, {"name": "False"}]}
-                                          ]
+                                              {"name": "True"}, {"name": "False"}], "default": "True"}
+                                          ],
+                           "isDefault": True,
                            }],
       }},
     {"id": 8,

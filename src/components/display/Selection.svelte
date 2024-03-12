@@ -7,13 +7,11 @@
     export let maxSelectedNum: number = 1;
 
     let selectedOptionNames: string[] = [];
-    let active: boolean = false;
 
     function handleOption(event, name: string) {
         if (event.shiftKey) {
             let selected = [...selectedOptionNames, name];
             if (selected.length > maxSelectedNum) {
-                active = true;
                 return;
             }
             selectedOptionNames = [...selectedOptionNames, name];

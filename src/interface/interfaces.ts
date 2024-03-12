@@ -11,11 +11,13 @@ export type Parameter = {
     options?: Option[];
     value?: number | string | number[] | string[];
     pvalue?: number | number[];
+    default?: number | string | number[] | string[];
 };
 
 export type Model = {
     name: string;
     parameters: Parameter[];
+    isDefault?: boolean;
 };
 
 export type ModelResult = {

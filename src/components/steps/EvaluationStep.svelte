@@ -105,7 +105,7 @@
                     <div class="p-2">
                         {#if step.config.modelParameters[0].hasOwnProperty('pvalue')}
                             <Table
-                                headers={['Name', 'Value', 'P']}
+                                headers={['Variable', 'Coefficient', 'P-value']}
                                 keys={['name', 'value', 'pvalue']}
                                 data={step?.config?.modelParameters}
                             />

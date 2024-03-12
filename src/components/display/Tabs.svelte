@@ -115,7 +115,7 @@
                     />
                     <div class="grow" />
                 </div>
-                {#if $workflowInfo.steps[stepIndex]?.config?.viz[$activeTabValue].vizType == 'density'}
+                {#if $workflowInfo.steps[stepIndex]?.config?.viz?.length > 0 && $workflowInfo.steps[stepIndex]?.config?.viz[$activeTabValue].vizType == 'density'}
                     <div class="p-2 flex">
                         <div class="grow" />
                         <span class="py-1 px-2">Select:</span>

@@ -43,7 +43,11 @@ export function getBoxplotStats(
             },
             {
                 transform: [{ flatten: ['outliers'] }],
-                mark: { type: 'point', style: 'boxplot-outliers' },
+                mark: {
+                    type: 'point',
+                    style: 'boxplot-outliers',
+                    tooltip: true
+                },
                 encoding: {
                     x: { field: 'outliers', type: 'quantitative' }
                 }
@@ -62,6 +66,8 @@ export function getScatterPlotStats(
 ) {
     let spec;
     if (group.length === 0) {
+        let xMax = Math.max(...viz.vizStats.map((d: any) => d.x));
+        let xMin = Math.min(...viz.vizStats.map((d: any) => d.x));
         spec = {
             $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
             width: 'container',
@@ -69,11 +75,26 @@ export function getScatterPlotStats(
             data: { values: viz.vizStats },
             mark: { type: 'point', tooltip: true },
             encoding: {
-                x: { field: 'x', title: viz.xLabel, type: 'quantitative' },
+                x: {
+                    field: 'x',
+                    title: viz.xLabel,
+                    type: 'quantitative',
+                    scale: { domain: [xMin, xMax] }
+                },
                 y: { field: 'y', title: viz.yLabel, type: 'quantitative' }
             }
         };
     } else {
+        let xMax = Math.max(
+            ...viz.vizStats
+                .filter((d: any) => d.group === group)
+                .map((d: any) => d.x)
+        );
+        let xMin = Math.min(
+            ...viz.vizStats
+                .filter((d: any) => d.group === group)
+                .map((d: any) => d.x)
+        );
         spec = {
             $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
             width: 'container',
@@ -83,7 +104,12 @@ export function getScatterPlotStats(
             },
             mark: { type: 'point', tooltip: true },
             encoding: {
-                x: { field: 'x', title: viz.xLabel, type: 'quantitative' },
+                x: {
+                    field: 'x',
+                    title: viz.xLabel,
+                    type: 'quantitative',
+                    scale: { domain: [xMin, xMax] }
+                },
                 y: { field: 'y', title: viz.yLabel, type: 'quantitative' }
             }
         };
@@ -300,9 +326,11 @@ export function getHeatMapStats(
             color: {
                 field: 'value',
                 type: 'quantitative',
+                scale: { scheme: 'redblue', domain: [-1,1] },
                 legend: {
                     title: null
-                }
+                },
+                as: 'correlation'
             }
         }
     };

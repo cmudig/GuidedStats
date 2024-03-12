@@ -7,12 +7,18 @@ import random
 def boxplotVizStats(X: pd.Series, *args, **kwargs):
     if isinstance(X, pd.DataFrame):
         X = X.iloc[:, 0]
-    max_outlier = kwargs.get("max_outlier", 10)
-
-    q1 = np.quantile(X, 0.25)
-    median = np.median(X)
-    q3 = np.quantile(X, 0.75)
-    iqr = q3 - q1
+    max_outlier = kwargs.get("max_outlier", 50)
+    previousX = kwargs.get("previousX", None)
+    if previousX is not None:
+        q1 = np.quantile(previousX, 0.25)
+        median = np.median(previousX)
+        q3 = np.quantile(previousX, 0.75)
+        iqr = q3 - q1
+    else:
+        q1 = np.quantile(X, 0.25)
+        median = np.median(X)
+        q3 = np.quantile(X, 0.75)
+        iqr = q3 - q1
 
     lower_bound = q1 - 1.5 * iqr
     upper_bound = q3 + 1.5 * iqr

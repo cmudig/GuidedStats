@@ -149,7 +149,7 @@ class GuidedStep(Step):
     def computeMetric(self, dataframe: pd.DataFrame, column: str, *referenceColumns: str):
         X = dataframe[column]
         referenceXs = [dataframe[col] for col in referenceColumns]
-        return self.metric.compute(X, *referenceXs)
+        return self.metric.compute(X, Y=referenceXs)
 
     def compare(self, dataframe: pd.DataFrame, columns: list, k: int = 1, *referenceColumns: str):
         """
@@ -466,16 +466,16 @@ class AssumptionCheckingStep(SucccessorStep):
             if self.config.get("assumptionResults", None) is not None:
 
                 # update self.inputs andd dataframe
-                if self.transformedDataset is not None:
-                    for key in self.inputs.keys():
-                        self.inputs[key] = self.transformedDataset[self.inputs[key].columns]
-                    self.workflow.current_dataframe = self.transformedDataset
+                if self.transformedDataset is None:
+                    self.transformedDataset = self.workflow.current_dataframe
+
+                self.workflow.current_dataframe = self.transformedDataset
 
                 if self.outputNames is not None:
                     self.outputs = {}
                     for i, outputName in enumerate(self.outputNames):
-                        self.outputs[outputName] = list(
-                            self.inputs.values())[i]
+                        ipt = list(self.inputs.values())[i]
+                        self.outputs[outputName] = self.transformedDataset[ipt.columns]
                 else:
                     self.outputs = self.getPreviousOutputs()
 
@@ -506,14 +506,14 @@ class AssumptionCheckingStep(SucccessorStep):
                 inputs = copy.deepcopy(self.inputs)
                 for key in inputs.keys():
                     inputs[key] = self.transformedDataset[inputs[key].columns]
-                self.checkAssumption(inputs)
+                self.checkAssumption(inputs, previousInputs=self.inputs)
             if msg is not None:
                 self.workflow.message = msg
 
-    def checkAssumption(self, inputs: dict):
+    def checkAssumption(self, inputs: dict, previousInputs: dict = None):
         # 2. check assumption
         assumptionResults, vizs = self.assumption.checkAssumption(
-            *tuple(inputs.values()))
+            *tuple(inputs.values()), previousInputs=previousInputs)
         # 3. set config
         self.changeConfig("assumptionResults", assumptionResults)
         self.changeConfig("viz", vizs)
@@ -674,7 +674,7 @@ class EvaluationStep(GuidedStep):
                 params, 4), "pvalue": round(p_values, 6)})
         self.changeConfig("modelParameters", rows)
 
-        # viz
+        # viz & evaluation metrics
         if self.inputs["model"]._canPredict:
             if self.visType is not None and self.visType == "residual":
                 modelResults = []
@@ -688,7 +688,8 @@ class EvaluationStep(GuidedStep):
 
                 if len(self.inputs["yTest"]) != 0:
                     for metric in self.metricWrappers:
-                        outputs = metric.compute(Y_true, Y_hat)
+                        outputs = metric.compute(
+                            Y_true, Y_hat, X_wconstant)
                         modelResults.append(
                             {"name": metric._metricName, "score": round(outputs["stats"], 4), "group": "Test"})
 
@@ -701,7 +702,8 @@ class EvaluationStep(GuidedStep):
 
                 if len(self.inputs["yTrain"]) != 0:
                     for metric in self.metricWrappers:
-                        outputs = metric.compute(Y_true, Y_hat)
+                        outputs = metric.compute(
+                            Y_true, Y_hat, X_wconstant)
                         modelResults.append(
                             {"name": metric._metricName, "score": round(outputs["stats"], 4), "group": "Train"})
 

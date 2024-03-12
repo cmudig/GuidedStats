@@ -63,8 +63,8 @@ _regressionConfig = [
      {"stepName": "Check Outliers",
       "assumptionName": "outlier",
       "isRelaxed": True,
-      "inputNames": ["X"],
-      "outputNames": ["X"],
+      "inputNames": ["X","exog", "Y"],
+      "outputNames": ["X","exog", "Y"],
       "succeedPreviousStepOutput": False,
       }
      },
@@ -76,7 +76,6 @@ _regressionConfig = [
       "assumptionName": "multicollinearity",
       "isRelaxed": True,
       "inputNames": ["X", "exog"],
-      "outputNames": ["X"],
       "succeedPreviousStepOutput": False,
       }
      },
@@ -96,7 +95,7 @@ _regressionConfig = [
      "stepConfig":
      {"stepName": "Train model",
       "inputNames": ["XTrain", "yTrain"],
-      "modelCandidates": [{"name": "Simple Linear Regression"},
+      "modelCandidates": [{"name": "Simple Linear Regression", "isDefault": True},
                           {"name": "Ridge Regression",
                               "parameters": [{"name": "alpha"}]},
                           {"name": "Lasso Regression", "parameters": [{"name": "alpha"}]}],
@@ -109,6 +108,6 @@ _regressionConfig = [
      {"stepName": "Evaluate the model",
       "inputNames": ["model", "results", "XTest", "yTest", "XTrain", "yTrain"],
       "visType": "residual",
-      "evaluationMetricNames": ["mse", "r2"],
+      "evaluationMetricNames": ["mse", "r2", "adjusted_r2"],
       }},
 ]

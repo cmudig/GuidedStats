@@ -9,10 +9,25 @@ def log_transform(data: pd.DataFrame,columns,**kwargs):
     return (data,None)
 
 #winsorization
-def winsorize(data: pd.DataFrame,columns,**kwargs):
+def winsorize(data: pd.DataFrame, columns, **kwargs):
     for col in columns:
-        data[col] = data[col].clip(lower=data[col].quantile(0.05), upper=data[col].quantile(0.95))
-    return (data,None)
+        lower = data[col].quantile(0.05)
+        upper = data[col].quantile(0.95)
+        data = data[(data[col] >= lower) & (data[col] <= upper)]
+    return (data, None)
+
+def deleteOutliers(data: pd.DataFrame, columns, **kwargs):
+    for col in columns:   
+        X = data[col]
+        Q1 = np.percentile(X, 25)
+        Q3 = np.percentile(X, 75)
+        IQR = Q3 - Q1
+
+        lower_threshold = Q1 - 1.5 * IQR
+        upper_threshold = Q3 + 1.5 * IQR
+
+        data = data[(data[col] >= lower_threshold) & (data[col] <= upper_threshold)]
+        return (data, None)
 
 TRANSFORMATIONS = {
     "Logarithmic Transform": 
@@ -26,8 +41,13 @@ TRANSFORMATIONS = {
             "func": winsorize,
             "requireVarCat": False,
             "requireGroupVariable": False,
-        }
-    
+        },
+    "Delete Outliers":
+        {
+            "func": deleteOutliers,
+            "requireVarCat": False,
+            "requireGroupVariable": False,
+        }   
 }
 
 class TransformationWrapper:
