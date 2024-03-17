@@ -9,9 +9,9 @@ export type Parameter = {
     displayName?: string;
     multiple?: boolean;
     options?: Option[];
-    value?: number | string | number[] | string[];
+    value?: number | string | number[] | string[] | boolean | boolean[];
     pvalue?: number | number[];
-    default?: number | string | number[] | string[];
+    default?: number | string | number[] | string[] | boolean | boolean[];
 };
 
 export type Model = {

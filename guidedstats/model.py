@@ -38,8 +38,8 @@ def LassoLR(X, Y, alpha=1.0):
     return (model, results)
 
 
-def TTest(X1, X2, alpha=0.05, alternative="two-sided", equal_var=True):
-    usevar = "unequal" if equal_var is False else "pooled"
+def TTest(X1, X2, alternative="two-sided", equal_var="true"):
+    usevar = "unequal" if equal_var == "false" else "pooled"
     tstats, pvalue, df = ttest_ind(
         X1, X2, alternative=alternative, usevar=usevar)
     results = Results()
@@ -100,7 +100,7 @@ class ModelWrapper(object):
 
     def predict(self, X: pd.DataFrame, **kwargs):
         if self._canPredict:
-            return self.fittedModel.predict(X, **kwargs)
+            return self.fittedModel.predict(sm.add_constant(X), **kwargs)
         else:
             raise TypeError("The model does not support prediction")
 

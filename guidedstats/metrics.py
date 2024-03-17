@@ -130,7 +130,7 @@ def r2(y_true, y_pred, *args, **kwargs):
 def adjusted_r2(y_true, y_pred, *args, **kwargs):
     n = len(y_true)
     exogs = args[0]
-    p = exogs.shape[1] - 1
+    p = exogs.shape[1]
     r2 = r2_score(y_true, y_pred)
     stats = 1 - (1-r2)*(n-1)/(n-p-1)
     return {

@@ -27,7 +27,10 @@ _regressionConfig = [
         One of the least squares assumptions is that large outliers are unlikely. \
        Outliers can significantly affect the regression model.\
       Even if it seems like extreme observations have been recorded correctly, it is advisable to exclude \
-    them or perform data transformation on them before estimating.",
+    them or perform data transformation on them before estimating.\
+       Here, we use interquartile range(IQR), the range between 25th and 75th percentiles of the data, to detect outliers.\
+                    Any value that is less than 25th percentile - 1.5 * IQR or greater than 75th perecentile + 1.5 * IQR is considered an outlier.\
+      ",
      "stepConfig":
      {"stepName": "Check Outliers",
       "inputNames": ["Y"],
@@ -58,13 +61,16 @@ _regressionConfig = [
         One of the least squares assumptions is that large outliers are unlikely. \
        Outliers can significantly affect the regression model.\
       Even if it seems like extreme observations have been recorded correctly, it is advisable to exclude \
-    them or perform data transformation on them before estimating.",
+    them or perform data transformation on them before estimating.\
+       Here, we use interquartile range(IQR), the range between 25th and 75th percentiles of the data, to detect outliers.\
+                    Any value that is less than 25th percentile - 1.5 * IQR or greater than 75th perecentile + 1.5 * IQR is considered an outlier.\
+    ",
      "stepConfig":
      {"stepName": "Check Outliers",
       "assumptionName": "outlier",
       "isRelaxed": True,
-      "inputNames": ["X","exog", "Y"],
-      "outputNames": ["X","exog", "Y"],
+      "inputNames": ["X", "exog", "Y"],
+      "outputNames": ["X", "exog", "Y"],
       "succeedPreviousStepOutput": False,
       }
      },

@@ -14,6 +14,15 @@ export function getBoxplotStats(
             values: viz.vizStats
         },
         encoding: { y: { field: 'name', type: 'nominal', title: null } },
+        axes: [
+            {
+                orient: 'bottom',
+                scale: 'xscale',
+                labelOverlap: true,
+                zindex: 1
+            },
+            { orient: 'left', scale: 'yscale', labelOverlap: true, zindex: 1 }
+        ],
         layer: [
             {
                 mark: { type: 'rule' },
@@ -74,6 +83,20 @@ export function getScatterPlotStats(
             height: height,
             data: { values: viz.vizStats },
             mark: { type: 'point', tooltip: true },
+            axes: [
+                {
+                    orient: 'bottom',
+                    scale: 'xscale',
+                    labelOverlap: true,
+                    zindex: 1
+                },
+                {
+                    orient: 'left',
+                    scale: 'yscale',
+                    labelOverlap: true,
+                    zindex: 1
+                }
+            ],
             encoding: {
                 x: {
                     field: 'x',
@@ -103,6 +126,20 @@ export function getScatterPlotStats(
                 values: viz.vizStats.filter((d: any) => d.group === group)
             },
             mark: { type: 'point', tooltip: true },
+            axes: [
+                {
+                    orient: 'bottom',
+                    scale: 'xscale',
+                    labelOverlap: true,
+                    zindex: 1
+                },
+                {
+                    orient: 'left',
+                    scale: 'yscale',
+                    labelOverlap: true,
+                    zindex: 1
+                }
+            ],
             encoding: {
                 x: {
                     field: 'x',
@@ -202,8 +239,20 @@ export function getDensityPlotStats(
                 }
             ],
             axes: [
-                { orient: 'bottom', scale: 'xscale', zindex: 1 },
-                { orient: 'left', scale: 'yscale', tickCount: 5, zindex: 1 }
+                {
+                    orient: 'bottom',
+                    scale: 'xscale',
+                    labelOverlap: true,
+                    title: 'Value', 
+                    zindex: 1
+                },
+                {
+                    orient: 'left',
+                    scale: 'yscale',
+                    labelOverlap: true,
+                    title: "Probability Density",
+                    zindex: 1
+                }
             ],
             legends: [
                 { orient: 'top-left', fill: 'color', offset: 0, zindex: 1 }
@@ -242,14 +291,32 @@ export function getDensityPlotStats(
         const specs = {
             $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
             data: { values: viz.vizStats },
+            width : width,
+            height: height,
             transform: [
                 { quantile: 'value', step: 0.01, as: ['p', 'v'] },
                 { calculate: 'quantileNormal(datum.p)', as: 'norm' }
             ],
             mark: 'point',
+            axes: [
+                {
+                    orient: 'bottom',
+                    scale: 'xscale',
+                    labelOverlap: true,
+                    title: 'Theoretical Uniform Quantiles',
+                    zindex: 1
+                },
+                {
+                    orient: 'left',
+                    scale: 'yscale',
+                    labelOverlap: true,
+                    title: 'Empirical Data Quantiles',
+                    zindex: 1
+                }
+            ],
             encoding: {
                 x: { field: 'norm', type: 'quantitative' },
-                y: { field: 'v', type: 'quantitative' }
+                y: { field: 'p', type: 'quantitative' }
             }
         };
         return specs;
@@ -272,6 +339,15 @@ export function getTTestPlotStats(
         data: {
             values: viz.vizStats
         },
+        axes: [
+            {
+                orient: 'bottom',
+                scale: 'xscale',
+                labelOverlap: true,
+                zindex: 1
+            },
+            { orient: 'left', scale: 'yscale', labelOverlap: true, zindex: 1 }
+        ],
         layer: [
             {
                 mark: 'boxplot',
@@ -326,7 +402,7 @@ export function getHeatMapStats(
             color: {
                 field: 'value',
                 type: 'quantitative',
-                scale: { scheme: 'redblue', domain: [-1,1] },
+                scale: { scheme: 'redblue', domain: [-1, 1] },
                 legend: {
                     title: null
                 },

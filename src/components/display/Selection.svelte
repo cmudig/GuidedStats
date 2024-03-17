@@ -28,23 +28,27 @@
 </script>
 
 <div
-    class="p-2 m-2 overflow-hidden overflow-y-scroll bg-white border-2 flex flex-col max-h-96"
+    class="p-2 m-2 flex overflow-hidden overflow-y-scroll bg-white border-2 flex flex-col max-h-96"
 >
-    {#if !_.isUndefined(options)}
-        {#each options as option}
-            <button
-                class="px-2 py-1 hover:bg-slate-100 {selectedOptionNames.includes(
-                    option.name
-                )
-                    ? ' bg-gray-300'
-                    : ''}"
-                on:click={e => handleOption(e, option.name)}
-                ><span
-                    >{option.name}{_.isUndefined(option.score)
-                        ? ''
-                        : `: ${option.score.toFixed(4)}`}</span
-                ></button
-            >
-        {/each}
-    {/if}
+    <div class="grow" />
+    <div class="flex flex-col">
+        {#if !_.isUndefined(options)}
+            {#each options as option}
+                <button
+                    class="px-2 py-1 hover:bg-slate-100 {selectedOptionNames.includes(
+                        option.name
+                    )
+                        ? ' bg-gray-300'
+                        : ''}"
+                    on:click={e => handleOption(e, option.name)}
+                    ><span
+                        >{option.name}{_.isUndefined(option.score)
+                            ? ''
+                            : `: ${option.score.toFixed(4)}`}</span
+                    ></button
+                >
+            {/each}
+        {/if}
+    </div>
+    <div class="grow" />
 </div>

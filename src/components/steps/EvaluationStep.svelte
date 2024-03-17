@@ -10,8 +10,11 @@
         getTTestPlotStats
     } from '../viz/action/visualization';
     import embed from 'vega-embed';
-    import { afterUpdate } from 'svelte';
+    import { afterUpdate, getContext } from 'svelte';
     import Table from '../display/Table.svelte';
+    import type { Writable } from 'svelte/store';
+
+    const serial: Writable<string> = getContext('serial');
 
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
@@ -35,7 +38,7 @@
                 } else if (viz.vizType === 'ttest') {
                     spec = getTTestPlotStats(viz);
                 }
-                embed(`#vis-${stepIndex}`, spec, { actions: false });
+                embed(`#vis-${$serial}-${stepIndex}`, spec);
             }
         });
     }
@@ -68,7 +71,7 @@
             <div class="flex flex-col">
                 <div class="grow" />
                 <!-- Visualization -->
-                <div id="vis-{stepIndex}" style="width:220px" />
+                <div id="vis-{$serial}-{stepIndex}" style="width:300px" />
                 <!-- create a select menu to select Train or Test-->
                 {#if !_.isUndefined(step.config?.viz) && step.config?.viz.length > 0 && step.config?.viz[0]?.vizType === 'scatter'}
                     <div class="p-2 flex">
@@ -105,7 +108,11 @@
                     <div class="p-2">
                         {#if step.config.modelParameters[0].hasOwnProperty('pvalue')}
                             <Table
-                                headers={['Variable', 'Coefficient', 'P-value']}
+                                headers={!_.isUndefined(step.config?.viz) &&
+                                step.config?.viz.length > 0 &&
+                                step.config?.viz[0]?.vizType === 'scatter'
+                                    ? ['Variable', 'Coefficient', 'P-value']
+                                    : ['Test Statistic', 'Value', 'P-value']}
                                 keys={['name', 'value', 'pvalue']}
                                 data={step?.config?.modelParameters}
                             />

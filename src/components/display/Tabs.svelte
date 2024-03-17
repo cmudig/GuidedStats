@@ -63,10 +63,6 @@
         }
     }
 
-    onMount(() => {
-        updateChart(viz, $activeTabValue);
-    });
-
     afterUpdate(() => {
         updateChart(viz, $activeTabValue);
     });
@@ -118,7 +114,10 @@
                 {#if $workflowInfo.steps[stepIndex]?.config?.viz?.length > 0 && $workflowInfo.steps[stepIndex]?.config?.viz[$activeTabValue].vizType == 'density'}
                     <div class="p-2 flex">
                         <div class="grow" />
-                        <span class="py-1 px-2">Select:</span>
+                        <span class="py-1 px-2"
+                            >Select plot for comparison against normal
+                            distribution:</span
+                        >
                         <select
                             class="rounded appearance-auto py-1 px-2 mx-1 bg-white border-solid border border-gray-300 focus:border-blue-500"
                             bind:value={vizSubType}

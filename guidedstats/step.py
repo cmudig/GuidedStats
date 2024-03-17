@@ -1,9 +1,7 @@
 from abc import abstractmethod
-from collections import OrderedDict
 import json
 import copy
 import traitlets as tl
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -396,10 +394,12 @@ class VariableSelectionStep(GuidedStep):
                 selectedColumns = [result["name"]
                                    for result in newConfig["variableResults"]]
                 self.outputs = {}
+                groups = [newConfig["groupResults"][i]["name"] for i in range(len(newConfig["groupResults"]))]
                 for i in range(len(self.outputNames)):
                     group = newConfig["groupResults"][i]["name"]
                     self.outputs[self.outputNames[i]
                                  ] = self.inputs["Y1"][self.inputs["dataset"][selectedColumns[0]] == group]
+                    self.outputs["groups"] = groups
             else:
                 if hasVariableResults:  # 1. display groupby options
                     selectedColumns = [result["name"]
@@ -466,21 +466,19 @@ class AssumptionCheckingStep(SucccessorStep):
             if self.config.get("assumptionResults", None) is not None:
 
                 # update self.inputs andd dataframe
-                if self.transformedDataset is None:
-                    self.transformedDataset = self.workflow.current_dataframe
-
-                self.workflow.current_dataframe = self.transformedDataset
+                if self.transformedDataset is not None:
+                    self.workflow.current_dataframe = self.transformedDataset
+                    self.outputs["dataset"] = self.transformedDataset
 
                 if self.outputNames is not None:
-                    self.outputs = {}
                     for i, outputName in enumerate(self.outputNames):
                         ipt = list(self.inputs.values())[i]
-                        self.outputs[outputName] = self.transformedDataset[ipt.columns]
+                        if self.transformedDataset is not None:
+                            self.outputs[outputName] = self.transformedDataset[ipt.columns]
+                        else:
+                            self.outputs[outputName] = ipt
                 else:
                     self.outputs = self.getPreviousOutputs()
-
-                if self.transformedDataset is not None:
-                    self.outputs["dataset"] = self.transformedDataset
 
                 self.moveToNextStep()
             else:
@@ -678,9 +676,7 @@ class EvaluationStep(GuidedStep):
         if self.inputs["model"]._canPredict:
             if self.visType is not None and self.visType == "residual":
                 modelResults = []
-
-                X_wconstant = sm.add_constant(self.inputs["XTest"])
-                Y_hat = self.inputs["model"].predict(X_wconstant)
+                Y_hat = self.inputs["model"].predict(self.inputs["XTest"])
                 Y_hat = Y_hat.to_numpy().reshape((-1))
                 Y_true = self.inputs["yTest"].to_numpy().reshape((-1))
 
@@ -689,12 +685,11 @@ class EvaluationStep(GuidedStep):
                 if len(self.inputs["yTest"]) != 0:
                     for metric in self.metricWrappers:
                         outputs = metric.compute(
-                            Y_true, Y_hat, X_wconstant)
+                            Y_true, Y_hat, self.inputs["XTest"])
                         modelResults.append(
                             {"name": metric._metricName, "score": round(outputs["stats"], 4), "group": "Test"})
 
-                X_wconstant = sm.add_constant(self.inputs["XTrain"])
-                Y_hat = self.inputs["model"].predict(X_wconstant)
+                Y_hat = self.inputs["model"].predict(self.inputs["XTrain"])
                 Y_hat = Y_hat.to_numpy().reshape((-1))
                 Y_true = self.inputs["yTrain"].to_numpy().reshape((-1))
                 vizStats.extend(VIZ[self.visType](
@@ -703,7 +698,7 @@ class EvaluationStep(GuidedStep):
                 if len(self.inputs["yTrain"]) != 0:
                     for metric in self.metricWrappers:
                         outputs = metric.compute(
-                            Y_true, Y_hat, X_wconstant)
+                            Y_true, Y_hat, self.inputs["XTrain"])
                         modelResults.append(
                             {"name": metric._metricName, "score": round(outputs["stats"], 4), "group": "Train"})
 

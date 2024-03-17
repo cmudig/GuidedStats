@@ -22,15 +22,17 @@
         : (modelName = undefined);
 
     function handleInputChange(parameterName: string, value: any) {
-        let parameter = parameterValues?.find(
-            parameter => parameter.name == parameterName
-        );
-        if (!_.isUndefined(parameter)) {
-            parameter.value = value;
+        if (!_.isUndefined(parameterName) && !_.isUndefined(value)) {
+            let parameter = parameterValues?.find(
+                parameter => parameter.name == parameterName
+            );
+            if (!_.isUndefined(parameter)) {
+                parameter.value = value;
+            }
+            let info: Workflow = deepCopy($workflowInfo);
+            info.steps[stepIndex].config.modelParameters = parameterValues;
+            workflowInfo.set(info);
         }
-        let info: Workflow = deepCopy($workflowInfo);
-        info.steps[stepIndex].config.modelParameters = parameterValues;
-        workflowInfo.set(info);
     }
 
     function updateModelName(modelName: string) {

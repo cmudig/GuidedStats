@@ -25,7 +25,9 @@ _ttestConfig = [
      "stepType": "AssumptionCheckingStep",
      "stepExplanation": "Examine the data for outliers that could potentially skew the results.\
           Outliers are extreme values that deviate from other observations in the dataset.\
-              They may make the mean unsuitable as a summary measure.",
+              They may make the mean unsuitable as a summary measure.\
+                  Here, we use interquartile range(IQR), the range between 25th and 75th percentiles of the data, to detect outliers.\
+                    Any value that is less than 25th percentile - 1.5 * IQR or greater than 75th perecentile + 1.5 * IQR is considered an outlier.",
      "stepConfig":
      {"stepName": "Check Outliers",
       "inputNames": ["Y1"],
@@ -99,12 +101,12 @@ _ttestConfig = [
      {"stepName": "State Hypothesis and Alpha Level",
       "inputNames": ["Y1", "Y2"],
       "modelCandidates": [{"name": "T Test",
-                           "parameters": [{"name": "alpha", "displayName": "Alpha Level", "default": 0.05},
-                                          {"name": "alternative", "displayName": "Alternative Hypothesis", "options": [
-                                              {"name": "two-sided"}, {"name": "smaller"}, {"name": "larger"}], "default": "two-sided"},
-                                          {"name": "equal_var", "displayName": "Equal Variance", "options": [
-                                              {"name": "True"}, {"name": "False"}], "default": "True"}
-                                          ],
+                           "parameters": [
+                               {"name": "alternative", "displayName": "Alternative Hypothesis", "options": [
+                                   {"name": "two-sided"}, {"name": "smaller"}, {"name": "larger"}], "default": "two-sided", "value": "two-sided"},
+                               {"name": "equal_var", "displayName": "Equal Variance", "options": [
+                                   {"name": True}, {"name": False}], "default": True, "value": True},
+                           ],
                            "isDefault": True,
                            }],
       }},
