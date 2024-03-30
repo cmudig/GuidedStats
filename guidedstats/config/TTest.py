@@ -54,7 +54,7 @@ _ttestConfig = [
      "stepExplanation": "Assess the homogeneity of variances between the two groups using Levene's test. Equal variances across samples is called homogeneity of variance. Levene's test is used to test if samples have equal variances.",
      "stepConfig":
      {"stepName": "Check Homogeneity of Variance",
-      "inputNames": ["Y1", "Y2"],
+      "inputNames": ["Y1", "Y2", "groups"],
       "outputNames": ["Y1", "Y2"],
       "assumptionName": "levene",
       "isRelaxed": True,
@@ -116,7 +116,7 @@ _ttestConfig = [
          This step will compare the observed test statistic to the critical value determined by the Alpha Level rate, leading to a decision on the null hypothesis.",
      "stepConfig":
      {"stepName": "Evaluate the model",
-      "inputNames": ["model", "results", "Y1", "Y2"],
+      "inputNames": ["model", "results", "Y1", "Y2", "groups"],
       "visType": "ttest",
       }},
 ]

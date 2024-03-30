@@ -3,7 +3,7 @@ from statsmodels.stats.weightstats import ttest_ind
 import pandas as pd
 
 
-def naiveLR(X, Y):
+def naiveLR(X, Y, **kwargs):
     X_wconstant = sm.add_constant(X)
     model = sm.OLS(Y, X_wconstant).fit()
     results = Results()
@@ -19,7 +19,7 @@ def naiveLR(X, Y):
     return (model, results)
 
 
-def RidgeLR(X, Y, alpha=1.0):
+def RidgeLR(X, Y, alpha=1.0, **kwargs):
     X_wconstant = sm.add_constant(X)
     model = sm.OLS(Y, X_wconstant).fit_regularized(
         method='elastic_net', alpha=float(alpha), L1_wt=0.0)
@@ -29,7 +29,7 @@ def RidgeLR(X, Y, alpha=1.0):
     return (model, results)
 
 
-def LassoLR(X, Y, alpha=1.0):
+def LassoLR(X, Y, alpha=1.0, **kwargs):
     X_wconstant = sm.add_constant(X)
     model = sm.OLS(Y, X_wconstant).fit_regularized(
         method='elastic_net', alpha=float(alpha), L1_wt=1.0)
@@ -47,7 +47,6 @@ def TTest(X1, X2, alternative="two-sided", equal_var="true"):
     results.setStat("pvalue", float(pvalue))
     results.setStat("df", float(df))
     return (results,)
-
 
 models = {
     "Simple Linear Regression": {
@@ -80,12 +79,11 @@ class Results(object):
 
 
 class ModelWrapper(object):
-    def __init__(self):
+    def __init__(self, **kwargs):
         self._model = None
         self._results = None
         self._modelName = None
         self.fittedModel = None
-        self.stats = None
         self._canPredict = False
         self.num_exog = None
 
@@ -209,16 +207,6 @@ class ModelWrapper(object):
         if len(outputs) == 2:
             self.num_exog = X.shape[1]
             (self.fittedModel, self._results) = outputs
-            if self._results.getStat("rsquared"):
-                self.stats = {
-                    "r_squared": self._results.getStat("rsquared"),
-                    "adj_r_squared": self._results.getStat("rsquared_adj"),
-                    "f_statistic": self._results.getStat("fvalue"),
-                    "f_pvalue": self._results.getStat("f_pvalue"),
-                    "log_likelihood": self._results.getStat("llf"),
-                    "aic": self._results.getStat("aic"),
-                    "bic": self._results.getStat("bic"),
-                }
         else:
             (self._results,) = outputs
             group_stats1 = (X.mean().get(key=0),

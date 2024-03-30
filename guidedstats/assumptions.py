@@ -73,7 +73,6 @@ class AssumptionWrapper(object):
             raise KeyError("The assumption does not exist")
 
     def checkAssumption(self, X: pd.DataFrame, *referenceXs: pd.DataFrame, **kwargs):
-        # TBC
         assumptionResults = []
         vizStats = []
         if self._assumption["isSingleColumn"]:
@@ -85,11 +84,11 @@ class AssumptionWrapper(object):
                     previousX = None
                 if self._assumption["vis_func"] is not None:
                     stats = self._assumption["vis_func"](
-                        X[col], *referenceXs, previousX=previousX)
+                        X[col], *referenceXs, previousX=previousX, **kwargs)
                     vizStats.append(stats)
                 if self._assumption["metric_func"] is not None:
                     outputs = self._assumption["metric_func"](
-                        X[[col]], *referenceXs, previousX=previousX)
+                        X[[col]], *referenceXs, previousX=previousX, **kwargs)
                     prompt = self._assumption["prompt"].format(**outputs)
                     assumptionResults.append(
                         {**outputs, "name": str(col), "prompt": prompt})

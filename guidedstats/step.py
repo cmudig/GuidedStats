@@ -394,7 +394,8 @@ class VariableSelectionStep(GuidedStep):
                 selectedColumns = [result["name"]
                                    for result in newConfig["variableResults"]]
                 self.outputs = {}
-                groups = [newConfig["groupResults"][i]["name"] for i in range(len(newConfig["groupResults"]))]
+                groups = [newConfig["groupResults"][i]["name"]
+                          for i in range(len(newConfig["groupResults"]))]
                 for i in range(len(self.outputNames)):
                     group = newConfig["groupResults"][i]["name"]
                     self.outputs[self.outputNames[i]
@@ -504,14 +505,15 @@ class AssumptionCheckingStep(SucccessorStep):
                 inputs = copy.deepcopy(self.inputs)
                 for key in inputs.keys():
                     inputs[key] = self.transformedDataset[inputs[key].columns]
-                self.checkAssumption(inputs, previousInputs=self.inputs)
+                self.checkAssumption(
+                    inputs, previousInputs=self.inputs, groups=self.inputs.get("groups", None))
             if msg is not None:
                 self.workflow.message = msg
 
-    def checkAssumption(self, inputs: dict, previousInputs: dict = None):
+    def checkAssumption(self, inputs: dict, **kwargs):
         # 2. check assumption
         assumptionResults, vizs = self.assumption.checkAssumption(
-            *tuple(inputs.values()), previousInputs=previousInputs)
+            *tuple(inputs.values()), **kwargs)
         # 3. set config
         self.changeConfig("assumptionResults", assumptionResults)
         self.changeConfig("viz", vizs)
@@ -523,7 +525,8 @@ class AssumptionCheckingStep(SucccessorStep):
 
         if self.assumption is not None:
             if self.workflow is not None and self.workflow.currentStep is not None:
-                self.checkAssumption(self.inputs)
+                self.checkAssumption(
+                    self.inputs, groups=self.inputs.get("groups", None))
 
 
 class TrainTestSplitStep(Step):
@@ -715,7 +718,7 @@ class EvaluationStep(GuidedStep):
         else:
             if self.visType is not None and self.visType == "ttest":
                 vizStats = VIZ[self.visType](
-                    self.inputs["Y1"], self.inputs["Y2"])
+                    self.inputs["Y1"], self.inputs["Y2"],groups=self.inputs.get("groups", None))
 
                 stat = self.inputs["results"].getStat("tstat")
                 # determine p's range

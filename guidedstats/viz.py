@@ -47,13 +47,15 @@ def boxplotVizStats(X: pd.Series, *args, **kwargs):
 
 
 def multiBoxplotVizStats(*args, **kwargs):
+    groups = kwargs.get("groups", None)
     stats = []
     Xs = list(args)
     for i, X in enumerate(Xs):
         if isinstance(X, pd.DataFrame):
             X = X.iloc[:, 0]
-        X.name = "group" + str(i+1)
-        stats.append(boxplotVizStats(X, **kwargs))
+        if isinstance(X, pd.Series):
+            X.name = groups[i] if groups is not None and isinstance(groups,list) else "group" + str(i+1)
+            stats.append(boxplotVizStats(X, **kwargs))
     return stats
 
 
@@ -97,7 +99,7 @@ def normalityVizStats(X: Iterable, **kwargs):
 
 def tTestVizStats(Y1: Iterable, Y2: Iterable, **kwargs):
     max_point = kwargs.get("max_point", 150)
-    group_label = kwargs.get("group_label", ["group1", "group2"])
+    group_label = kwargs.get("groups", ["group1", "group2"])
 
     stats = []
     Y1 = np.array(Y1).reshape(-1).tolist()
