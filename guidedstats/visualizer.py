@@ -12,6 +12,7 @@ import pandas as pd
 import random
 import string
 
+from IPython import get_ipython
 from ipywidgets import DOMWidget
 import traitlets as tl
 from traitlets import Int, Unicode, Dict, List, Instance
@@ -34,49 +35,55 @@ class GuidedStats(DOMWidget):
     _view_name = Unicode('VizualizerView').tag(sync=True)
     _view_module = Unicode(module_name).tag(sync=True)
     _view_module_version = Unicode(module_version).tag(sync=True)
-    
+
     # our synced traitlet state
     builtinWorkflows = List().tag(sync=True)
     builtinSteps = List().tag(sync=True)
     builtinAssumptions = List().tag(sync=True)
     builtinTransformations = List().tag(sync=True)
-    
+
     selectedWorkflow = Unicode("").tag(sync=True)
-    selectedStepInfo = Dict({}).tag(sync=True) # {stepType: the name of step, stepPos: the stepId of its subsequent step}
-    
+    # {stepType: the name of step, stepPos: the stepId of its subsequent step}
+    selectedStepInfo = Dict({}).tag(sync=True)
+
     workflow = Instance(WorkFlow)
     workflowInfo = Dict({}).tag(sync=True)
-    
+
     serial = Unicode("").tag(sync=True)
-    
+
     def __init__(self, dataset: pd.DataFrame, datasetName: str = "dataset", *args, **kwargs):
         super(GuidedStats, self).__init__(*args, **kwargs)
 
         self.dataset = dataset
-        self.datasetName = datasetName
         
-        self.serial = ''.join(random.choices(string.ascii_letters + string.digits, k=4))
+        user_ns = get_ipython().user_ns
+        for name, value in user_ns.items():
+            if value is dataset:
+                self.datasetName = name
+
+        self.serial = ''.join(random.choices(
+            string.ascii_letters + string.digits, k=4))
         self.ignore_update = False
-        
+
         self.observe(self.addWorkFlow, names='selectedWorkflow')
-        
+
         self.getBuiltinWorkflow()
         self.getBuiltinSteps()
         self.getBuiltinAssumptions()
         self.getBuiltinTransformations()
-        
+
     def _handle_exportTable(self, change):
-        idx = change["new"] #evaluation step
+        idx = change["new"]  # evaluation step
         modelStep = self.workflow.steps[idx-1]
         results = modelStep.outputs["results"]
         html_table = exportTable([results])
-        html_table = html_table.replace("\n","").replace('"', '\"')
-        
+        html_table = html_table.replace("\n", "").replace('"', '\"')
+
         self.exportCode = html_table
-    
+
     def _handle_exportViz(self, change):
         viz_idx = change["new"]
-        if viz_idx >=0 and self.exportVizStepIdx >= 0 and self.exportVizStepIdx < len(self.workflow.steps):
+        if viz_idx >= 0 and self.exportVizStepIdx >= 0 and self.exportVizStepIdx < len(self.workflow.steps):
             vizStep = self.workflow.steps[self.exportVizStepIdx]
             viz = vizStep.config["viz"][viz_idx]
             if viz["vizType"] == "boxplot":
@@ -88,10 +95,10 @@ class GuidedStats(DOMWidget):
             elif viz["vizType"] == "ttest":
                 vizCode = exportTTestPlot(viz)
             self.exportCode = vizCode
-        
-    def export(self,item:str,**kwargs):
+
+    def export(self, item: str, **kwargs):
         if item == "table":
-            format = kwargs.get("format","latex")
+            format = kwargs.get("format", "latex")
             table = self.exportTable(format=format)
             return table
         elif item == "report":
@@ -103,72 +110,88 @@ class GuidedStats(DOMWidget):
         elif item == "dataset":
             dataset = self.exportDataset()
             return dataset
+        elif item == "workflow":
+            from ipylab import JupyterFrontEnd
+            code = self.exportWorkflowCode()
+            app = JupyterFrontEnd()
+            app.commands.execute('notebook:move-cursor-up')
+            app.commands.execute('notebook:insert-cell-below')
+
+            # Enter edit mode in the new cell
+            app.commands.execute('notebook:enter-edit-mode')
+            # Populate the new cell with the desired code
+            app.commands.execute('notebook:replace-selection', {'text': code})
         else:
             raise ValueError("Invalid export item")
-            
-    
-    def exportTable(self,format="html"):
+
+    def exportTable(self, format="html"):
         # loop through all steps, find the last model step, and export its results
         modelStep = None
         for step in self.workflow.steps:
-            if isinstance(step,ModelStep):
+            if isinstance(step, ModelStep):
                 modelStep = step
         if modelStep == None:
             raise ValueError("No model step found")
-        else:      
+        else:
             results = modelStep.outputs["results"]
-            table = exportTable([results],format=format)
-            table = table.replace("\n","").replace('"', '\"')
-        
+            table = exportTable([results], format=format)
+            table = table.replace("\n", "").replace('"', '\"')
+
         return table
         # self.exportCode = html_table
-        
+
     def exportReport(self):
         if self.workflow.current_model is not None:
             if self.workflow.current_model._results is None:
                 raise ValueError("Model not fitted")
-            if self.workflow.current_model._modelName == "Simple Linear Regression":  
+            if self.workflow.current_model._modelName == "Simple Linear Regression":
                 return exportReport(self.workflow.current_model._results)
             elif self.workflow.current_model._modelName == "T Test":
                 return exportTTestReport(self.workflow.current_model._results)
         else:
             raise ValueError("No model found")
-        
+
     def exportCurrentModel(self):
         if self.workflow.current_model is not None:
             return self.workflow.current_model
         else:
             raise ValueError("No model found")
-        
+
     def exportDataset(self):
         if self.workflow.current_dataframe is not None:
             return self.workflow.current_dataframe
-      
+
+    def exportWorkflowCode(self):
+        if self.workflow is not None:
+            return self.workflow.exportCode()
+
     def getBuiltinWorkflow(self):
-        self.builtinWorkflows = ["Linear Regression","T Test"]
-        
+        self.builtinWorkflows = ["Linear Regression", "T Test"]
+
     def getBuiltinSteps(self):
-        self.builtinSteps = ['Load Dataset','Select Variable(s)','Transform Data','Check Assumption','Split Data','Add Model','Evaluate Model']
-    
-    def getBuiltinAssumptions(self):      
+        self.builtinSteps = [
+            'Load Dataset', 'Select Variable(s)', 'Transform Data', 'Check Assumption', 'Split Data', 'Add Model', 'Evaluate Model']
+
+    def getBuiltinAssumptions(self):
         display_names = []
         for name in ASSUMPTIONS.keys():
             display_name = ASSUMPTIONS[name]["display"]
             display_names.append(display_name)
-        
+
         self.builtinAssumptions = display_names
-    
+
     def getBuiltinTransformations(self):
         self.builtinTransformations = list(TRANSFORMATIONS.keys())
-            
-    def addWorkFlow(self,change):
-        #TBC, dataset stuff should be refined
-        workflow = WorkFlow(dataset=self.dataset,datasetName=self.datasetName,workflowName=change["new"])
+
+    def addWorkFlow(self, change):
+        # TBC, dataset stuff should be refined
+        workflow = WorkFlow(
+            dataset=self.dataset, datasetName=self.datasetName, workflowName=change["new"])
         self.workflow = workflow
         self.workflow.visualizer = self
-        self.workflow.observe(self.updateWorkflowInfo,names=["workflowInfo"])
+        self.workflow.observe(self.updateWorkflowInfo, names=["workflowInfo"])
         self.workflow.startGuiding()
-    
+
     def updateWorkflowInfo(self, change):
         self.ignore_update = True
         new_info = self.workflow.workflowInfo
@@ -182,13 +205,12 @@ class GuidedStats(DOMWidget):
             return
         new_info = change["new"]
         self.workflow.workflowInfo = new_info
-  
-    #add property "currentDF" to workflow
+
+    # add property "currentDF" to workflow
     @property
     def current_dataframe(self):
         return self.workflow.current_dataframe
-    
+
     @current_dataframe.setter
     def current_dataframe(self, df):
         raise ImproperUseError("current_dataframe is read-only")
-

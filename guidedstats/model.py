@@ -1,9 +1,8 @@
-import statsmodels.api as sm
-from statsmodels.stats.weightstats import ttest_ind
 import pandas as pd
 
 
 def naiveLR(X, Y, **kwargs):
+    import statsmodels.api as sm
     X_wconstant = sm.add_constant(X)
     model = sm.OLS(Y, X_wconstant).fit()
     results = Results()
@@ -20,6 +19,7 @@ def naiveLR(X, Y, **kwargs):
 
 
 def RidgeLR(X, Y, alpha=1.0, **kwargs):
+    import statsmodels.api as sm
     X_wconstant = sm.add_constant(X)
     model = sm.OLS(Y, X_wconstant).fit_regularized(
         method='elastic_net', alpha=float(alpha), L1_wt=0.0)
@@ -30,6 +30,7 @@ def RidgeLR(X, Y, alpha=1.0, **kwargs):
 
 
 def LassoLR(X, Y, alpha=1.0, **kwargs):
+    import statsmodels.api as sm
     X_wconstant = sm.add_constant(X)
     model = sm.OLS(Y, X_wconstant).fit_regularized(
         method='elastic_net', alpha=float(alpha), L1_wt=1.0)
@@ -39,12 +40,13 @@ def LassoLR(X, Y, alpha=1.0, **kwargs):
 
 
 def TTest(X1, X2, alternative="two-sided", equal_var="true"):
+    from statsmodels.stats.weightstats import ttest_ind
     usevar = "unequal" if equal_var == "false" else "pooled"
     tstats, pvalue, df = ttest_ind(
         X1, X2, alternative=alternative, usevar=usevar)
     results = Results()
-    results.setStat("tstat", float(tstats))
-    results.setStat("pvalue", float(pvalue))
+    results.setStat("params", [float(tstats)])
+    results.setStat("pvalues", [float(pvalue)])
     results.setStat("df", float(df))
     return (results,)
 
@@ -97,6 +99,7 @@ class ModelWrapper(object):
             raise KeyError("The model does not exist")
 
     def predict(self, X: pd.DataFrame, **kwargs):
+        import statsmodels.api as sm
         if self._canPredict:
             return self.fittedModel.predict(sm.add_constant(X), **kwargs)
         else:

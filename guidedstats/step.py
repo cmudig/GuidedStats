@@ -1,6 +1,8 @@
 from abc import abstractmethod
 import json
 import copy
+import re
+import textwrap
 import traitlets as tl
 import numpy as np
 import pandas as pd
@@ -112,6 +114,13 @@ class Step(tl.HasTraits):
     def forward(self):
         """
         execute the current step and move forward
+        """
+        pass
+
+    @abstractmethod
+    def export(self):
+        """
+        export the current step to code
         """
         pass
 
@@ -307,6 +316,11 @@ class LoadDatasetStep(Step):
     def datasetName(self, datasetName: str):
         self._datasetName = datasetName
         self.changeConfig("dataset", datasetName)
+        
+    def export(self):
+        code = f"""# Step {self.stepId + 1}: {self.stepName}\n"""
+        code += textwrap.dedent(f"""import pandas as pd\n""")
+        return code
 
     def forward(self):
 
@@ -360,6 +374,18 @@ class VariableSelectionStep(GuidedStep):
         self.inputs = {}
         self.outputs = {}
         self.done = False
+
+    def export(self):
+            step_no = self.stepId + 1
+            columns = ["'" + variable["name"] +
+                       "'" for variable in self.config["variableResults"]]
+            columns = ",".join(columns)
+            code = textwrap.dedent(f"""\n# Step {step_no}: {self.stepName}\n{self.outputNames[0]} = {self.workflow.datasetName}[[{columns}]]\n""")
+            
+            if self._variableType == "independent variables":
+                code += f"""exog = {self.outputNames[0]}\n"""
+                
+            return code
 
     def findVariableCandidates(self, dataset: pd.DataFrame, referenceDataset: pd.DataFrame = None) -> pd.DataFrame:
         if self._compare:
@@ -461,6 +487,41 @@ class AssumptionCheckingStep(SucccessorStep):
         self.config.pop("assumptionResults", None)
         self.config.pop("viz", None)
 
+    def export(self):
+        import inspect
+        code = f"\n# Step {self.stepId + 1}: {self.stepName}\n"
+        metric_code = inspect.getsource(
+            self.assumption._assumption["metric_func"])
+        code += metric_code
+
+        sig = inspect.signature(self.assumption._assumption["metric_func"])
+
+        # Get a list of the function's parameters
+        params = sig.parameters.values()
+
+        # Filter the list to include only parameters that do not have a default value
+        non_optional_params = [
+            param.name for param in params if param.default is param.empty and param.name not in ["args", "kwargs"]]
+
+        # Call the function in the exported paragraph
+
+        # it should be loop through columns of"
+        code += f"for col in {self.inputNames[0]}.columns:"
+
+        arguments = []
+        # Match the inputNames with the non-optional parameters
+        for i, param in enumerate(non_optional_params):
+            if i == 0:
+                arguments.append(f"{param} = {self.inputNames[i]}" + "[[col]]")
+            else:
+                arguments.append(f"{param} = {self.inputNames[i]}")
+
+        code += f"""\n    outputs = {
+            self.assumption._assumption['metric_func'].__name__}({",".join(arguments)})"""
+        code += f"\n    print('{self.assumption._assumption['prompt']}'.format(**outputs))\n"
+
+        return code
+
     @tl.observe("toExecute")
     def onObserveToExecute(self, change):
         if change["old"] == False and change["new"] == True:
@@ -543,6 +604,23 @@ class TrainTestSplitStep(Step):
     def clear(self):
         self.config.pop("trainSize", None)
 
+    def export(self):
+        code = textwrap.dedent(f"""\n# Step {self.stepId + 1}: {self.stepName}\n
+import numpy as np
+trainSize = {self.config["trainSize"]}
+
+indices = np.arange(len(X))
+np.random.shuffle(indices)
+train_indices = indices[:int(len(indices)*float(trainSize))]
+test_indices = indices[int(
+    len(indices)*(float(trainSize))):]
+
+XTrain = X.iloc[train_indices]
+XTest = X.iloc[test_indices]
+yTrain = Y.iloc[train_indices]
+yTest = Y.iloc[test_indices]\n""")
+        return code
+
     @tl.observe("toExecute")
     def onObserveToExecute(self, change):
         if change["old"] == False and change["new"] == True:
@@ -591,6 +669,37 @@ class ModelStep(GuidedStep):
         self.config.pop("modelName", None)
         self.config.pop("modelParameters", None)
 
+    def export(self):
+        import inspect
+        code = textwrap.dedent(f"""\n# Step {self.stepId + 1}: {self.stepName}
+from guidedstats.model import Results\n""")
+        arguments = []
+
+        sig = inspect.signature(self.modelWrapper._model)
+
+        # Get a list of the function's parameters
+        params = sig.parameters.values()
+
+        # Filter the list to include only parameters that do not have a default value
+        non_optional_params = [
+            param.name for param in params if param.default is param.empty and param.name not in ["args", "kwargs"]]
+
+        for i, param in enumerate(non_optional_params):
+            if i == 0:
+                arguments.append(f"{param} = {self.inputNames[i]}")
+
+        if self.config.get("modelParameters", None) is not None:
+            for parameter in self.config["modelParameters"]:
+                arguments.append(f"{parameter['name']} = {parameter['value']}")
+
+        code += inspect.getsource(self.modelWrapper._model)
+        # remove results.setStat("x2xx", yy4y) from the code
+        code = re.sub(
+            r"results.setStat\(\"[a-zA-Z0-9]*\", [a-zA-Z0-9]*\)", "", code)
+
+        code += f"""model,results = {self.modelWrapper._model.__name__}({",".join(arguments)})\n"""
+        return code
+
     @tl.observe("config")
     def onObserveConfig(self, change):
         if "modelName" in change["new"] and change["new"].get("modelName", None) != change["old"].get("modelName", None):
@@ -635,6 +744,8 @@ class EvaluationStep(GuidedStep):
         self.evaluationMetricNames = kwargs.get("evaluationMetricNames", None)
         self.visType = kwargs.get("visType", None)
 
+        self.columns = None
+
         self.metricWrappers = []
         if self.evaluationMetricNames is not None:
             for metricName in self.evaluationMetricNames:
@@ -647,94 +758,138 @@ class EvaluationStep(GuidedStep):
         self.config.pop("modelResults", None)
         self.config.pop("viz", None)
 
-    def forward(self, **inputs):
-        # TBC, should wrap a model object
+    def export(self):
+        import inspect
+        code = textwrap.dedent(f"""\n# Step {self.stepId + 1}: {self.stepName}\n
+params = results.getStat("params")
+p_values = results.getStat("pvalues")
+columns = {self.columns}
+print("Model Parameters")
+for i, col in enumerate(columns):
+    print(col, "coefficient:", round(params[i], 4), "pvalue:", round(p_values[i], 6))""")
+        # if model can predict
+        model = self.inputs["model"]
+        if model._canPredict:
+            code += textwrap.dedent('''
+Y_hat_train = model.predict(XTrain)
+Y_hat_train = Y_hat_train.to_numpy().reshape((-1))
+Y_true_train = yTrain.to_numpy().reshape((-1))''')
+            
+            if len(self.inputs["yTest"]) > 0:
+                code += textwrap.dedent('''
+Y_hat_test = model.predict(XTest)
+Y_hat_test = Y_hat_test.to_numpy().reshape((-1))
+Y_true_test = yTest.to_numpy().reshape((-1))''')
 
-        self.inputs = inputs
+            for metric in self.metricWrappers:
+                code += inspect.getsource(metric._metric)
+                code += f"""\nprint("Training Set {metric._metricName}")"""
+                code += f"""\noutputs = {metric._metric.__name__}(Y_true_train, Y_hat_train, XTrain)"""
+                code += f"""\nprint('{metric._metricName}', round(outputs["stats"], 4))\n"""
+                
+                if len(self.inputs["yTest"]) > 0:
+                    code += inspect.getsource(metric._metric)
+                    code += f"""\nprint("Test Set {metric._metricName}")"""
+                    code += f"""\noutputs = {metric._metric.__name__}(Y_true_test, Y_hat_test, XTest)"""
+                    code += f"""\nprint('{metric._metricName}', round(outputs["stats"], 4))\n"""
+        return code
 
-        # update model parameters
-        if self.inputs["model"]._modelName in ("Simple Linear Regression", "Ridge Regression", "Lasso Regression"):
-            params = self.inputs["results"].getStat("params")
-            p_values = self.inputs["results"].getStat("pvalues")
-        elif self.inputs["model"]._modelName == "T Test":
-            params = self.inputs["results"].getStat("tstat")
-            p_values = self.inputs["results"].getStat("pvalue")
+    def update_model_parameters(self, model, results, columns):
+        params = results.getStat("params")
+        p_values = results.getStat("pvalues")
         rows = []
-        if self.inputs["model"]._modelName in ("Simple Linear Regression", "Ridge Regression", "Lasso Regression"):
-            columns = ["const"] + list(self.inputs["XTest"].columns)
-            for i, col in enumerate(columns):
-                if p_values is not None:
-                    rows.append({"name": col, "value": round(
-                        params[i], 4), "pvalue": round(p_values[i], 6)})
-                else:
-                    rows.append(
-                        {"name": col, "value": round(params[i], 4)})
-            self.changeConfig("modelParameters", rows)
-        elif self.inputs["model"]._modelName == "T Test":
-            rows.append({"name": "T Statistic", "value": round(
-                params, 4), "pvalue": round(p_values, 6)})
+        for i, col in enumerate(columns):
+            if p_values is not None:
+                rows.append({"name": col, "value": round(
+                    params[i], 4), "pvalue": round(p_values[i], 6)})
+            else:
+                rows.append({"name": col, "value": round(params[i], 4)})
         self.changeConfig("modelParameters", rows)
 
-        # viz & evaluation metrics
-        if self.inputs["model"]._canPredict:
-            if self.visType is not None and self.visType == "residual":
-                modelResults = []
-                Y_hat = self.inputs["model"].predict(self.inputs["XTest"])
-                Y_hat = Y_hat.to_numpy().reshape((-1))
-                Y_true = self.inputs["yTest"].to_numpy().reshape((-1))
+    def evaluate_model(self, model, XTrain, XTest, yTrain, yTest):
+        modelResults = []
+        if model._canPredict:
+            Y_hat_train = model.predict(XTrain)
+            Y_hat_train = Y_hat_train.to_numpy().reshape((-1))
+            Y_true_train = yTrain.to_numpy().reshape((-1))
 
-                vizStats = VIZ[self.visType](Y_hat, Y_true, group="Test")
+            for metric in self.metricWrappers:
+                outputs = metric.compute(Y_true_train, Y_hat_train, XTrain)
+                modelResults.append(
+                    {"name": metric._metricName, "score": round(outputs["stats"], 4), "group": "Train"})
 
-                if len(self.inputs["yTest"]) != 0:
-                    for metric in self.metricWrappers:
-                        outputs = metric.compute(
-                            Y_true, Y_hat, self.inputs["XTest"])
-                        modelResults.append(
-                            {"name": metric._metricName, "score": round(outputs["stats"], 4), "group": "Test"})
+            if len(yTest) > 0:
+                Y_hat_test = model.predict(XTest)
+                Y_hat_test = Y_hat_test.to_numpy().reshape((-1))
+                Y_true_test = yTest.to_numpy().reshape((-1))
 
-                Y_hat = self.inputs["model"].predict(self.inputs["XTrain"])
-                Y_hat = Y_hat.to_numpy().reshape((-1))
-                Y_true = self.inputs["yTrain"].to_numpy().reshape((-1))
-                vizStats.extend(VIZ[self.visType](
-                    Y_hat, Y_true, group="Train"))
+                for metric in self.metricWrappers:
+                    outputs = metric.compute(Y_true_test, Y_hat_test, XTest)
+                    modelResults.append(
+                        {"name": metric._metricName, "score": round(outputs["stats"], 4), "group": "Test"})
 
-                if len(self.inputs["yTrain"]) != 0:
-                    for metric in self.metricWrappers:
-                        outputs = metric.compute(
-                            Y_true, Y_hat, self.inputs["XTrain"])
-                        modelResults.append(
-                            {"name": metric._metricName, "score": round(outputs["stats"], 4), "group": "Train"})
+        self.changeConfig("modelResults", modelResults)
 
-                self.changeConfig("modelResults", modelResults)
+    def generate_residual_viz(self, model, XTrain, XTest, yTrain, yTest):
+        vizStats = []
+        if model._canPredict:
+            Y_hat_test = model.predict(XTest).to_numpy().reshape((-1))
+            Y_true_test = yTest.to_numpy().reshape((-1))
+            vizStats.extend(VIZ['residual'](
+                Y_hat_test, Y_true_test, group="Test"))
 
-                viz = {
-                    "vizType": "scatter",
-                    "xLabel": "Predicted {}".format(self.inputs["yTest"].columns[0]),
-                    "yLabel": "Residuals",
-                    "vizStats": vizStats,
-                }
-                vizs = [viz]
-                self.changeConfig("viz", vizs)
-        else:
-            if self.visType is not None and self.visType == "ttest":
-                vizStats = VIZ[self.visType](
-                    self.inputs["Y1"], self.inputs["Y2"],groups=self.inputs.get("groups", None))
+            Y_hat_train = model.predict(XTrain).to_numpy().reshape((-1))
+            Y_true_train = yTrain.to_numpy().reshape((-1))
+            vizStats.extend(VIZ['residual'](
+                Y_hat_train, Y_true_train, group="Train"))
 
-                stat = self.inputs["results"].getStat("tstat")
-                # determine p's range
-                p = self.inputs["results"].getStat("pvalue")
-                sign = checkPRange(p)
+            viz = {
+                "vizType": "scatter",
+                "xLabel": "Predicted {}".format(yTest.columns[0]),
+                "yLabel": "Residuals",
+                "vizStats": vizStats,
+            }
+            vizs = [viz]
+            self.changeConfig("viz", vizs)
 
-                title = "T Test, t = {:.4f}, p {}".format(stat, sign)
+    def generate_ttest_viz(self, Y1, Y2, results):
+        vizStats = VIZ['ttest'](Y1, Y2, groups=self.inputs.get("groups", None))
+        stat = results.getStat("params")[0]
+        p = results.getStat("pvalues")[0]
+        sign = checkPRange(p)
+        title = "T Test, t = {:.4f}, p {}".format(stat, sign)
 
-                viz = {
-                    "vizType": "ttest",
-                    "xLabel": "group",
-                    "yLabel": "values",
-                    "title": title,
-                    "vizStats": vizStats,
-                }
-                vizs = [viz]
-                self.changeConfig("viz", vizs)
+        viz = {
+            "vizType": "ttest",
+            "xLabel": "group",
+            "yLabel": "values",
+            "title": title,
+            "vizStats": vizStats,
+        }
+        vizs = [viz]
+        self.changeConfig("viz", vizs)
+
+    def forward(self, **inputs):
+        self.inputs = inputs
+        model = self.inputs["model"]
+        results = self.inputs["results"]
+
+        if self.visType == "residual":
+            XTest = self.inputs["XTest"]
+            XTrain = self.inputs["XTrain"]
+            yTest = self.inputs["yTest"]
+            yTrain = self.inputs["yTrain"]
+
+            self.columns = ["const"] + list(XTrain.columns)
+            self.update_model_parameters(model, results, columns=self.columns)
+            self.evaluate_model(model, XTrain, XTest, yTrain, yTest)
+            self.generate_residual_viz(model, XTrain, XTest, yTrain, yTest)
+        elif self.visType == "ttest":
+            Y1 = self.inputs["Y1"]
+            Y2 = self.inputs["Y2"]
+
+            self.columns = ["T Statistic"]
+            self.update_model_parameters(model, results, columns=self.columns)
+            self.generate_ttest_viz(Y1, Y2, results)
 
         self.done = True

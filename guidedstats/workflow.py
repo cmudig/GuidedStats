@@ -27,6 +27,7 @@ class WorkFlow(tl.HasTraits):
         self.stepList = []
 
         # export related state variables
+    
         self.current_dataframe = None
         self.current_model = None
 
@@ -83,6 +84,13 @@ class WorkFlow(tl.HasTraits):
         self.stepList.append(loadStep)
         loadStep.dataset = self.dataset
         loadStep.datasetName = self.datasetName
+        
+    def exportCode(self):
+        code = ""
+        for step in self.steps:
+            if step.done:
+                code += step.export()
+        return code
 
     def topologicalSort(self):
         """

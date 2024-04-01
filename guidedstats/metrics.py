@@ -1,13 +1,8 @@
 """
 This file contains selectable metrics for ranking
 """
-from typing import Callable, Iterable
-import numpy as np
+from typing import Callable
 import pandas as pd
-import scipy
-import scipy.stats as spstats
-from sklearn.metrics import r2_score
-from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 from .utils import QUANTITATIVE_DTYPES
 
@@ -16,39 +11,49 @@ A Metric should allow user to define their own metrics,
 some built-in functions are provided
 
 format of a metric function:
-    def metric(x,y=None,*args) -> tuple[float,float] | float:
-        return (statistics,pvalue(optional))
+def metric(X: Iterable, Y: Iterable = None, *args, **kwargs):
+    # X is the target column
+    # Y is the reference column
+    # *args and **kwargs are additional arguments
+    # return a dictionary containing the metric score and p-value(optional)
+    # for example:
+    return {
+        "stats": stats,
+        "pvalue": pvalue,
+        "rejectIndicator": rejectIndicator,
+        "annotation": annotation
+    }
 """
 
-
 def pearson(X, Y, *args, **kwargs):
+    import scipy.stats as spstats
+    import numpy as np
     stats, pvalue = spstats.pearsonr(X, np.array(Y).reshape((-1)))
     return {
         "stats": stats,
         "pvalue": pvalue,
-        "rejectIndicator": None
     }
 
 
-def skewness(X, Y: Iterable = None, *args, **kwargs):
+def skewness(X, Y = None, *args, **kwargs):
+    import scipy.stats as spstats
     stats, pvalue = spstats.skew(X)
     return {
         "stats": stats,
         "pvalue": pvalue,
-        "rejectIndicator": None
     }
 
 
-def kurtosis(X, Y: Iterable = None, *args, **kwargs):
+def kurtosis(X, Y = None, *args, **kwargs):
+    import scipy.stats as spstats
     stats = spstats.kurtosis(X)
     return {
         "stats": stats,
-        "pvalue": None,
-        "rejectIndicator": None
     }
 
 
-def outlier(X, Y: Iterable = None, *args, **kwargs):
+def outlier(X, Y = None, *args, **kwargs):
+    import numpy as np
     X = X.to_numpy().reshape((-1))
     previousX = kwargs.get("previousX", None)
     if previousX is not None:
@@ -71,16 +76,16 @@ def outlier(X, Y: Iterable = None, *args, **kwargs):
             count += 1
     return {
         "stats": count,
-        "pvalue": None,
-        "rejectIndicator": None
     }
 
 
-def levene(Y1: Iterable, Y2: Iterable, *args, **kwargs):
+def levene(Y1, Y2, *args, **kwargs):
+    import numpy as np
+    import scipy.stats as spstats
     # Perform Levene test for testing equal variances.
     Y1 = np.array(Y1).reshape(-1).tolist()
     Y2 = np.array(Y2).reshape(-1).tolist()
-    stats, p = scipy.stats.levene(Y1, Y2)
+    stats, p = spstats.levene(Y1, Y2)
     stats, p = round(stats, 6), round(p, 6)
 
     if p < 0.05:
@@ -94,7 +99,8 @@ def levene(Y1: Iterable, Y2: Iterable, *args, **kwargs):
     }
 
 
-def sharpiro(X, Y: Iterable = None, *args, **kwargs):
+def sharpiro(X, Y = None, *args, **kwargs):
+    import scipy.stats as spstats
     stats, p = spstats.shapiro(X)
     stats, p = round(stats, 6), round(p, 6)
 
@@ -110,24 +116,23 @@ def sharpiro(X, Y: Iterable = None, *args, **kwargs):
 
 
 def mse(y_true, y_pred, *args, **kwargs):
+    import numpy as np
     stats = np.mean((np.array(y_true)-np.array(y_pred))**2)
     return {
         "stats": stats,
-        "pvalue": None,
-        "rejectIndicator": None
     }
 
 
 def r2(y_true, y_pred, *args, **kwargs):
+    from sklearn.metrics import r2_score
     stats = r2_score(y_true, y_pred)
     return {
         "stats": stats,
-        "pvalue": None,
-        "rejectIndicator": None
     }
 
 
 def adjusted_r2(y_true, y_pred, *args, **kwargs):
+    from sklearn.metrics import r2_score
     n = len(y_true)
     exogs = args[0]
     p = exogs.shape[1]
@@ -135,12 +140,12 @@ def adjusted_r2(y_true, y_pred, *args, **kwargs):
     stats = 1 - (1-r2)*(n-1)/(n-p-1)
     return {
         "stats": stats,
-        "pvalue": None,
-        "rejectIndicator": None
     }
 
 
 def VIF(exog: pd.DataFrame, design_matrix: pd.DataFrame, *args, **kwargs):
+    from statsmodels.stats.outliers_influence import variance_inflation_factor
+    QUANTITATIVE_DTYPES = ['float64', 'int64']
     # find the index of exog in design_matrix
     other_exogs = []
     for i in range(design_matrix.shape[1]):
@@ -154,8 +159,6 @@ def VIF(exog: pd.DataFrame, design_matrix: pd.DataFrame, *args, **kwargs):
         vif = round(vif, 6)
         return {
             "stats": vif,
-            "pvalue": None,
-            "rejectIndicator": None,
             "annotation": ""
         }
     else:
@@ -163,8 +166,6 @@ def VIF(exog: pd.DataFrame, design_matrix: pd.DataFrame, *args, **kwargs):
 
     return {
         "stats": vif,
-        "pvalue": None,
-        "rejectIndicator": None,
         "annotation": "for one predictor, there is no need to check multicollinearity"
     }
 
@@ -212,7 +213,7 @@ class MetricWrapper(object):
         else:
             raise KeyError("The metric does not exist")
 
-    def compute(self, X: Iterable, Y: Iterable, *referenceXs: Iterable):
+    def compute(self, X, Y, *referenceXs):
         outputs = self._metric(X, Y, *referenceXs)
         return outputs
 
@@ -221,6 +222,7 @@ if __name__ == "__main__":
     # unit test for all functions below
     # TBC
     def test_sharpiro():
+        import numpy as np
         x = np.array([1, 2, 3, 4, 5])
         result = sharpiro(x)
         print(result)
