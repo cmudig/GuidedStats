@@ -6,6 +6,7 @@
     import { getContext } from 'svelte';
     import type { Writable } from 'svelte/store';
     import Done from '../icons/Done.svelte';
+    import Alert from '../icons/Alert.svelte';
     import Tabs from '../display/Tabs.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
@@ -27,6 +28,8 @@
         info.steps[stepIndex].config.assumptionName = assumptionName;
         workflowInfo.set(info);
     }
+
+    let active = true;
 </script>
 
 <div>
@@ -45,7 +48,17 @@
             </div>
         </div>
         <div class="flex">
-            <div class="grow" />
+            <div class="grow flex">
+                {#if !_.isUndefined(step?.message) && step.message.length > 0}
+                    <button
+                        on:click={() => {
+                            active = !active;
+                        }}><Alert /></button
+                    >{#if active}
+                        <span class="px-2">{step.message}</span>
+                    {/if}
+                {/if}
+            </div>
             <Tooltip title="Apply Transformation/Skip">
                 <button on:click={execute}><Done /></button>
             </Tooltip>
@@ -82,7 +95,17 @@
             </div>
             <div class="grow" />
             <div class="flex">
-                <div class="grow" />
+                <div class="grow flex">
+                    {#if !_.isUndefined(step?.message) && step.message.length > 0}
+                        <button
+                            on:click={() => {
+                                active = !active;
+                            }}><Alert /></button
+                        >{#if active}
+                            <span class="px-2">{step.message}</span>
+                        {/if}
+                    {/if}
+                </div>
                 <Tooltip title="Done">
                     <button on:click={updateAssumption}><Done /></button>
                 </Tooltip>

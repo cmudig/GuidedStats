@@ -45,6 +45,10 @@ _regressionConfig = [
      "stepExplanation": "Select the independent variables (also known as the predictors or features) \
        that will be used to predict the dependent variable. \
          This step involves choosing the relevant variables based on certain criteria.",
+    "suggestions": ["Select variables that are theoretically relevant to the dependent variable.",\
+      "Select variables with high correlation with the dependent variable.",\
+      "Create interaction terms(eg. x1*x2) between variables. This suggests that the effect of one variable depends on the value of another variable.",\
+        "Consider transforming variables, for example using log transformation, to improve the model's fit."],
      "stepConfig":
      {"stepName": "Select Independent Variables",
       "outputNames": ["X"],

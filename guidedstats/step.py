@@ -13,6 +13,7 @@ from .assumptions import AssumptionWrapper
 from .transformations import TransformationWrapper
 from .viz import VIZ
 from .model import ModelWrapper
+from .export import vizTypeToSpec
 from .utils import QUANTITATIVE_DTYPES
 
 
@@ -41,6 +42,7 @@ class Step(tl.HasTraits):
     config = tl.Dict({}).tag(sync=True)
     previousConfig = tl.Dict({}).tag(sync=True)
     groupConfig = tl.Dict({}).tag(sync=True)
+    message = tl.Unicode().tag(sync=True)
     """
     base class
     """
@@ -105,10 +107,17 @@ class Step(tl.HasTraits):
     @abstractmethod
     def onObserveToExecute(self, change):
         pass
-
+        
     def moveToNextStep(self):
         self.done = True
         self.workflow.moveToNextStep(self)
+    
+    def rerun(self):
+        config = copy.deepcopy(self.config)
+        self.previousConfig = config
+        self.config = {}
+        self.config = config
+        self.toExecute = True
 
     @abstractmethod
     def forward(self):
@@ -118,7 +127,7 @@ class Step(tl.HasTraits):
         pass
 
     @abstractmethod
-    def export(self):
+    def export(self, export_viz_func=False, **kwargs):
         """
         export the current step to code
         """
@@ -154,10 +163,14 @@ class GuidedStep(Step):
 
     # Utils function
     def computeMetric(self, dataframe: pd.DataFrame, column: str, *referenceColumns: str):
-        X = dataframe[column]
-        referenceXs = [dataframe[col] for col in referenceColumns]
-        return self.metric.compute(X, Y=referenceXs)
-
+        try:
+            X = dataframe[column]
+            referenceXs = [dataframe[col] for col in referenceColumns]
+            return self.metric.compute(X, Y=referenceXs)
+        except Exception as e:
+            self.workflow.message = f"{e}"
+            raise e
+        
     def compare(self, dataframe: pd.DataFrame, columns: list, k: int = 1, *referenceColumns: str):
         """
             Return the top-k highest column(s) based on the metric
@@ -316,8 +329,8 @@ class LoadDatasetStep(Step):
     def datasetName(self, datasetName: str):
         self._datasetName = datasetName
         self.changeConfig("dataset", datasetName)
-        
-    def export(self):
+
+    def export(self, export_viz_func=False, **kwargs):
         code = f"""# Step {self.stepId + 1}: {self.stepName}\n"""
         code += textwrap.dedent(f"""import pandas as pd\n""")
         return code
@@ -375,17 +388,21 @@ class VariableSelectionStep(GuidedStep):
         self.outputs = {}
         self.done = False
 
-    def export(self):
+    def export(self, export_viz_func=False, **kwargs):
+        code = ""
+        if self.config.get("variableResults", None) is not None:
             step_no = self.stepId + 1
+            code += f"\n# Step {step_no}: {self.stepName}\n"
             columns = ["'" + variable["name"] +
                        "'" for variable in self.config["variableResults"]]
             columns = ",".join(columns)
-            code = textwrap.dedent(f"""\n# Step {step_no}: {self.stepName}\n{self.outputNames[0]} = {self.workflow.datasetName}[[{columns}]]\n""")
-            
+            code += textwrap.dedent(f"""{self.outputNames[0]} = {
+                                    self.workflow.datasetName}[[{columns}]]\n""")
+
             if self._variableType == "independent variables":
                 code += f"""exog = {self.outputNames[0]}\n"""
-                
-            return code
+
+        return code
 
     def findVariableCandidates(self, dataset: pd.DataFrame, referenceDataset: pd.DataFrame = None) -> pd.DataFrame:
         if self._compare:
@@ -487,25 +504,21 @@ class AssumptionCheckingStep(SucccessorStep):
         self.config.pop("assumptionResults", None)
         self.config.pop("viz", None)
 
-    def export(self):
+    def export(self, export_viz_func=False, **kwargs):
+        code = ""
         import inspect
-        code = f"\n# Step {self.stepId + 1}: {self.stepName}\n"
+        code += f"\n# Step {self.stepId + 1}: {self.stepName}\n"
+
+        code += "# Function to check the assumption\n"
         metric_code = inspect.getsource(
             self.assumption._assumption["metric_func"])
         code += metric_code
 
         sig = inspect.signature(self.assumption._assumption["metric_func"])
-
-        # Get a list of the function's parameters
         params = sig.parameters.values()
-
-        # Filter the list to include only parameters that do not have a default value
         non_optional_params = [
             param.name for param in params if param.default is param.empty and param.name not in ["args", "kwargs"]]
 
-        # Call the function in the exported paragraph
-
-        # it should be loop through columns of"
         code += f"for col in {self.inputNames[0]}.columns:"
 
         arguments = []
@@ -520,6 +533,25 @@ class AssumptionCheckingStep(SucccessorStep):
             self.assumption._assumption['metric_func'].__name__}({",".join(arguments)})"""
         code += f"\n    print('{self.assumption._assumption['prompt']}'.format(**outputs))\n"
 
+        if export_viz_func:
+            code += "\n# Function to generate the data for visualizing the assumption\n"
+            viz_code = inspect.getsource(
+                VIZ[self.assumption._assumption["vis_type"]])
+            code += viz_code
+
+            code += "\n# Function to visualize the assumption\n"
+            code += f"{inspect.getsource(vizTypeToSpec[self.assumption._assumption['vis_type']])}\n"
+            
+            code += f"""import altair as alt\n"""
+            code += f"""charts = []\n"""
+            code += f"for col in {self.inputNames[0]}.columns:"
+
+            code += f"\n    vizStats = {VIZ[self.assumption._assumption['vis_type']].__name__}({self.inputNames[0]}[[col]])\n"
+
+            code += f"    chart = {vizTypeToSpec[self.assumption._assumption['vis_type']].__name__}(vizStats)\n"
+            code += f"    charts.append(chart)\n"
+            code += f"""final_chart = alt.vconcat(*charts)\n"""
+            code += f"""final_chart.display()\n"""
         return code
 
     @tl.observe("toExecute")
@@ -604,8 +636,10 @@ class TrainTestSplitStep(Step):
     def clear(self):
         self.config.pop("trainSize", None)
 
-    def export(self):
-        code = textwrap.dedent(f"""\n# Step {self.stepId + 1}: {self.stepName}\n
+    def export(self, export_viz_func=False, **kwargs):
+        code = ""
+        if self.config.get("trainSize", None) is not None:
+            code += textwrap.dedent(f"""\n# Step {self.stepId + 1}: {self.stepName}\n
 import numpy as np
 trainSize = {self.config["trainSize"]}
 
@@ -669,35 +703,35 @@ class ModelStep(GuidedStep):
         self.config.pop("modelName", None)
         self.config.pop("modelParameters", None)
 
-    def export(self):
+    def export(self, export_viz_func=False, **kwargs):
+        code = ""
         import inspect
-        code = textwrap.dedent(f"""\n# Step {self.stepId + 1}: {self.stepName}
+        code += textwrap.dedent(f"""\n# Step {self.stepId + 1}: {self.stepName}
 from guidedstats.model import Results\n""")
-        arguments = []
+        if self.config.get("modelName", None) is not None:
+            code += inspect.getsource(self.modelWrapper._model)
 
-        sig = inspect.signature(self.modelWrapper._model)
+            arguments = []
 
-        # Get a list of the function's parameters
-        params = sig.parameters.values()
+            sig = inspect.signature(self.modelWrapper._model)
 
-        # Filter the list to include only parameters that do not have a default value
-        non_optional_params = [
-            param.name for param in params if param.default is param.empty and param.name not in ["args", "kwargs"]]
+            # Get a list of the function's parameters
+            params = sig.parameters.values()
 
-        for i, param in enumerate(non_optional_params):
-            if i == 0:
-                arguments.append(f"{param} = {self.inputNames[i]}")
+            # Filter the list to include only parameters that do not have a default value
+            non_optional_params = [
+                param.name for param in params if param.default is param.empty and param.name not in ["args", "kwargs"]]
 
-        if self.config.get("modelParameters", None) is not None:
-            for parameter in self.config["modelParameters"]:
-                arguments.append(f"{parameter['name']} = {parameter['value']}")
+            for i, param in enumerate(non_optional_params):
+                if i == 0:
+                    arguments.append(f"{param} = {self.inputNames[i]}")
 
-        code += inspect.getsource(self.modelWrapper._model)
-        # remove results.setStat("x2xx", yy4y) from the code
-        code = re.sub(
-            r"results.setStat\(\"[a-zA-Z0-9]*\", [a-zA-Z0-9]*\)", "", code)
+            if self.config.get("modelParameters", None) is not None:
+                for parameter in self.config["modelParameters"]:
+                    arguments.append(f"{parameter['name']} = {parameter['value']}")
 
-        code += f"""model,results = {self.modelWrapper._model.__name__}({",".join(arguments)})\n"""
+            code += f"""model,results = {self.modelWrapper._model.__name__}
+                ({",".join(arguments)})\n"""
         return code
 
     @tl.observe("config")
@@ -758,7 +792,7 @@ class EvaluationStep(GuidedStep):
         self.config.pop("modelResults", None)
         self.config.pop("viz", None)
 
-    def export(self):
+    def export(self, export_viz_func=False, **kwargs):
         import inspect
         code = textwrap.dedent(f"""\n# Step {self.stepId + 1}: {self.stepName}\n
 params = results.getStat("params")
@@ -774,7 +808,7 @@ for i, col in enumerate(columns):
 Y_hat_train = model.predict(XTrain)
 Y_hat_train = Y_hat_train.to_numpy().reshape((-1))
 Y_true_train = yTrain.to_numpy().reshape((-1))''')
-            
+
             if len(self.inputs["yTest"]) > 0:
                 code += textwrap.dedent('''
 Y_hat_test = model.predict(XTest)
@@ -784,14 +818,37 @@ Y_true_test = yTest.to_numpy().reshape((-1))''')
             for metric in self.metricWrappers:
                 code += inspect.getsource(metric._metric)
                 code += f"""\nprint("Training Set {metric._metricName}")"""
-                code += f"""\noutputs = {metric._metric.__name__}(Y_true_train, Y_hat_train, XTrain)"""
-                code += f"""\nprint('{metric._metricName}', round(outputs["stats"], 4))\n"""
-                
+                code += f"""\noutputs = {metric._metric.__name__}
+                    (Y_true_train, Y_hat_train, XTrain)"""
+                code += f"""\nprint('{metric._metricName}
+                                    ', round(outputs["stats"], 4))\n"""
+
                 if len(self.inputs["yTest"]) > 0:
                     code += inspect.getsource(metric._metric)
                     code += f"""\nprint("Test Set {metric._metricName}")"""
-                    code += f"""\noutputs = {metric._metric.__name__}(Y_true_test, Y_hat_test, XTest)"""
-                    code += f"""\nprint('{metric._metricName}', round(outputs["stats"], 4))\n"""
+                    code += f"""\noutputs = {metric._metric.__name__}
+                        (Y_true_test, Y_hat_test, XTest)"""
+                    code += f"""\nprint('{metric._metricName}
+                                        ', round(outputs["stats"], 4))\n"""
+
+        if export_viz_func:
+            code += textwrap.dedent(f"""\n# Visualization\n""")
+            code += inspect.getsource(VIZ[self.visType])
+            if self.vizType == "residual":
+                code += f"""vizStats = {VIZ['residual'].__name__}
+                    (Y_hat_train, Y_true_train, group="Train")"""
+                code += f"""\n{vizTypeToSpec[self.visType]()}\n"""
+                code += f"""\nchart\n"""
+                if len(self.inputs["yTest"]) > 0:
+                    code += f"""vizStats = {VIZ['residual'].__name__}
+                        (Y_hat_test, Y_true_test, group="Test")"""
+                    code += f"""\n{vizTypeToSpec[self.visType]()}\n"""
+                    code += f"""\nchart\n"""
+            elif self.visType == "ttest":
+                code += f"""vizStats = {VIZ['ttest'].__name__}
+                    (Y1, Y2, groups=groups)"""
+                code += f"""\n{vizTypeToSpec[self.visType]()}\n"""
+
         return code
 
     def update_model_parameters(self, model, results, columns):

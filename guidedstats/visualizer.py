@@ -55,7 +55,7 @@ class GuidedStats(DOMWidget):
         super(GuidedStats, self).__init__(*args, **kwargs)
 
         self.dataset = dataset
-        
+
         user_ns = get_ipython().user_ns
         for name, value in user_ns.items():
             if value is dataset:
@@ -81,45 +81,34 @@ class GuidedStats(DOMWidget):
 
         self.exportCode = html_table
 
-    def _handle_exportViz(self, change):
-        viz_idx = change["new"]
-        if viz_idx >= 0 and self.exportVizStepIdx >= 0 and self.exportVizStepIdx < len(self.workflow.steps):
-            vizStep = self.workflow.steps[self.exportVizStepIdx]
-            viz = vizStep.config["viz"][viz_idx]
-            if viz["vizType"] == "boxplot":
-                vizCode = exportBoxplot(viz)
-            elif viz["vizType"] == "scatter":
-                vizCode = exportScatterplot(viz)
-            elif viz["vizType"] == "density":
-                vizCode = exportDensityPlot(viz)
-            elif viz["vizType"] == "ttest":
-                vizCode = exportTTestPlot(viz)
-            self.exportCode = vizCode
+    def _import(self, name: str, item):
+        if name == "dataset":
+            # import dataset
+            self.workflow.importDataset(item)
+        else:
+            raise ValueError("Invalid import item")
 
-    def export(self, item: str, **kwargs):
-        if item == "table":
+    def export(self, name: str, **kwargs):
+        if name == "table":
             format = kwargs.get("format", "latex")
             table = self.exportTable(format=format)
             return table
-        elif item == "report":
+        elif name == "report":
             report = self.exportReport()
             return report
-        elif item == "model":
+        elif name == "model":
             model = self.exportCurrentModel()
             return model
-        elif item == "dataset":
+        elif name == "dataset":
             dataset = self.exportDataset()
             return dataset
-        elif item == "workflow":
+        elif name == "code":
             from ipylab import JupyterFrontEnd
-            code = self.exportWorkflowCode()
+            code = self.exportWorkflowCode(**kwargs)
             app = JupyterFrontEnd()
             app.commands.execute('notebook:move-cursor-up')
             app.commands.execute('notebook:insert-cell-below')
-
-            # Enter edit mode in the new cell
             app.commands.execute('notebook:enter-edit-mode')
-            # Populate the new cell with the desired code
             app.commands.execute('notebook:replace-selection', {'text': code})
         else:
             raise ValueError("Invalid export item")
@@ -161,9 +150,9 @@ class GuidedStats(DOMWidget):
         if self.workflow.current_dataframe is not None:
             return self.workflow.current_dataframe
 
-    def exportWorkflowCode(self):
+    def exportWorkflowCode(self, step_no=None, export_viz_func=False, **kwargs):
         if self.workflow is not None:
-            return self.workflow.exportCode()
+            return self.workflow.exportCode(step_no=step_no, export_viz_func=export_viz_func, **kwargs)
 
     def getBuiltinWorkflow(self):
         self.builtinWorkflows = ["Linear Regression", "T Test"]

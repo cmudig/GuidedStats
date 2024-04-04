@@ -1,10 +1,9 @@
-from typing import Iterable
 import pandas as pd
-import numpy as np
 import random
 
 
 def boxplotVizStats(X: pd.Series, *args, **kwargs):
+    import numpy as np
     if isinstance(X, pd.DataFrame):
         X = X.iloc[:, 0]
     max_outlier = kwargs.get("max_outlier", 50)
@@ -59,7 +58,7 @@ def multiBoxplotVizStats(*args, **kwargs):
     return stats
 
 
-def residVizStats(Y_hat: Iterable, Y_true: Iterable, **kwargs):
+def residVizStats(Y_hat, Y_true, **kwargs):
     max_point = kwargs.get("max_point", 100)
     group = kwargs.get("group", "group")
     resid = Y_hat - Y_true
@@ -70,7 +69,7 @@ def residVizStats(Y_hat: Iterable, Y_true: Iterable, **kwargs):
     return sample
 
 
-def multicollinearityVizStats(X: Iterable, df: pd.DataFrame, **kwargs):
+def heapmapVizStats(X, df: pd.DataFrame, **kwargs):
     max_point = kwargs.get("max_point", 150)
 
     # generate a heatmap of correlation matrix
@@ -83,7 +82,8 @@ def multicollinearityVizStats(X: Iterable, df: pd.DataFrame, **kwargs):
     return stats
 
 
-def normalityVizStats(X: Iterable, **kwargs):
+def densityVizStats(X, **kwargs):
+    import numpy as np
     max_point = kwargs.get("max_point", 150)
 
     stats = []
@@ -97,7 +97,8 @@ def normalityVizStats(X: Iterable, **kwargs):
     return stats
 
 
-def tTestVizStats(Y1: Iterable, Y2: Iterable, **kwargs):
+def tTestVizStats(Y1, Y2, **kwargs):
+    import numpy as np
     max_point = kwargs.get("max_point", 150)
     group_label = kwargs.get("groups", ["group1", "group2"])
 
@@ -118,6 +119,10 @@ def tTestVizStats(Y1: Iterable, Y2: Iterable, **kwargs):
 
 
 VIZ = {
+    "boxplot": boxplotVizStats,
+    "multiBoxplot": multiBoxplotVizStats,
+    "density": densityVizStats,
+    "heatmap": heapmapVizStats,
     "residual": residVizStats,
     "ttest": tTestVizStats
 }

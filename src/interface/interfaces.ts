@@ -51,6 +51,7 @@ export type Step = {
     config: StepConfig;
     previousConfig?: StepConfig;
     groupConfig?: GroupConfig;
+    message?: string;
 };
 
 export type GroupConfig = {

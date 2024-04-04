@@ -412,3 +412,13 @@ export function getHeatMapStats(
     };
     return spec;
 }
+
+// generate a dictionary of visualization types and their corresponding functions
+export const vizTypeToSpec = {
+    boxplot: getBoxplotStats,
+    multiBoxplot: getBoxplotStats,
+    scatter: getScatterPlotStats,
+    density: getDensityPlotStats,
+    ttest: getTTestPlotStats,
+    heatmap: getHeatMapStats
+};

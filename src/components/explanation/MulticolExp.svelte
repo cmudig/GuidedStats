@@ -28,6 +28,8 @@
             A VIF of <span class="font-bold" style="color:#008AFE"
                 >{assumptionResult?.name}</span
             > above 4 raises concerns, but it may not be a big issue.
+        {:else if _.isNaN(assumptionResult?.stats) }
+            For the model with only one predictor {assumptionResult?.name}, VIF is not a issue of concern.
         {:else}
             A VIF of <span class="font-bold" style="color:#008AFE"
                 >{assumptionResult?.name}</span

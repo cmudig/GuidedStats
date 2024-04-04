@@ -7,7 +7,7 @@
         Workflow
     } from '../../interface/interfaces';
     import type { Writable } from 'svelte/store';
-    import { afterUpdate, getContext, onMount } from 'svelte';
+    import { afterUpdate, getContext } from 'svelte';
     import { deepCopy } from '../../utils';
     import { activeTabValue } from '../../stores';
     import {
@@ -47,7 +47,7 @@
             specs = viz.map(v => {
                 if (v.vizType == 'density') {
                     return getDensityPlotStats(v, vizSubType);
-                } else if (v.vizType == 'boxplot') {
+                } else if (v.vizType == 'boxplot' || v.vizType == 'multiBoxplot') {
                     return getBoxplotStats(v);
                 } else if (v.vizType == 'heatmap') {
                     return getHeatMapStats(v);

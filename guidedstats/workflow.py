@@ -27,7 +27,6 @@ class WorkFlow(tl.HasTraits):
         self.stepList = []
 
         # export related state variables
-    
         self.current_dataframe = None
         self.current_model = None
 
@@ -66,14 +65,14 @@ class WorkFlow(tl.HasTraits):
         # Unobserve old steps
         for step in self._steps:
             step.unobserve(self.updateWorkflowInfo, names=["stepId", "stepName", "stepType", "stepExplanation",
-                           "done", "isProceeding", "toExecute", "isShown", "config", "previousConfig", "groupConfig"])
+                           "done", "isProceeding", "toExecute", "isShown", "config", "previousConfig", "groupConfig","message"])
         # Set the new steps
         self._steps = value
         # Observe new steps
         for step in self._steps:
             step.workflow = self
             step.observe(self.updateWorkflowInfo, names=["stepId", "stepName", "stepType", "stepExplanation",
-                         "done", "isProceeding", "toExecute", "isShown", "config", "previousConfig", "groupConfig"])
+                         "done", "isProceeding", "toExecute", "isShown", "config", "previousConfig", "groupConfig","message"])
 
     def loadData(self):
         """
@@ -85,12 +84,34 @@ class WorkFlow(tl.HasTraits):
         loadStep.dataset = self.dataset
         loadStep.datasetName = self.datasetName
         
-    def exportCode(self):
-        code = ""
-        for step in self.steps:
-            if step.done:
-                code += step.export()
-        return code
+    def exportCode(self, step_no=None, export_viz_func = False, **kwargs):
+        stp_no = step_no
+        #export all steps
+        if stp_no is None:    
+            code = ""
+            for step in self.steps:
+                if step.done or step.isProceeding:
+                    code += step.export(export_viz_func = export_viz_func, **kwargs)
+            return code
+        #export specific step
+        if isinstance(stp_no, int):
+            if self.steps.index(self.currentStep) + 1 < stp_no or stp_no <= 0:
+                raise ValueError("Invalid step number")
+            code = ""
+            step = self.steps[stp_no-1]
+            code += step.export(export_viz_func = export_viz_func, **kwargs)
+            return code
+        #export steps in a range
+        if isinstance(stp_no, Iterable):
+            if any([ self.steps.index(self.currentStep) + 1 < stp or stp <= 0 for stp in stp_no]):
+                raise ValueError("Invalid step numbers")
+            stp_no = sorted(list(set(stp_no)))
+            code = ""
+            for stp in stp_no:
+                step = self.steps[stp-1]
+                code += step.export(export_viz_func = export_viz_func, **kwargs)
+            return code    
+        
 
     def topologicalSort(self):
         """
@@ -127,17 +148,21 @@ class WorkFlow(tl.HasTraits):
         step.isProceeding = False
         step.toExecute = False
 
+        # if the current step is farther than the next step
         if self.stepList.index(self.currentStep) > stepIdx+1:
+            next_step = self.stepList[stepIdx+1]
+            self.callStepForward(next_step)
+            next_step.rerun()
             # reconstruct the steps after the current step
-            for i in range(stepIdx+1, len(self.stepList)):
-                newStep = self.constructStep(self.configFile[i])
-                self.stepList[i] = newStep
-                self.outputsStorage[self.stepList[i].stepId] = {}
-            self.steps = self.stepList
-
-        self.currentStep = self.stepList[stepIdx+1]
-        self.currentStep.isProceeding = True
-        self.callStepForward(self.currentStep)
+            # for i in range(stepIdx+1, len(self.stepList)):
+            #     newStep = self.constructStep(self.configFile[i])
+            #     self.stepList[i] = newStep
+            #     self.outputsStorage[self.stepList[i].stepId] = {}
+            # self.steps = self.stepList
+        else:         
+            self.currentStep = self.stepList[stepIdx+1]
+            self.currentStep.isProceeding = True
+            self.callStepForward(self.currentStep)
 
     def callStepForward(self, step: Step):
         if step.succeedPreviousStepOutput:
@@ -168,7 +193,7 @@ class WorkFlow(tl.HasTraits):
         stepInfos = []
         for step in self.steps:
             stepInfo = {"stepId": step.stepId, "stepName": step.stepName, "stepType": step.stepType, "stepExplanation": step.stepExplanation, "done": step.done, "isProceeding": step.isProceeding,
-                        "toExecute": step.toExecute, "isShown": step.isShown, "config": step.config, "previousConfig": step.previousConfig, "groupConfig": step.groupConfig}
+                        "toExecute": step.toExecute, "isShown": step.isShown, "config": step.config, "previousConfig": step.previousConfig, "groupConfig": step.groupConfig, "message": step.message}
             stepInfos.append(stepInfo)
 
         info = {"workflowName": self.workflowName,
@@ -210,6 +235,17 @@ class WorkFlow(tl.HasTraits):
                 if step.config != configs:
                     step.config = configs
                     break
+                if step.message != stepInfo["message"]:
+                    step.message = stepInfo["message"]
+                    break
+    
+    def importDataset(self, data: pd.DataFrame):
+        self.dataset = data
+        self.current_dataframe = data
+        loadStep = self.steps[0]
+        loadStep.forward()
+        #set alert message to workflow
+        self.message = "New data imported, GuidedStats will rerun the workflow from the beginning."
 
     def constructStep(self, stepInfo: dict):
         cls = globals()[stepInfo["stepType"]]

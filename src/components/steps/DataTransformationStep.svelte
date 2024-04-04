@@ -6,6 +6,7 @@
     import { deepCopy } from '../../utils';
     import Tooltip from '../tooltip/Tooltip.svelte';
     import Done from '../icons/Done.svelte';
+    import Alert from '../icons/Alert.svelte';
     import SelectionBoard from '../display/SelectionBoard.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
@@ -64,6 +65,8 @@
         info.steps[stepIndex].done = true;
         workflowInfo.set(info);
     }
+
+    let active = true;
 </script>
 
 <div class="flex flex-col h-full">
@@ -115,7 +118,17 @@
     </div>
     <div class="grow" />
     <div class="flex">
-        <div class="grow" />
+        <div class="grow flex">
+            {#if !_.isUndefined(step?.message) && step.message.length > 0}
+                <button
+                    on:click={() => {
+                        active = !active;
+                    }}><Alert /></button
+                >{#if active}
+                    <span class="px-2">{step.message}</span>
+                {/if}
+            {/if}
+        </div>
         <Tooltip title="Execute">
             <button on:click={execute}><Done /></button>
         </Tooltip>
