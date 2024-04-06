@@ -48,6 +48,7 @@ export type Step = {
     toExecute: boolean;
     isShown: boolean;
     stepExplanation?: string;
+    suggestions?: string[];
     config: StepConfig;
     previousConfig?: StepConfig;
     groupConfig?: GroupConfig;
@@ -135,6 +136,7 @@ export type Workflow = {
     workflowName: string;
     currentStepId: number;
     message: string;
+    report: string;
     steps: Step[];
     flows: Flow[];
 };

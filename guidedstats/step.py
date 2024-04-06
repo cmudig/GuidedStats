@@ -13,7 +13,7 @@ from .assumptions import AssumptionWrapper
 from .transformations import TransformationWrapper
 from .viz import VIZ
 from .model import ModelWrapper
-from .export import vizTypeToSpec
+from .export import vizTypeToSpec, exportTTestReport, exportRegressionReport
 from .utils import QUANTITATIVE_DTYPES
 
 
@@ -39,6 +39,7 @@ class Step(tl.HasTraits):
     toExecute = tl.Bool(False).tag(sync=True)
     isShown = tl.Bool(False).tag(sync=True)
     stepExplanation = tl.Unicode().tag(sync=True)
+    suggestions = tl.List([]).tag(sync=True)
     config = tl.Dict({}).tag(sync=True)
     previousConfig = tl.Dict({}).tag(sync=True)
     groupConfig = tl.Dict({}).tag(sync=True)
@@ -63,8 +64,10 @@ class Step(tl.HasTraits):
         # back-end state
         self.inputs = {}
         self.outputs = {}
+        
         self.outputNames = kwargs.get("outputNames", None)
         self.inputNames = kwargs.get("inputNames", None)
+        self.suggestions = kwargs.get("suggestions", [])
 
         self.registered_functions = []
 
@@ -926,10 +929,19 @@ Y_true_test = yTest.to_numpy().reshape((-1))''')
         vizs = [viz]
         self.changeConfig("viz", vizs)
 
+    def report(self,results):
+        if self.workflow.current_model._modelName == "Simple Linear Regression":
+            report = exportRegressionReport(results, style="html")
+        elif self.workflow.current_model._modelName == "T Test":
+            report = exportTTestReport(results)
+        self.workflow.report = report
+        
     def forward(self, **inputs):
         self.inputs = inputs
         model = self.inputs["model"]
         results = self.inputs["results"]
+        
+        self.report(results)
 
         if self.visType == "residual":
             XTest = self.inputs["XTest"]

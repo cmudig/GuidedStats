@@ -16,11 +16,16 @@
     let parameterValues: Parameter[] = undefined;
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
-
-    step.config.modelCandidates.filter(x => x?.isDefault)?.length > 0
-        ? (modelName = step.config.modelCandidates.filter(x => x?.isDefault)[0]
-              .name)
-        : (modelName = undefined);
+    if (
+        !_.isUndefined(step.config?.modelCandidates) &&
+        step.config.modelCandidates.length > 0
+    ) {
+        step.config.modelCandidates.filter(x => x?.isDefault)?.length > 0
+            ? (modelName = step.config.modelCandidates.filter(
+                  x => x?.isDefault
+              )[0].name)
+            : (modelName = undefined);
+    }
 
     function handleInputChange(parameterName: string, value: any) {
         if (!_.isUndefined(parameterName) && !_.isUndefined(value)) {
@@ -74,11 +79,13 @@
                     bind:value={modelName}
                 >
                     <option disabled selected value> -- option -- </option>
-                    {#each step.config.modelCandidates as modelCandidate}
-                        <option value={modelCandidate?.name}
-                            >{modelCandidate?.name}</option
-                        >
-                    {/each}
+                    {#if !_.isUndefined(step.config.modelCandidates) && step.config.modelCandidates.length > 0}
+                        {#each step.config.modelCandidates as modelCandidate}
+                            <option value={modelCandidate?.name}
+                                >{modelCandidate?.name}</option
+                            >
+                        {/each}
+                    {/if}
                 </select>
             </div>
             <SelectionBoard parameters={parameterValues} {handleInputChange} />

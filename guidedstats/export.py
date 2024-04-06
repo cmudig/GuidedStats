@@ -95,7 +95,7 @@ vizTypeToSpec = {
 }
 
 
-def exportReport(results: Results):
+def exportRegressionReport(results: Results, style="text"):
     # Extract model results
 
     df_resid = results.getStat("df_resid")
@@ -108,34 +108,65 @@ def exportReport(results: Results):
     conf_int = results.getStat("conf_int")
     pvalues = results.getStat("pvalues")
     se = results.getStat("bse")
-
+    r_squared_percentage = r_squared * 100
     # Check if all necessary attributes are not None
     reportAvailable = all([v is not None for v in [df_resid, df_model, fvalue, f_pvalue, r_squared, columns, params, conf_int, pvalues, se]])
     if not reportAvailable:
         raise ValueError(
             "The fitted model does not have all the necessary attributes for reports")
+    if style == "text":
+        # APA report string
+        apa_report = ""
+        
+        apa_report += f"""The regression analysis revealed that the model with independent variables {", ".join(columns)} explained {r_squared_percentage:.0}% of the variance in the dependent variable (R² = {r_squared:.2f})."""
+        # Adding parameter estimates
+        for i, column in enumerate(columns):
+            if 'Intercept' in column:  # Typically not reported in APA
+                continue
+            B = params[i]
+            CI_lower, CI_upper = conf_int.iloc[i]
+            p = pvalues[i]
+            SE = se[i]
+            if p < 0.001:
+                p_text = "p < .001"
+                significance = f"This provides very strong evidence against the null hypothesis (which states that there is no effect for {column} on the dependent variable) and supports the alternative hypothesis (which states that there is an effect)."
+            elif p < 0.05:
+                p_text = f"p = {p:.3f}"
+                significance = f"This provides evidence against the null hypothesis (which states that there is no effect for {column} on the dependent variable) and supports the alternative hypothesis."
+            else:
+                p_text = f"p = {p:.3f}"
+                significance = f"This does not provide enough evidence to reject the null hypothesis (which states that there is no effect for {column} on the dependent variable), so we cannot conclude that there is an effect."
 
-    # APA report string
-    apa_report = f"The regression analysis revealed that the model explained {r_squared:.2f} of the variance (F({df_model:.0f}, {df_resid:.0f}) = {fvalue:.3f}, p = {f_pvalue:.3f}). "
+            apa_report += f"The coefficient for {column} indicates that, holding other variables constant, a one-unit increase in {column} is associated with a {B:.3f}-unit change in the dependent variable (B = {B:.3f}, {p_text}). {significance}\n"
 
-    # Adding parameter estimates
-    for i, column in enumerate(columns):
-        if 'Intercept' in column:  # Typically not reported in APA
-            continue
-        B = params[i]
-        CI_lower, CI_upper = conf_int.iloc[i]
-        p = pvalues[i]
-        SE = se[i]
-        if p < 0.001:
-            p_text = "p < .001"
-        elif p < 0.01:
-            p_text = f"p = {p:.2f}"
-        elif p < 0.05:
-            p_text = f"p < .05"
-        else:
-            p_text = f"p = {p:.2f}"
-        apa_report += f"The coefficient for {column} was significant (B = {B:.3f}, SE = {SE:.3f}, 95% CI [{CI_lower:.3f}, {CI_upper:.3f}], {p_text}). "
+        return apa_report
+    
+    if style == "html":
+        apa_report = ""
+        apa_report += f'<h7 class="text-blue-700">Regression Analysis</h7><p>The regression analysis revealed that the model with independent variables <span class="text-blue-700">{", ".join(columns)}</span> explained {r_squared_percentage:.0f}% of the variance in the dependent variable (R² = {r_squared:.2f}).</p>'
+        apa_report += '<h7 class="text-blue-700">Individual Coefficients</h7>\n'
 
+        for i, column in enumerate(columns):
+            if 'const' in column:
+                continue
+            B = params[i]
+            CI_lower, CI_upper = conf_int.iloc[i]
+            p = pvalues[i]
+            SE = se[i]
+            if p < 0.001:
+                p_text = "< .001"
+                significance = f"""The p-value for the coefficient of {column} {p_text}, which provides very strong evidence against the null hypothesis that there is no effect for <span class="text-blue-700">{column}</span> on the dependent variable."""
+            elif p < 0.05:
+                p_text = f"< {p:.3f}"
+                significance = f"""The p-value for the coefficient of {column} {p_text}, which provides evidence against the null hypothesis that there is no effect for <span class="text-blue-700">{column}</span> on the dependent variable."""
+            else:
+                p_text = f"= {p:.3f}"
+                significance = f"""The p-value for the coefficient of {column} {p_text}, which does not provide enough evidence to reject the null hypothesis that there is no effect for <span class="text-blue-700">{column}</span> on the dependent variable."""
+
+            apa_report += f'<p class="text-blue-700">{column}</p>The coefficient for <span class="text-blue-700">{column}</span> indicates that, holding other variables constant, a one-unit increase in {column} is associated with a {B:.3f}-unit change in the dependent variable (B = {B:.3f}, {p_text}). {significance}</p>'
+        return apa_report
+        
+    
     return apa_report
 
 

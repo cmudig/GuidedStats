@@ -15,7 +15,7 @@ class WorkFlow(tl.HasTraits):
     workflowName = tl.Unicode()
     currentStepId = tl.Int().tag(sync=True)
     message = tl.Unicode().tag(sync=True)
-    # onProceeding = tl.Bool().tag(sync=True)
+    report = tl.Unicode().tag(sync=True)
     _steps = tl.List(trait=tl.Instance(Step)).tag(sync=True)
     workflowInfo = tl.Dict({}).tag(sync=True)
 
@@ -42,12 +42,13 @@ class WorkFlow(tl.HasTraits):
         self.workflowInfo = {"workflowName": self.workflowName,
                              "currentStepId": self.currentStepId,
                              "message": "",
+                             "report": "",
                              "steps": []}
 
         self.outputsStorage = {}
 
         self.observe(self.updateWorkflowInfo, names=[
-                     "workflowName", "currentStepId","message"])
+                     "workflowName", "currentStepId","message","report"])
 
         self.visualizer = None
 
@@ -64,14 +65,14 @@ class WorkFlow(tl.HasTraits):
     def steps(self, value):
         # Unobserve old steps
         for step in self._steps:
-            step.unobserve(self.updateWorkflowInfo, names=["stepId", "stepName", "stepType", "stepExplanation",
+            step.unobserve(self.updateWorkflowInfo, names=["stepId", "stepName", "stepType", "stepExplanation", "suggestions",
                            "done", "isProceeding", "toExecute", "isShown", "config", "previousConfig", "groupConfig","message"])
         # Set the new steps
         self._steps = value
         # Observe new steps
         for step in self._steps:
             step.workflow = self
-            step.observe(self.updateWorkflowInfo, names=["stepId", "stepName", "stepType", "stepExplanation",
+            step.observe(self.updateWorkflowInfo, names=["stepId", "stepName", "stepType", "stepExplanation", "suggestions",
                          "done", "isProceeding", "toExecute", "isShown", "config", "previousConfig", "groupConfig","message"])
 
     def loadData(self):
@@ -111,35 +112,7 @@ class WorkFlow(tl.HasTraits):
                 step = self.steps[stp-1]
                 code += step.export(export_viz_func = export_viz_func, **kwargs)
             return code    
-        
-
-    def topologicalSort(self):
-        """
-        Return steps in topologically sorted order. Subgraph of these 
-        nodes must form a DAG.
-        """
-        sortedSteps = []  # Empty list that will contain the sorted nodes
-        visitedSteps = set()
-        foundDAGSteps = set()
-
-        def visit(step: Step):
-            if step in foundDAGSteps:
-                return
-            if step in visitedSteps:
-                raise Exception("The steps are cyclic.")
-            visitedSteps.add(step)
-            for previousStep in step.previousSteps:
-                visit(previousStep)
-            foundDAGSteps.add(step)
-            sortedSteps.append(step)
-        visit(self.stepList[-1])
-        self.stepList = sortedSteps
-
-        # initialize steps attribute in workflowInfo
-        self.steps = self.stepList
-
-        self.currentStep = self.stepList[0]
-
+    
     def moveToNextStep(self, step: Step):
         # if done, store the current outputs and move to the next step
         self.outputsStorage[step.stepId] = step.outputs
@@ -192,13 +165,14 @@ class WorkFlow(tl.HasTraits):
     def updateWorkflowInfo(self, change=None):
         stepInfos = []
         for step in self.steps:
-            stepInfo = {"stepId": step.stepId, "stepName": step.stepName, "stepType": step.stepType, "stepExplanation": step.stepExplanation, "done": step.done, "isProceeding": step.isProceeding,
+            stepInfo = {"stepId": step.stepId, "stepName": step.stepName, "stepType": step.stepType, "stepExplanation": step.stepExplanation, "suggestions": step.suggestions, "done": step.done, "isProceeding": step.isProceeding,
                         "toExecute": step.toExecute, "isShown": step.isShown, "config": step.config, "previousConfig": step.previousConfig, "groupConfig": step.groupConfig, "message": step.message}
             stepInfos.append(stepInfo)
 
         info = {"workflowName": self.workflowName,
                 "currentStepId": self.currentStepId,
                 "message": self.message,
+                "report": self.report,
                 "steps": stepInfos}
 
         self.workflowInfo = info
@@ -217,6 +191,10 @@ class WorkFlow(tl.HasTraits):
                 return
             if self.message != workflowInfo["message"]:
                 self.message = workflowInfo["message"]
+                self.isObservingWorkflowInfo = False
+                return
+            if self.report != workflowInfo["report"]:
+                self.report = workflowInfo["report"]
                 self.isObservingWorkflowInfo = False
                 return
 
@@ -238,7 +216,7 @@ class WorkFlow(tl.HasTraits):
                 if step.message != stepInfo["message"]:
                     step.message = stepInfo["message"]
                     break
-    
+        
     def importDataset(self, data: pd.DataFrame):
         self.dataset = data
         self.current_dataframe = data
@@ -253,6 +231,8 @@ class WorkFlow(tl.HasTraits):
         ) if param != "previousStepsConfigs"}
         if stepInfo.get("stepExplanation") is not None:
             parameters["stepExplanation"] = stepInfo["stepExplanation"]
+        if stepInfo.get("suggestions") is not None:
+            parameters["suggestions"] = stepInfo["suggestions"]
         step = cls(**parameters)
         step.stepId = stepInfo["id"]
         return step

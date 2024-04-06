@@ -134,7 +134,7 @@ class GuidedStats(DOMWidget):
             if self.workflow.current_model._results is None:
                 raise ValueError("Model not fitted")
             if self.workflow.current_model._modelName == "Simple Linear Regression":
-                return exportReport(self.workflow.current_model._results)
+                return exportRegressionReport(self.workflow.current_model._results)
             elif self.workflow.current_model._modelName == "T Test":
                 return exportTTestReport(self.workflow.current_model._results)
         else:
@@ -142,7 +142,7 @@ class GuidedStats(DOMWidget):
 
     def exportCurrentModel(self):
         if self.workflow.current_model is not None:
-            return self.workflow.current_model
+            return copy.deepcopy(self.workflow.current_model)
         else:
             raise ValueError("No model found")
 

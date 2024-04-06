@@ -46,6 +46,7 @@
             workflowName: '',
             currentStepId: undefined,
             message: '',
+            report: '',
             steps: [],
             flows: []
         },

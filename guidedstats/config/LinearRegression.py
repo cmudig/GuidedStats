@@ -31,6 +31,10 @@ _regressionConfig = [
        Here, we use interquartile range(IQR), the range between 25th and 75th percentiles of the data, to detect outliers.\
                     Any value that is less than 25th percentile - 1.5 * IQR or greater than 75th perecentile + 1.5 * IQR is considered an outlier.\
       ",
+    "suggestions": ["Remove outliers from the dataset to improve the model's fit.",\
+      "Consider transforming outliers to reduce their impact on the model.",\
+        "The outliers may be valid data points, so consider investigating them further before removing them."],
+      ""
      "stepConfig":
      {"stepName": "Check Outliers",
       "inputNames": ["Y"],
@@ -69,6 +73,10 @@ _regressionConfig = [
        Here, we use interquartile range(IQR), the range between 25th and 75th percentiles of the data, to detect outliers.\
                     Any value that is less than 25th percentile - 1.5 * IQR or greater than 75th perecentile + 1.5 * IQR is considered an outlier.\
     ",
+    "suggestions": ["Select variables that are theoretically relevant to the dependent variable.",\
+      "Select variables with high correlation with the dependent variable.",\
+      "Create interaction terms(eg. x1*x2) between variables. This suggests that the effect of one variable depends on the value of another variable.",\
+        "Consider transforming variables, for example using log transformation, to improve the model's fit."],
      "stepConfig":
      {"stepName": "Check Outliers",
       "assumptionName": "outlier",
@@ -81,6 +89,8 @@ _regressionConfig = [
     {"id": 5,
      "stepType": "AssumptionCheckingStep",
      "stepExplanation": "Check for multicollinearity among independent variables.",
+     "suggestions": ["Consider other combinations of variables that may be less correlated.",\
+       "Deciding multicollinearity on VIF is not enough, think about other factors like the context of the data and the research question."],
      "stepConfig":
      {"stepName": "Check Multicollinearity",
       "assumptionName": "multicollinearity",
@@ -94,6 +104,7 @@ _regressionConfig = [
      "stepExplanation": "Split the dataset into training and testing sets. \
        The training set is used to train the regression model, \
          while the testing set is used to evaluate its generalizability performance.",
+    "suggestions": ["Set the training set to 100% if you want to estimate the effects of the independent variables on the dependent variable unbiasedly."],
      "stepConfig":
      {"stepName": "Do train test split",
       "inputNames": ["X", "Y"],
@@ -114,6 +125,11 @@ _regressionConfig = [
      "stepType": "EvaluationStep",
      "stepExplanation": "Evaluate the performance of the trained regression model using the testing set. \
        This step involves calculating evaluation metrics like Mean Squared Error (MSE) and R-squared (R2) to assess the model's accuracy and goodness of fit.",
+    "suggestions": ["According to zero conditional mean assumption, the residual in the plot should be distributed around 0 on average.",\
+                    "Consider different combinations of independent variables to predict the dependent variable.",\
+                    "Consider transforming variables, for example using log transformation, to improve the model's fit.",\
+                    "Consider using cross-validation to assess the model's generalizability",\
+                    "Consider more advanced regression techniques like Logistic Regression for binary outcomes, or fixed/random effects models for panel data."],
      "stepConfig":
      {"stepName": "Evaluate the model",
       "inputNames": ["model", "results", "XTest", "yTest", "XTrain", "yTrain"],
