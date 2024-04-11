@@ -50,8 +50,6 @@ class WorkFlow(tl.HasTraits):
         self.observe(self.updateWorkflowInfo, names=[
                      "workflowName", "currentStepId","message","report"])
 
-        self.visualizer = None
-
         if self.workflowName == "Linear Regression":
             self.configFile = _regressionConfig
         elif self.workflowName == "T Test":

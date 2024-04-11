@@ -170,13 +170,16 @@ def exportRegressionReport(results: Results, style="text"):
     return apa_report
 
 
-def exportTTestReport(results: Results):
+def exportTTestReport(results: Results, style="text", groups = None):
     # Extract t-test results
-    t_statistic = results.getStat("tstat")
-    p_value = results.getStat("pvalue")
+    t_statistic = results.getStat("params")[0]
+    p_value = results.getStat("pvalues")[0]
     df = results.getStat("df")
     (mean1, std1, n1) = results.getStat("group_stats1")
     (mean2, std2, n2) = results.getStat("group_stats2")
+    variable_name = results.getStat("variable_name")
+    variable = "the variable" if variable_name is None else variable_name
+    
 
     # APA format report
     if p_value < 0.001:
@@ -187,8 +190,13 @@ def exportTTestReport(results: Results):
         p_text = "p < .05"
     else:
         p_text = f"p = {p_value:.2f}"
-
-    apa_report = (f"A two independent sample t-test was conducted to compare the difference of means between . The results indicated that the difference between the groups "
-                  f"was statistically significant (t({df}) = {t_statistic:.3f}, {p_text}). The mean (SD) for group 1 is {mean1:.2f} ({std1:.2f}) and for group 2 is {mean2:.2f} ({std2:.2f}).")
-
-    return apa_report
+        
+    group = str(groups[0]) + " and " + str(groups[1]) if groups is not None and len(groups) > 1 else "the two groups"
+        
+    if style == "text":
+        apa_report = (f"A two independent sample t-test was conducted to compare the difference of means between {group} of {variable}. The results indicated that the difference between the groups "
+                      f"was statistically significant (t({df}) = {t_statistic:.3f}, {p_text}). The mean (SD) for group 1 is {mean1:.2f} ({std1:.2f}) and for group 2 is {mean2:.2f} ({std2:.2f}).")
+        return apa_report
+    elif style == "html":
+        apa_report = (f'<h7 class="text-blue-700">Two Independent Sample T-Test</h7><p>A two independent sample t-test was conducted to compare the difference of means between {group} of {variable}. The results indicated that the difference between the groups was statistically significant (t({df}) = {t_statistic:.3f}, {p_text}). The mean (SD) for group 1 is {mean1:.2f} ({std1:.2f}) and for group 2 is {mean2:.2f} ({std2:.2f}).</p>')
+        return apa_report

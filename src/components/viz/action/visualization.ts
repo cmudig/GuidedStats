@@ -243,14 +243,14 @@ export function getDensityPlotStats(
                     orient: 'bottom',
                     scale: 'xscale',
                     labelOverlap: true,
-                    title: 'Value', 
+                    title: 'Value',
                     zindex: 1
                 },
                 {
                     orient: 'left',
                     scale: 'yscale',
                     labelOverlap: true,
-                    title: "Probability Density",
+                    title: 'Probability Density',
                     zindex: 1
                 }
             ],
@@ -289,35 +289,74 @@ export function getDensityPlotStats(
         return spec;
     } else if (subvizType === 'qq') {
         const specs = {
-            $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
-            data: { values: viz.vizStats },
-            width : width,
+            $schema: 'https://vega.github.io/schema/vega/v5.json',
+            width: width,
             height: height,
-            transform: [
-                { quantile: 'value', step: 0.01, as: ['p', 'v'] },
-                { calculate: 'quantileNormal(datum.p)', as: 'norm' }
-            ],
-            mark: 'point',
-            axes: [
+            padding: 5,
+            data: [
                 {
-                    orient: 'bottom',
-                    scale: 'xscale',
-                    labelOverlap: true,
-                    title: 'Theoretical Uniform Quantiles',
-                    zindex: 1
+                    name: 'points',
+                    values: viz.vizStats
                 },
                 {
-                    orient: 'left',
-                    scale: 'yscale',
-                    labelOverlap: true,
-                    title: 'Empirical Data Quantiles',
-                    zindex: 1
+                    name: 'quantiles',
+                    source: 'points',
+                    transform: [
+                        {
+                            type: 'quantile',
+                            field: 'value',
+                            step: { signal: '1 / (100 + 1)' }
+                        },
+                        {
+                            type: 'formula',
+                            as: 'qnormal',
+                            expr: 'quantileNormal(datum.prob)'
+                        }
+                    ]
                 }
             ],
-            encoding: {
-                x: { field: 'norm', type: 'quantitative' },
-                y: { field: 'p', type: 'quantitative' }
-            }
+            scales: [
+                {
+                    name: 'y',
+                    domain: [0, 1],
+                    range: 'height',
+                    nice: true
+                },
+                {
+                    name: 'x',
+                    domain: [-3, 3],
+                    range: 'width'
+                }
+            ],
+            axes: [
+                {
+                    scale: 'y',
+                    orient: 'left',
+                    offset: 10,
+                    grid: true,
+                    title: 'Empirical Probability'
+                },
+                {
+                    scale: 'x',
+                    orient: 'bottom',
+                    grid: true,
+                    title: 'Theoretical Normal Quantiles'
+                }
+            ],
+            marks: [
+                {
+                    type: 'symbol',
+                    from: { data: 'quantiles' },
+                    encode: {
+                        update: {
+                            x: { scale: 'x', field: 'qnormal' },
+                            y: { scale: 'y', field: 'prob' },
+                            fill: { value: 'steelblue' },
+                            size: { value: 16 }
+                        }
+                    }
+                }
+            ]
         };
         return specs;
     }

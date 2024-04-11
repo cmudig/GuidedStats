@@ -26,7 +26,7 @@ ASSUMPTIONS = {
         "isSingleColumn": True,
         "vis_type": "density",
         "metric_func": METRICS["sharpiro"],
-        "prompt": "The p-value of Shapiro-Wilk Test is {pvalue}, which {rejectIndicator} the null hypothesis that the data is normally distributed",
+        "prompt": "The p-value of Shapiro-Wilk Test is {pvalue}(n = {count}), which {rejectIndicator} the null hypothesis that the data is normally distributed",
     },
     "multicollinearity": {
         "display": "Multicollinearity Test",

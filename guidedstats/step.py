@@ -68,9 +68,7 @@ class Step(tl.HasTraits):
         self.outputNames = kwargs.get("outputNames", None)
         self.inputNames = kwargs.get("inputNames", None)
         self.suggestions = kwargs.get("suggestions", [])
-
-        self.registered_functions = []
-
+        
         self._workflow = None
 
         self.previousSteps = previousSteps
@@ -134,11 +132,6 @@ class Step(tl.HasTraits):
         """
         export the current step to code
         """
-        pass
-
-    @abstractmethod
-    # register the functions used in rerunning the step
-    def register(self, function):
         pass
 
     @abstractmethod
@@ -361,7 +354,7 @@ class VariableSelectionStep(GuidedStep):
         elif variableType == "dependent variable":
             previousSteps = ["dataset"]
         elif variableType == "group variable":
-            previousSteps = ["dataset", "Y1"]
+            previousSteps = ["dataset", "Y"]
         else:
             previousSteps = ["dataset"]
         self.requireVarCategory = kwargs.get("requireVarCategory", False)
@@ -399,11 +392,23 @@ class VariableSelectionStep(GuidedStep):
             columns = ["'" + variable["name"] +
                        "'" for variable in self.config["variableResults"]]
             columns = ",".join(columns)
-            code += textwrap.dedent(f"""{self.outputNames[0]} = {
-                                    self.workflow.datasetName}[[{columns}]]\n""")
-
+            
             if self._variableType == "independent variables":
+                code += textwrap.dedent(f"""{self.outputNames[0]} = {
+                                    self.workflow.datasetName}[[{columns}]]\n""")
                 code += f"""exog = {self.outputNames[0]}\n"""
+            elif self._variableType == "dependent variable":
+                code += textwrap.dedent(f"""{self.outputNames[0]} = {
+                                    self.workflow.datasetName}[[{columns}]]\n""")
+            elif self._variableType == "group variable":
+                if self.config.get("groupResults", None) is not None:
+                    groups = [result["name"] for result in self.config["groupResults"]]
+                    column = self.config["variableResults"][0]["name"]
+                    code += textwrap.dedent(f"""{self.outputNames[0]} = Y[{self.workflow.datasetName}['{column}'] == '{groups[0]}']\n""")
+                    code += textwrap.dedent(f"""{self.outputNames[1]} = Y[{self.workflow.datasetName}['{column}'] == '{groups[1]}']\n""")
+            else:
+                code += textwrap.dedent(f"""{self.outputNames[0]} = {
+                                    self.workflow.datasetName}[[{columns}]]\n""")
 
         return code
 
@@ -431,8 +436,9 @@ class VariableSelectionStep(GuidedStep):
     @tl.observe("config")
     def onObserveConfig(self, change):
         newConfig = change["new"]
+        oldConfig = change["old"]
         hasGroupResults = "groupResults" in newConfig and len(
-            newConfig["groupResults"]) == 2
+            newConfig["groupResults"]) == 2 and newConfig.get("variableResults") == oldConfig.get("variableResults")
         hasVariableResults = "variableResults" in newConfig and len(
             newConfig["variableResults"]) != 0
         if self.requireVarCategory:
@@ -445,7 +451,7 @@ class VariableSelectionStep(GuidedStep):
                 for i in range(len(self.outputNames)):
                     group = newConfig["groupResults"][i]["name"]
                     self.outputs[self.outputNames[i]
-                                 ] = self.inputs["Y1"][self.inputs["dataset"][selectedColumns[0]] == group]
+                                 ] = self.inputs["Y"][self.inputs["dataset"][selectedColumns[0]] == group]
                     self.outputs["groups"] = groups
             else:
                 if hasVariableResults:  # 1. display groupby options
@@ -726,15 +732,13 @@ from guidedstats.model import Results\n""")
                 param.name for param in params if param.default is param.empty and param.name not in ["args", "kwargs"]]
 
             for i, param in enumerate(non_optional_params):
-                if i == 0:
-                    arguments.append(f"{param} = {self.inputNames[i]}")
+                arguments.append(f"{param} = {self.inputNames[i]}")
 
             if self.config.get("modelParameters", None) is not None:
                 for parameter in self.config["modelParameters"]:
                     arguments.append(f"{parameter['name']} = {parameter['value']}")
 
-            code += f"""model,results = {self.modelWrapper._model.__name__}
-                ({",".join(arguments)})\n"""
+            code += f"""model,results = {self.modelWrapper._model.__name__}({",".join(arguments)})\n"""
         return code
 
     @tl.observe("config")
@@ -933,7 +937,7 @@ Y_true_test = yTest.to_numpy().reshape((-1))''')
         if self.workflow.current_model._modelName == "Simple Linear Regression":
             report = exportRegressionReport(results, style="html")
         elif self.workflow.current_model._modelName == "T Test":
-            report = exportTTestReport(results)
+            report = exportTTestReport(results, style="html", groups=self.inputs.get("groups", None))
         self.workflow.report = report
         
     def forward(self, **inputs):

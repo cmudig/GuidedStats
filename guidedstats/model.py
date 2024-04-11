@@ -45,6 +45,7 @@ def LassoLR(X, Y, alpha=1.0, **kwargs):
 
 def TTest(X1, X2, alternative="two-sided", equal_var="true"):
     from statsmodels.stats.weightstats import ttest_ind
+    import numpy as np
     usevar = "unequal" if equal_var == "false" else "pooled"
     tstats, pvalue, df = ttest_ind(
         X1, X2, alternative=alternative, usevar=usevar)
@@ -52,7 +53,11 @@ def TTest(X1, X2, alternative="two-sided", equal_var="true"):
     results.setStat("params", [float(tstats)])
     results.setStat("pvalues", [float(pvalue)])
     results.setStat("df", float(df))
-    return (results,)
+    results.setStat("group_stats1", (np.mean(X1.to_numpy()), np.std(X1.to_numpy()), len(X1)))
+    results.setStat("group_stats2", (np.mean(X2.to_numpy()), np.std(X2.to_numpy()), len(X2)))
+    results.setStat("variable_name", X1.columns[0] if hasattr(X1, "columns") and len(
+        X1.columns) > 0 else None)
+    return (None,results)
 
 models = {
     "Simple Linear Regression": {
@@ -216,10 +221,4 @@ class ModelWrapper(object):
             (self.fittedModel, self._results) = outputs
         else:
             (self._results,) = outputs
-            group_stats1 = (X.mean().get(key=0),
-                            X.std().get(key=0), X.shape[0])
-            group_stats2 = (Y.mean().get(key=0),
-                            Y.std().get(key=0), Y.shape[0])
-            self._results.setStat("group_stats1", group_stats1)
-            self._results.setStat("group_stats2", group_stats2)
         return self, self._results

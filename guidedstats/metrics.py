@@ -76,6 +76,7 @@ def outlier(X, Y = None, *args, **kwargs):
             count += 1
     return {
         "stats": count,
+        "count": count,
     }
 
 
@@ -103,13 +104,14 @@ def sharpiro(X, Y = None, *args, **kwargs):
     import scipy.stats as spstats
     stats, p = spstats.shapiro(X)
     stats, p = round(stats, 6), round(p, 6)
-
+    count = X.shape[0]
     if p < 0.05:
         phrase = "does reject"
     else:
         phrase = "does not reject"
     return {
         "stats": stats,
+        "count": count,
         "pvalue": p,
         "rejectIndicator": phrase
     }

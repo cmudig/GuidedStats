@@ -15,7 +15,7 @@ _ttestConfig = [
          This variable is the focus of the analysis and the basis for comparison between groups.",
      "stepConfig":  # This is for the initialization of Steps
      {"stepName": "Select Independent Variable",
-      "outputNames": ["Y1"],
+      "outputNames": ["Y"],
       "variableType": "variable",
       "variableNum": 1,
       "candidateNum": 4,
@@ -28,18 +28,26 @@ _ttestConfig = [
               They may make the mean unsuitable as a summary measure.\
                   Here, we use interquartile range(IQR), the range between 25th and 75th percentiles of the data, to detect outliers.\
                     Any value that is less than 25th percentile - 1.5 * IQR or greater than 75th perecentile + 1.5 * IQR is considered an outlier.",
+        "suggestions": ["Remove outliers to ensure the validity of the t-test results.", \
+                        "Consider transforming outliers to reduce their impact on the t-test.", \
+                        "The outliers may be valid data points, so consider investigating them further before removing them."],
      "stepConfig":
      {"stepName": "Check Outliers",
-      "inputNames": ["Y1"],
-      "outputNames": ["Y1"],
-      "assumptionName": "outlier",
-      "isRelaxed": True,
-      "succeedPreviousStepOutput": False,
+            "inputNames": ["Y"],
+            "outputNames": ["Y"],
+            "assumptionName": "outlier",
+            "isRelaxed": True,
+            "succeedPreviousStepOutput": False,
       }
      },
     {"id": 3,
      "stepType": "VariableSelectionStep",
-     "stepExplanation": "Select the group variable which categorizes data into groups for comparison. This step is about defining the groups that will be compared in the t-test.",
+     "stepExplanation": "Select the group variable which categorizes data into groups for comparison.\
+         This step is about defining the groups that will be compared in the t-test.\
+        Only categorical variables can be used as group variables.",
+     "suggestions": ["Ensure that the group variable has at least two distinct groups for comparison.", \
+                     "Check the coding of the group variable to make sure you choose the groups you intend to compare.", \
+                     "Transform variables into categorical format if needed for the t-test, df['col'] = df.col.astype('category')"],
      "stepConfig":
      {"stepName": "Select Group Variable",
       "outputNames": ["Y1", "Y2"],
@@ -52,6 +60,7 @@ _ttestConfig = [
     {"id": 4,
      "stepType": "AssumptionCheckingStep",
      "stepExplanation": "Assess the homogeneity of variances between the two groups using Levene's test. Equal variances across samples is called homogeneity of variance. Levene's test is used to test if samples have equal variances.",
+     "suggestions": ["If the assumption of homogeneity of variance is violated, select True for the Equal Variance parameter in the t-test model."],
      "stepConfig":
      {"stepName": "Check Homogeneity of Variance",
       "inputNames": ["Y1", "Y2", "groups"],
@@ -68,6 +77,8 @@ _ttestConfig = [
             In practice, the method is robust to violations of the normal population assumption. \
                 This is especially true when both n1 and n2 are at least about 30, by the Central Limit Theorem.\
                     The Shapiro-Wilk test tests whether a random sample comes from a normal distribution.",
+        "suggestions": ["If the assumption of normality is heavily violated, consider using a non-parametric test like the Mann-Whitney U test.",
+                        "If the sample size is large enough, the t-test is robust to violations of normality."],
         "stepConfig":
         {"stepName": "Check Normality of the First Group",
          "inputNames": ["Y1"],
@@ -84,6 +95,8 @@ _ttestConfig = [
             In practice, the method is robust to violations of the normal population assumption. \
                 This is especially true when both n1 and n2 are at least about 30, by the Central Limit Theorem.\
                     The Shapiro-Wilk test tests whether a random sample comes from a normal distribution.",
+        "suggestions": ["If the assumption of normality is heavily violated, consider using a non-parametric test like the Mann-Whitney U test.",
+                        "If the sample size is large enough, the t-test is robust to violations of normality."],
         "stepConfig":
         {"stepName": "Check Normality of the Second Group",
          "inputNames": ["Y2"],
@@ -97,8 +110,10 @@ _ttestConfig = [
      "stepType": "ModelStep",
      "stepExplanation": "Formulate the null and alternative hypotheses for the t-test and define the Type I Error (alpha).\
          This step is crucial as it frames the statistical test and sets the significance level at which the null hypothesis will be tested against the alternative.",
+     "suggestions": ["Select 'two-sided' if you are interested in testing whether the means are different, 'smaller' if you are interested in testing whether the first group mean is smaller than the second group mean, and 'larger' if you are interested in testing whether the first group mean is larger than the second group mean.",
+                     "Select 'True' for the Equal Variance parameter if the assumption of homogeneity of variance is met, and 'False' if it is violated."],
      "stepConfig":
-     {"stepName": "State Hypothesis and Alpha Level",
+     {"stepName": "State the Hypothesis",
       "inputNames": ["Y1", "Y2"],
       "modelCandidates": [{"name": "T Test",
                            "parameters": [

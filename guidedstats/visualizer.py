@@ -177,7 +177,6 @@ class GuidedStats(DOMWidget):
         workflow = WorkFlow(
             dataset=self.dataset, datasetName=self.datasetName, workflowName=change["new"])
         self.workflow = workflow
-        self.workflow.visualizer = self
         self.workflow.observe(self.updateWorkflowInfo, names=["workflowInfo"])
         self.workflow.startGuiding()
 
