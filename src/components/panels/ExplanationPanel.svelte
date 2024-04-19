@@ -1,7 +1,7 @@
 <script lang="ts">
     import _ from 'lodash';
     import type { Step, Workflow } from '../../interface/interfaces';
-    import { selectingStep, activeTabValue } from '../../stores';
+    import { selectingStep, activeTab } from '../../stores';
     import Explanations from '../explanation/Explanations.svelte';
     import MulticolExp from '../explanation/MulticolExp.svelte';
     import ExportCode from '../explanation/ExportCode.svelte';
@@ -33,7 +33,7 @@
                 <MulticolExp
                     slot="concept"
                     assumptionResult={steps[$selectingStep].config
-                        ?.assumptionResults[$activeTabValue]}
+                        ?.assumptionResults[$activeTab]}
                 />
                 <Explanation
                     slot="report"
@@ -43,7 +43,7 @@
                 <Explanation
                     slot="suggestions"
                     title="What can you do for this step?"
-                    items={steps[$selectingStep].suggestions}
+                    suggestions={steps[$selectingStep].suggestions}
                 />
                 <ExportCode slot="export" />
             </Explanations>
@@ -63,7 +63,7 @@
                 <Explanation
                     slot="suggestions"
                     title="What can you do for this step?"
-                    items={steps[$selectingStep].suggestions}
+                    suggestions={steps[$selectingStep].suggestions}
                 />
                 <ExportCode slot="export" />
             </Explanations>
@@ -83,7 +83,7 @@
                 <Explanation
                     slot="suggestions"
                     title="What can you do for this step"
-                    items={steps[$selectingStep].suggestions}
+                    suggestions={steps[$selectingStep].suggestions}
                 />
                 <ExportCode slot="export" />
             </Explanations>

@@ -48,7 +48,7 @@ export type Step = {
     toExecute: boolean;
     isShown: boolean;
     stepExplanation?: string;
-    suggestions?: string[];
+    suggestions?: Suggestion[];
     config: StepConfig;
     previousConfig?: StepConfig;
     groupConfig?: GroupConfig;
@@ -137,6 +137,8 @@ export type Workflow = {
     currentStepId: number;
     message: string;
     report: string;
+    action: Action;
+    presets: Preset[];
     steps: Step[];
     flows: Flow[];
 };
@@ -158,7 +160,24 @@ export type ModelStep = GuidedStep & {
     modelName: string;
 };
 
-export type Explanation = {
-    word: string;
-    explanation: string;
+export type VisualizationStep = Step & {
+    viz: Visualization[];
 };
+
+export type Suggestion = {
+    stepId: number;
+    message: string;
+    action?: string;
+};
+
+export type Action = {
+    name: string;
+    stepId: number;
+    activeTab?: number;
+}
+
+export type Preset = {
+    name: string;
+    stepId: number;
+    value: any;
+}

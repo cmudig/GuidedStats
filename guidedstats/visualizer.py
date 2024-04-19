@@ -173,10 +173,19 @@ class GuidedStats(DOMWidget):
         self.builtinTransformations = list(TRANSFORMATIONS.keys())
 
     def addWorkFlow(self, change):
+        user_ns = get_ipython().user_ns
+        for key, value in user_ns.items():
+            #key should not be in the form of _2, _3, etc.
+            if re.match(r'^_[0-9]*$', key):
+                continue
+            if value is self:
+                self.workflowVariableName = key
         # TBC, dataset stuff should be refined
         workflow = WorkFlow(
             dataset=self.dataset, datasetName=self.datasetName, workflowName=change["new"])
         self.workflow = workflow
+        self.workflow.outputsStorage[0] = {}
+        self.workflow.outputsStorage[0]["workflowVariableName"] = self.workflowVariableName
         self.workflow.observe(self.updateWorkflowInfo, names=["workflowInfo"])
         self.workflow.startGuiding()
 

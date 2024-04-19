@@ -7,7 +7,7 @@
     import Tooltip from '../tooltip/Tooltip.svelte';
     import Done from '../icons/Done.svelte';
     import Alert from '../icons/Alert.svelte';
-    import SelectionBoard from '../display/SelectionBoard.svelte';
+    import Selections from '../display/Selections.svelte';
     export let step: Step = undefined;
     export let stepIndex: number = undefined;
 
@@ -110,7 +110,7 @@
                     </select>
                 {/if}
             </div>
-            <SelectionBoard
+            <Selections
                 parameters={step.config.transformationParameters}
                 {handleInputChange}
             />

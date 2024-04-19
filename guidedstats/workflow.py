@@ -1,3 +1,4 @@
+from ipylab import JupyterFrontEnd
 
 from collections import OrderedDict
 from typing import Iterable
@@ -7,7 +8,8 @@ import copy as copy
 import json
 
 from .step import *
-
+from .utils import getLatestValue
+from .action import ACTIONS
 from .config import _regressionConfig, _ttestConfig
 
 
@@ -16,6 +18,8 @@ class WorkFlow(tl.HasTraits):
     currentStepId = tl.Int().tag(sync=True)
     message = tl.Unicode().tag(sync=True)
     report = tl.Unicode().tag(sync=True)
+    action = tl.Dict({}).tag(sync=True)
+    presets = tl.List([]).tag(sync=True)
     _steps = tl.List(trait=tl.Instance(Step)).tag(sync=True)
     workflowInfo = tl.Dict({}).tag(sync=True)
 
@@ -43,12 +47,14 @@ class WorkFlow(tl.HasTraits):
                              "currentStepId": self.currentStepId,
                              "message": "",
                              "report": "",
+                             "action": self.action,
+                             "presets": self.presets,
                              "steps": []}
 
         self.outputsStorage = {}
 
         self.observe(self.updateWorkflowInfo, names=[
-                     "workflowName", "currentStepId","message","report"])
+                     "workflowName", "currentStepId","message","report","action","presets"])
 
         if self.workflowName == "Linear Regression":
             self.configFile = _regressionConfig
@@ -113,7 +119,11 @@ class WorkFlow(tl.HasTraits):
     
     def moveToNextStep(self, step: Step):
         # if done, store the current outputs and move to the next step
-        self.outputsStorage[step.stepId] = step.outputs
+        # update self.outputsStorage[step.stepId] with step.outputs
+        if step.stepId not in self.outputsStorage:
+            self.outputsStorage[step.stepId] = {}
+        self.outputsStorage[step.stepId].update(step.outputs)
+        
         stepIdx = self.stepList.index(step)
 
         step.isProceeding = False
@@ -159,7 +169,89 @@ class WorkFlow(tl.HasTraits):
                     currentIdx -= 1
 
             step.forward(**parameters)
+            
+    @tl.observe("action")
+    def onObserveAction(self, change):
+        if change["old"] != change["new"]:
+            actionName = change["new"]["name"]
+            stepId = change["new"]["stepId"]
+            step = self.steps[stepId]
+            activeTab = change["new"].get("activeTab", 0)
+            action = ACTIONS[actionName]
+            if action["type"] == "code" or action["type"] == "message":
+                template = action["template"]
+                arguments = re.findall(r'{(.*?)}', template)
+                arguments_map = {}
+                
+                extraStats = {}
+                
+                for i in range(stepId+1):
+                    if isinstance(self.steps[i], AssumptionCheckingStep):
+                        if len(self.steps[i].assumption.allExtraStats) > 0:
+                            if activeTab < len(self.steps[i].assumption.allExtraStats):
+                                extraStats.update(self.steps[i].assumption.allExtraStats[activeTab])
+                            else:
+                                extraStats.update(self.steps[i].assumption.allExtraStats[0])
+                
+                for argument in arguments:
+                    value = None
+                    if argument in extraStats:
+                        value = extraStats[argument]
+                    else:
+                        if 'col' in argument:
+                            columns = getLatestValue(self.outputsStorage, "columns")
+                            col = columns[activeTab]
+                            arguments_map['col'] = col
+                            continue
+                        
+                        value = getLatestValue(self.outputsStorage, argument)
+                    if value is not None:
+                        arguments_map[argument] = value
+                    else:
+                        print(ac)
+                        raise ValueError("Invalid argument")
+                
+                text = template.format(**arguments_map)
+                
+                if action["type"] == "code":
+                    app = JupyterFrontEnd()
+                    app.commands.execute('notebook:insert-cell-below')
+                    app.commands.execute('notebook:enter-edit-mode')
+                    app.commands.execute('notebook:replace-selection', {'text': text})
+                elif action["type"] == "message":
+                    self.message = text
+            elif action["type"] == "message":
+                template = action["template"]
+                template.format(**action["arguments"])
+            
+            elif action["type"] == "UI":
+                search_key = action["search_key"]
+                
+                presets = copy.deepcopy(self.presets)
+                
+                extraStats = {}
+                for i in range(stepId+1):
+                    if isinstance(self.steps[i], AssumptionCheckingStep):
+                        if activeTab < len(self.steps[i].assumption.allExtraStats):
+                            extraStats.update(self.steps[i].assumption.allExtraStats[activeTab])
+                        else:
+                            extraStats.update(self.steps[i].assumption.allExtraStats[0])
+                
+                value = None
+                if search_key in extraStats:
+                    value = extraStats[search_key] 
+                else:
+                    value = getLatestValue(self.outputsStorage, search_key)
+                if value is not None:
+                    if len(list(filter(lambda x: x["name"] != search_key, presets))) != 0:
+                        preset = list(filter(lambda x: x["name"] == search_key, presets))[0]
+                        presets.remove(preset)
 
+                    presets.append({"name": search_key, "stepId": stepId, "value": value})
+                    self.presets = presets
+                else:
+                    raise ValueError("Invalid preset")        
+                                
     def updateWorkflowInfo(self, change=None):
         stepInfos = []
         for step in self.steps:
@@ -171,6 +263,8 @@ class WorkFlow(tl.HasTraits):
                 "currentStepId": self.currentStepId,
                 "message": self.message,
                 "report": self.report,
+                "action": self.action,
+                "presets": self.presets,
                 "steps": stepInfos}
 
         self.workflowInfo = info
@@ -193,6 +287,10 @@ class WorkFlow(tl.HasTraits):
                 return
             if self.report != workflowInfo["report"]:
                 self.report = workflowInfo["report"]
+                self.isObservingWorkflowInfo = False
+                return
+            if self.action != workflowInfo["action"]:
+                self.action = workflowInfo["action"]
                 self.isObservingWorkflowInfo = False
                 return
 
@@ -231,8 +329,8 @@ class WorkFlow(tl.HasTraits):
             parameters["stepExplanation"] = stepInfo["stepExplanation"]
         if stepInfo.get("suggestions") is not None:
             parameters["suggestions"] = stepInfo["suggestions"]
+        parameters["stepId"] = stepInfo["id"]
         step = cls(**parameters)
-        step.stepId = stepInfo["id"]
         return step
 
     def constructSteps(self):

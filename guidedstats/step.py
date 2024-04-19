@@ -67,7 +67,6 @@ class Step(tl.HasTraits):
         
         self.outputNames = kwargs.get("outputNames", None)
         self.inputNames = kwargs.get("inputNames", None)
-        self.suggestions = kwargs.get("suggestions", [])
         
         self._workflow = None
 
@@ -336,7 +335,7 @@ class LoadDatasetStep(Step):
         self.dataset = self.workflow.dataset
         self.datasetName = self.workflow.datasetName
 
-        self.outputs = {"dataset": self.dataset}
+        self.outputs = {"dataset": self.dataset, "datasetName": self.datasetName}
 
         # update current dataframe
         if self.workflow is not None:
@@ -453,6 +452,7 @@ class VariableSelectionStep(GuidedStep):
                     self.outputs[self.outputNames[i]
                                  ] = self.inputs["Y"][self.inputs["dataset"][selectedColumns[0]] == group]
                     self.outputs["groups"] = groups
+                    self.outputs["separator"] = selectedColumns[0]
             else:
                 if hasVariableResults:  # 1. display groupby options
                     selectedColumns = [result["name"]
@@ -470,12 +470,12 @@ class VariableSelectionStep(GuidedStep):
                 subset = self.inputs["dataset"][selectedColumns]
                 if self._variableType == "independent variables":
                     self.outputs = {
-                        self.outputNames[0]: subset, "referenceDataset": self.inputs["referenceDataset"], "exog": subset}
+                        self.outputNames[0]: subset, "referenceDataset": self.inputs["referenceDataset"], "exog": subset, "columns": subset.columns}
                 elif self._variableType == "dependent variable":
                     self.outputs = {
-                        self.outputNames[0]: subset, "referenceDataset": subset}
+                        self.outputNames[0]: subset, "referenceDataset": subset, "columns": subset.columns}
                 else:
-                    self.outputs = {self.outputNames[0]: subset}
+                    self.outputs = {self.outputNames[0]: subset, "columns": subset.columns}
 
     @tl.observe("toExecute")
     def onObserveToExecute(self, change):
@@ -507,6 +507,10 @@ class AssumptionCheckingStep(SucccessorStep):
         if assumptionName is not None:
             self.assumption = AssumptionWrapper()
             self.assumption.setAssumption(assumptionName)
+            suggestions = copy.deepcopy(self.assumption._assumption["suggestions"])
+            for suggestion in suggestions:
+                suggestion.update(stepId = stepId)
+            self.suggestions = suggestions
             self.changeConfig("assumptionName", assumptionName)
 
     def clear(self):
@@ -936,9 +940,10 @@ Y_true_test = yTest.to_numpy().reshape((-1))''')
     def report(self,results):
         if self.workflow.current_model._modelName == "Simple Linear Regression":
             report = exportRegressionReport(results, style="html")
+            self.workflow.report = report
         elif self.workflow.current_model._modelName == "T Test":
             report = exportTTestReport(results, style="html", groups=self.inputs.get("groups", None))
-        self.workflow.report = report
+            self.workflow.report = report
         
     def forward(self, **inputs):
         self.inputs = inputs

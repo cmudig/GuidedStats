@@ -77,6 +77,10 @@ def outlier(X, Y = None, *args, **kwargs):
     return {
         "stats": count,
         "count": count,
+        "extraStats":{
+            "lower_threshold": lower_threshold,
+            "upper_threshold": upper_threshold,
+        }
     }
 
 
@@ -96,7 +100,12 @@ def levene(Y1, Y2, *args, **kwargs):
     return {
         "stats": stats,
         "pvalue": p,
-        "rejectIndicator": phrase
+        "rejectIndicator": phrase,
+        "extraStats": {
+            "equal_var": "false" if p < 0.05 else "true",
+            "N1": len(Y1),
+            "N2": len(Y2),
+        }
     }
 
 
@@ -113,7 +122,7 @@ def sharpiro(X, Y = None, *args, **kwargs):
         "stats": stats,
         "count": count,
         "pvalue": p,
-        "rejectIndicator": phrase
+        "rejectIndicator": phrase,
     }
 
 

@@ -20,3 +20,9 @@ def getUniqueValues(data: pd.DataFrame, col: str):
     values = [value for value in values]
     values.sort()
     return values
+
+def getLatestValue(outputsStorage, key):
+    for stepId in sorted(outputsStorage.keys(), reverse=True):
+        if key in outputsStorage[stepId]:
+            return outputsStorage[stepId][key]
+    return None

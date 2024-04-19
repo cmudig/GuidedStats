@@ -1,7 +1,16 @@
 <script lang="ts">
-    import type { Parameter } from '../../interface/interfaces';
+    import type { Parameter, Workflow } from '../../interface/interfaces';
     import _ from 'lodash';
     import Selection from './Selection.svelte';
+    import { getContext } from 'svelte';
+    import type { Writable } from 'svelte/store';
+
+    const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
+
+    $: presets = $workflowInfo.presets;
+
+    $: console.log(presets);
+
     export let parameters: Parameter[] = undefined;
     export let handleInputChange: Function = undefined;
     export let maxSelectedNum: number = 1;
@@ -28,20 +37,19 @@
                     {:else}
                         <select
                             class="rounded py-1 px-2 bg-white appearance-auto border-solid border border-gray-300 focus:border-blue-500"
-                            value={(parameter?.default)? parameter.default : parameter?.options[0]?.name}
                             on:change={event =>
                                 handleInputChange(
                                     parameter.name,
                                     event.target.value
                                 )}
                         >
-                            <option disabled selected value>
+                            <option disabled value>
                                 -- option --
                             </option>
                             {#each parameter?.options as option}
-                                <option value={option.name}
-                                    >{option.name}</option
-                                >
+                                <option value={option.name} selected={presets.find(d => d.name == parameter.name)?.value}>
+                                    {option.name}
+                                </option>
                             {/each}
                         </select>
                     {/if}

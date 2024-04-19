@@ -9,7 +9,7 @@
     import type { Writable } from 'svelte/store';
     import { afterUpdate, getContext } from 'svelte';
     import { deepCopy } from '../../utils';
-    import { activeTabValue } from '../../stores';
+    import { activeTab } from '../../stores';
     import {
         getBoxplotStats,
         getDensityPlotStats,
@@ -36,12 +36,12 @@
         let info = deepCopy($workflowInfo);
         info.steps[stepIndex].config.transformationName = transformationName;
         info.steps[stepIndex].config.variableResults = [
-            { name: assumptionResults[$activeTabValue].name }
+            { name: assumptionResults[$activeTab].name }
         ];
         workflowInfo.set(info);
     }
 
-    function updateChart(viz: Visualization[], activeTabValue: number) {
+    function updateChart(viz: Visualization[], activeTab: number) {
         if (!_.isUndefined(viz)) {
             let specs = undefined;
             specs = viz.map(v => {
@@ -55,8 +55,8 @@
             });
             if (!_.isUndefined(specs)) {
                 embed(
-                    `#vis-${$serial}-${stepIndex}-${activeTabValue}`,
-                    specs[activeTabValue],
+                    `#vis-${$serial}-${stepIndex}-${activeTab}`,
+                    specs[activeTab],
                     { actions: false }
                 );
             }
@@ -64,12 +64,12 @@
     }
 
     afterUpdate(() => {
-        updateChart(viz, $activeTabValue);
+        updateChart(viz, $activeTab);
     });
 
-    $: updateChart(viz, $activeTabValue);
+    $: updateChart(viz, $activeTab);
 
-    const handleClick = tabValue => () => activeTabValue.set(tabValue);
+    const handleClick = tabValue => () => activeTab.set(tabValue);
 </script>
 
 <div class="flex-col p-2 w-3/4">
@@ -79,11 +79,11 @@
                 <button on:click={handleClick(i)}
                     ><span
                         class={`font-bold rounded-t-md block py-2 px-4 cursor-pointer ${
-                            $activeTabValue === i
+                            $activeTab === i
                                 ? 'text-gray-600 bg-white border border-b-0 border-gray-300'
                                 : 'hover:border-gray-200'
                         }`}
-                        style={$activeTabValue === i
+                        style={$activeTab === i
                             ? ' margin-bottom:-1px'
                             : ''}>{assumptionResult.name}</span
                     ></button
@@ -92,14 +92,14 @@
         {/each}
     </ul>
     {#each Array(num) as _, i}
-        {#if $activeTabValue == i}
+        {#if $activeTab == i}
             <div
                 class="mb-2 p-2 border border-gray-300 rounded-b-lg border-t-0"
             >
                 <div class="flex">
                     <div class="grow" />
                     <div style="flex-wrap: wrap;width:300px">
-                        {assumptionResults[$activeTabValue].prompt}
+                        {assumptionResults[$activeTab].prompt}
                     </div>
                     <div class="grow" />
                 </div>
@@ -111,7 +111,7 @@
                     />
                     <div class="grow" />
                 </div>
-                {#if $workflowInfo.steps[stepIndex]?.config?.viz?.length > 0 && $workflowInfo.steps[stepIndex]?.config?.viz[$activeTabValue].vizType == 'density'}
+                {#if $workflowInfo.steps[stepIndex]?.config?.viz?.length > 0 && $workflowInfo.steps[stepIndex]?.config?.viz[$activeTab].vizType == 'density'}
                     <div class="p-2 flex">
                         <div class="grow" />
                         <span class="py-1 px-2"
@@ -128,11 +128,11 @@
                         <div class="grow" />
                     </div>
                 {/if}
-                {#if $workflowInfo.steps[stepIndex]?.config?.assumptionName === 'outlier'}
+                <!-- {#if $workflowInfo.steps[stepIndex]?.config?.assumptionName === 'outlier'}
                     <div
                         class="p-2 m-2 flex flex-col border border-gray-300 rounded"
-                    >
-                        <div class="flex">
+                    > -->
+                        <!-- <div class="flex">
                             <div class="grow" />
                             <button
                                 on:click={() => {
@@ -154,7 +154,7 @@
                                     <span
                                         class="font-bold"
                                         style="color: rgb(0, 138, 254);"
-                                        >{assumptionResults[$activeTabValue]
+                                        >{assumptionResults[$activeTab]
                                             .name}</span
                                     ></span
                                 >
@@ -178,10 +178,10 @@
                                     <div class="grow" />
                                 </div>
                             {/if}
-                            <div class="grow" />
-                        </div>
+                            <div class="grow" /> -->
+                        <!-- </div>
                     </div>
-                {/if}
+                {/if} -->
             </div>
         {/if}
     {/each}

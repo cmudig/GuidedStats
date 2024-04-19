@@ -42,5 +42,5 @@ export function WidgetWritable<T>(
 }
 
 export const selectingStep: Writable<number> = writable(-1);
-export const activeTabValue: Writable<number> = writable(0);    
+export const activeTab: Writable<number> = writable(0);    
 export const isBlocked: Writable<boolean> = writable(false);

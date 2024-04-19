@@ -13,6 +13,20 @@ ASSUMPTIONS = {
         "vis_type": "boxplot",
         "metric_func": METRICS["outlier"],
         "prompt": '{stats} outlier(s) fall outside of the "interquartile range" (IQR)',
+        "suggestions": [
+            {
+                "message": "Remove outliers from the dataset to improve the model's fit.",
+                "action": "remove_outliers",
+            },
+            {
+                "message": "Consider transforming outliers to reduce their impact on the model.",
+                "action": "transform_outliers",
+            },
+            {
+                "message": "The outliers may be valid data points, so consider investigating them further before removing them.",
+                "action": "investigate_outliers",
+            }
+        ]
     },
     "levene": {
         "display": "Levene Test",
@@ -20,6 +34,13 @@ ASSUMPTIONS = {
         "vis_type": "multiBoxplot",
         "metric_func": METRICS["levene"],
         "prompt": "The p-value of Levene Test is {pvalue}, which {rejectIndicator} the null hypothesis that the variances are equal",
+        "suggestions": [
+            {
+                "message": "If the assumption of homogeneity of variance is violated, select True for the Equal Variance parameter in the t-test model.",
+                "action": "set_equal_variance",
+            }
+        ]
+
     },
     "normality": {
         "display": "Normality Test",
@@ -27,6 +48,16 @@ ASSUMPTIONS = {
         "vis_type": "density",
         "metric_func": METRICS["sharpiro"],
         "prompt": "The p-value of Shapiro-Wilk Test is {pvalue}(n = {count}), which {rejectIndicator} the null hypothesis that the data is normally distributed",
+        "suggestions": [
+            {
+                "message": "If the assumption of normality is heavily violated, consider using a non-parametric test like the Mann-Whitney U test.",
+                "action": "use_mann_whitney",
+            },
+            {
+                "message": "If the sample size is large enough, the t-test is robust to violations of normality.",
+                "action": "print_group_size",
+            }
+        ]
     },
     "multicollinearity": {
         "display": "Multicollinearity Test",
@@ -35,6 +66,12 @@ ASSUMPTIONS = {
         "metric_func": METRICS["VIF"],
         # A VIF of 1 means that there is no correlation among the jth predictor and the remaining predictor variables, and hence the variance of bj is not inflated at all. The general rule of thumb is that VIFs exceeding 4 warrant further investigation, while VIFs exceeding 10 are signs of serious multicollinearity requiring correction.
         "prompt": "The VIF of the predictor is {stats}. {annotation}",
+        "suggestions": [
+            {
+                "message": "Consider other combinations of variables that may be less correlated.",
+                "action": "perform_VIF",
+            },
+        ]
     }
 }
 
@@ -44,6 +81,7 @@ class AssumptionWrapper(object):
         self._assumption = None
         self._assumptionName = None
         self.selfDefinedAssumptions = {}
+        self.allExtraStats = []
 
     def addAssumption(self, assumptionName: str, assumption: dict):
         """
@@ -69,6 +107,7 @@ class AssumptionWrapper(object):
             raise KeyError("The assumption does not exist")
 
     def checkAssumption(self, X: pd.DataFrame, *referenceXs: pd.DataFrame, **kwargs):
+        self.allExtraStats = []
         assumptionResults = []
         vizStats = []
         if self._assumption["isSingleColumn"]:
@@ -85,6 +124,11 @@ class AssumptionWrapper(object):
                 if self._assumption["metric_func"] is not None:
                     outputs = self._assumption["metric_func"](
                         X[[col]], *referenceXs, previousX=previousX, **kwargs)
+
+                    extraStats = outputs.pop("extraStats", None)
+                    if extraStats is not None:
+                        self.allExtraStats.append(extraStats)
+                    
                     prompt = self._assumption["prompt"].format(**outputs)
                     assumptionResults.append(
                         {**outputs, "name": str(col), "prompt": prompt})
