@@ -72,7 +72,19 @@ print('Statistics=%.3f, p=%.3f' % (stat, p))
 """,
 
     "print_group_size":
-"""The sample sizes of each group are {N1} and {N2}. For the t-test to be robust to violations of normality, the sample size should be large enough and at least 30."""
+"""The sample sizes of each group are {N1} and {N2}. For the t-test to be robust to violations of normality, the sample size should be large enough and at least 30.""",
+
+    "transform_variables":
+"""# There are numerous ways to transform variables. Here, we use log transformation on X as an example.
+import numpy as np
+df = {workflowVariableName}.export("dataset")
+#check if the column has non-positive values
+if {workflowVariableName}.export("dataset")["{col}"].min() <= 0:
+    raise ValueError("The column contains non-positive values, log transformation cannot be applied.")
+
+df["{col}"] = np.log(df["{col}"])
+{workflowVariableName}._import("dataset", df)""",
+
 }
 
 ACTIONS = {
@@ -83,6 +95,10 @@ ACTIONS = {
     "transform_outliers": {
         "type": "code",
         "template": TEMPLATES["transform_outliers"],
+    },
+    "transform_variables": {
+        "type": "code",
+        "template": TEMPLATES["transform_variables"],
     },
     "investigate_outliers": {
         "type": "code",

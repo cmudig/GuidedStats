@@ -8,12 +8,12 @@
     } from '../../interface/interfaces';
     import type { Writable } from 'svelte/store';
     import { afterUpdate, getContext } from 'svelte';
-    import { deepCopy } from '../../utils';
     import { activeTab } from '../../stores';
     import {
         getBoxplotStats,
         getDensityPlotStats,
-        getHeatMapStats
+        getHeatMapStats,
+        getRegressionPlotStats
     } from '../viz/action/visualization';
     export let num: number = undefined;
     export let stepIndex: number = undefined;
@@ -22,24 +22,9 @@
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
-    const builtinTransformations: Writable<Array<string>> = getContext(
-        'builtinTransformations'
-    );
-
     const serial: Writable<string> = getContext('serial');
 
-    let active = false;
     let vizSubType = 'density';
-
-    function updateTransformation(event: Event) {
-        let transformationName = (event.target as HTMLSelectElement).value;
-        let info = deepCopy($workflowInfo);
-        info.steps[stepIndex].config.transformationName = transformationName;
-        info.steps[stepIndex].config.variableResults = [
-            { name: assumptionResults[$activeTab].name }
-        ];
-        workflowInfo.set(info);
-    }
 
     function updateChart(viz: Visualization[], activeTab: number) {
         if (!_.isUndefined(viz)) {
@@ -47,17 +32,22 @@
             specs = viz.map(v => {
                 if (v.vizType == 'density') {
                     return getDensityPlotStats(v, vizSubType);
-                } else if (v.vizType == 'boxplot' || v.vizType == 'multiBoxplot') {
+                } else if (
+                    v.vizType == 'boxplot' ||
+                    v.vizType == 'multiBoxplot'
+                ) {
                     return getBoxplotStats(v);
                 } else if (v.vizType == 'heatmap') {
                     return getHeatMapStats(v);
+                } else if (v.vizType == 'regression') {
+                    return getRegressionPlotStats(v);
                 }
             });
             if (!_.isUndefined(specs)) {
                 embed(
                     `#vis-${$serial}-${stepIndex}-${activeTab}`,
                     specs[activeTab],
-                    { actions: false }
+                    { actions: false, scaleFactor: 250 }
                 );
             }
         }
@@ -83,15 +73,14 @@
                                 ? 'text-gray-600 bg-white border border-b-0 border-gray-300'
                                 : 'hover:border-gray-200'
                         }`}
-                        style={$activeTab === i
-                            ? ' margin-bottom:-1px'
-                            : ''}>{assumptionResult.name}</span
+                        style={$activeTab === i ? ' margin-bottom:-1px' : ''}
+                        >{assumptionResult.name}</span
                     ></button
                 >
             </li>
         {/each}
     </ul>
-    {#each Array(num) as _, i}
+    {#each Array(num) as __, i}
         {#if $activeTab == i}
             <div
                 class="mb-2 p-2 border border-gray-300 rounded-b-lg border-t-0"
@@ -99,7 +88,9 @@
                 <div class="flex">
                     <div class="grow" />
                     <div style="flex-wrap: wrap;width:300px">
-                        {assumptionResults[$activeTab].prompt}
+                        {#if !_.isUndefined(assumptionResults[$activeTab]?.prompt)}
+                            {assumptionResults[$activeTab]?.prompt}
+                        {/if}
                     </div>
                     <div class="grow" />
                 </div>
@@ -128,60 +119,6 @@
                         <div class="grow" />
                     </div>
                 {/if}
-                <!-- {#if $workflowInfo.steps[stepIndex]?.config?.assumptionName === 'outlier'}
-                    <div
-                        class="p-2 m-2 flex flex-col border border-gray-300 rounded"
-                    > -->
-                        <!-- <div class="flex">
-                            <div class="grow" />
-                            <button
-                                on:click={() => {
-                                    active = !active;
-                                }}
-                            >
-                                <span class="py-1 px-2">
-                                    {#if active}
-                                        Select
-                                    {:else}
-                                        Click to select
-                                    {/if}
-                                    <span
-                                        class="font-bold"
-                                        style="color: rgb(0, 138, 254);"
-                                        >data transformation</span
-                                    >
-                                    on column
-                                    <span
-                                        class="font-bold"
-                                        style="color: rgb(0, 138, 254);"
-                                        >{assumptionResults[$activeTab]
-                                            .name}</span
-                                    ></span
-                                >
-                            </button>
-                            {#if active}
-                                <div class="flex flex-col">
-                                    <div class="grow" />
-                                    <select
-                                        class="rounded appearance-auto py-1 px-2 m-2 bg-white border-solid border border-gray-300 focus:border-blue-500"
-                                        on:change={updateTransformation}
-                                    >
-                                        <option disabled selected value>
-                                            -- option --
-                                        </option>
-                                        {#each $builtinTransformations as transformation}
-                                            <option value={transformation}
-                                                >{transformation}</option
-                                            >
-                                        {/each}
-                                    </select>
-                                    <div class="grow" />
-                                </div>
-                            {/if}
-                            <div class="grow" /> -->
-                        <!-- </div>
-                    </div>
-                {/if} -->
             </div>
         {/if}
     {/each}

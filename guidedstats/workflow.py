@@ -175,8 +175,11 @@ class WorkFlow(tl.HasTraits):
         if change["old"] != change["new"]:
             actionName = change["new"]["name"]
             stepId = change["new"]["stepId"]
-            step = self.steps[stepId]
             activeTab = change["new"].get("activeTab", 0)
+            
+            # if actionName is None, do nothing
+            if actionName is None:
+                return
             action = ACTIONS[actionName]
             if action["type"] == "code" or action["type"] == "message":
                 template = action["template"]

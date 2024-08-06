@@ -4,6 +4,7 @@
     import type { Writable } from 'svelte/store';
     export let workflows: Array<string> = undefined;
 
+    let selectedWorkflow: string = undefined;
     const onSelectingStep: Writable<boolean> = getContext('onSelectingStep');
 
     const dispatch = createEventDispatcher();
@@ -23,11 +24,17 @@
             <button
                 class="w-full flex px-2 py-1 hover:bg-slate-100 overflow-hidden"
                 on:click={() => {
+                    selectedWorkflow = workflow;
                     dispatch('message', { selectedWorkflow: workflow });
                 }}
             >
                 <WorkflowIcon />
-                <span class="px-1" style="color:#807E7E">{workflow}</span>
+                <span
+                    class={'px-1' +
+                        (selectedWorkflow === workflow
+                            ? ' font-bold text-black'
+                            : ' text-gray-400')}>{workflow}</span
+                >
             </button>
         {/each}
     </div>

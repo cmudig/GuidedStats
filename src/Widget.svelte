@@ -47,8 +47,9 @@
             currentStepId: undefined,
             message: '',
             report: '',
+            action: undefined,
+            presets: [],
             steps: [],
-            flows: []
         },
         model
     );
@@ -70,8 +71,11 @@
 </script>
 
 <Notification />
-<div class={"bg-slate-50 rounded-xl w-full h-1/2 p-4 flex flex-row" + ($isBlocked ? ' blur-sm pointer-events-none' : '')}
-    style="height:600px">
+<div
+    class={'bg-slate-50 border-4 rounded-xl w-full h-1/2 p-4 flex flex-row' +
+        ($isBlocked ? ' blur-sm pointer-events-none' : '')}
+    style="height:600px"
+>
     <div
         bind:clientHeight={height}
         class="w-1/3 h-full mr-2 float-left flex flex-col"

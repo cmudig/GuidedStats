@@ -36,7 +36,7 @@ ASSUMPTIONS = {
         "prompt": "The p-value of Levene Test is {pvalue}, which {rejectIndicator} the null hypothesis that the variances are equal",
         "suggestions": [
             {
-                "message": "If the assumption of homogeneity of variance is violated, select True for the Equal Variance parameter in the t-test model.",
+                "message": "If the assumption of homogeneity of variance is violated, select False for the equal_var parameter in the t-test. Otherwise, select True with caution.",
                 "action": "set_equal_variance",
             }
         ]
@@ -72,7 +72,25 @@ ASSUMPTIONS = {
                 "action": "perform_VIF",
             },
         ]
+    },
+    "linearity": {
+        "display": "Check Linearity",
+        "isSingleColumn": True,
+        "vis_type": "regression",
+        "metric_func": None,
+        "prompt": None,
+        "suggestions": [
+            {
+                "message": "The linearity is not strictly required, as it is rare in practice.",
+                "action": None
+            },
+            {
+                "message": "Consider transforming variables to better represent the relationship between the independent and dependent variables.",
+                "action": "transform_variables",
+            }
+        ]
     }
+
 }
 
 
@@ -121,6 +139,7 @@ class AssumptionWrapper(object):
                     stats = VIZ[self._assumption["vis_type"]](
                         X[col], *referenceXs, previousX=previousX, **kwargs)
                     vizStats.append(stats)
+
                 if self._assumption["metric_func"] is not None:
                     outputs = self._assumption["metric_func"](
                         X[[col]], *referenceXs, previousX=previousX, **kwargs)
@@ -128,19 +147,15 @@ class AssumptionWrapper(object):
                     extraStats = outputs.pop("extraStats", None)
                     if extraStats is not None:
                         self.allExtraStats.append(extraStats)
-                    
+
                     prompt = self._assumption["prompt"].format(**outputs)
                     assumptionResults.append(
                         {**outputs, "name": str(col), "prompt": prompt})
+                else:
+                    assumptionResults.append(
+                        {"name": str(col), "prompt": None})
 
         vizs = [{"vizType": self._assumption["vis_type"],
                  "vizStats": vizStat} for vizStat in vizStats]
 
         return assumptionResults, vizs
-
-
-if __name__ == "__main__":
-    a = AssumptionWrapper()
-    a.setAssumption("outlier")
-    a.checkAssumptipon(pd.DataFrame(
-        {"test": [1, 2, 3, 34, 4, 4, 5, -20], "test2": [2, 3, 4, 5, 6, 310, -2, 2]}))

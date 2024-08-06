@@ -28,6 +28,12 @@ def metric(X: Iterable, Y: Iterable = None, *args, **kwargs):
 def pearson(X, Y, *args, **kwargs):
     import scipy.stats as spstats
     import numpy as np
+    import pandas as pd
+    #check if X and Y has null values
+    if pd.DataFrame(X).isnull().values.any():
+        print(X)
+    if pd.DataFrame(Y).isnull().values.any():
+        print(Y)
     stats, pvalue = spstats.pearsonr(X, np.array(Y).reshape((-1)))
     return {
         "stats": stats,

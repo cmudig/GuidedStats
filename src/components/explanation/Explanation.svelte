@@ -28,7 +28,7 @@
         let action: Action = {
             name: suggestion.action,
             stepId: suggestion.stepId,
-            activeTab: $activeTab,
+            activeTab: $activeTab
         };
         info['action'] = action;
         workflowInfo.set(info);
@@ -68,40 +68,50 @@
         {/if}
 
         {#if suggestions.length > 0}
-            <ul class="list-disc list-inside">
+            <ul class="list-none">
                 {#each suggestions as suggestion}
-                    <span>
-                        <li>
-                            {suggestion.message}
-                            {#if !_.isUndefined(suggestion?.action)}
-                                <div class="inline-block">
-                                    <Tooltip title="Action">
-                                        <button
-                                            class="p-1"
-                                            on:click={() => {
-                                                updateAction(suggestion);
-                                            }}
-                                        >
-                                            <ExportIcon
-                                                width="1.2em"
-                                                height="1.2em"
-                                            />
-                                        </button>
-                                    </Tooltip>
-                                </div>
-                            {/if}
-                        </li>
-                    </span>
+                    <li class="relative pl-5">
+                        {suggestion.message}
+                        {#if !_.isUndefined(suggestion?.action)}
+                            <div class="inline-block">
+                                <Tooltip title="Action">
+                                    <button
+                                        class="p-1"
+                                        on:click={() => {
+                                            updateAction(suggestion);
+                                        }}
+                                    >
+                                        <ExportIcon
+                                            width="1.2em"
+                                            height="0.9em"
+                                        />
+                                    </button>
+                                </Tooltip>
+                            </div>
+                        {/if}
+                    </li>
                 {/each}
             </ul>
         {/if}
 
         {#if items.length > 0}
-            <ul class="list-disc list-inside">
+            <ul class="list-none">
                 {#each items as item}
-                    <li>{item}</li>
+                    <li class="relative pl-5">{item}</li>
                 {/each}
             </ul>
         {/if}
     {/if}
 {/if}
+
+<style>
+    ul li::before {
+        content: '•';
+        position: absolute;
+        left: 0;
+        top: -0.3em;
+        font-size: 1.5em;
+        font-weight: bold;
+        color: black;
+    }
+</style>

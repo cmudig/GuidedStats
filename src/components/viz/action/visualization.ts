@@ -452,6 +452,100 @@ export function getHeatMapStats(
     return spec;
 }
 
+export function getRegressionPlotStats(
+    viz: Visualization,
+    width: number = 200,
+    height: number = 120
+) {
+    const spec = {
+        $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+        width: 'container',
+        height: height,
+        data: {
+            values: viz.vizStats
+        },
+        layer: [
+            {
+                mark: {
+                    type: 'point',
+                    filled: true
+                },
+                encoding: {
+                    x: {
+                        field: 'x',
+                        type: 'quantitative',
+                        axis: {
+                            title: 'X'
+                        }
+                    },
+                    y: {
+                        field: 'y',
+                        type: 'quantitative',
+                        axis: {
+                            title: 'Y'
+                        }
+                    }
+                }
+            },
+            {
+                mark: {
+                    type: 'line',
+                    color: 'firebrick'
+                },
+                transform: [
+                    {
+                        regression: 'y',
+                        on: 'x'
+                    }
+                ],
+                encoding: {
+                    x: {
+                        field: 'x',
+                        type: 'quantitative',
+                        axis: {
+                            title: 'X'
+                        }
+                    },
+                    y: {
+                        field: 'y',
+                        type: 'quantitative',
+                        axis: {
+                            title: 'Y'
+                        }
+                    }
+                }
+            },
+            {
+                transform: [
+                    {
+                        regression: 'y',
+                        on: 'x',
+                        params: true
+                    },
+                    {
+                        calculate: "'R²: '+format(datum.rSquared, '.2f')",
+                        as: 'R2'
+                    }
+                ],
+                mark: {
+                    type: 'text',
+                    color: 'firebrick',
+                    x: 'width',
+                    align: 'right',
+                    y: -5
+                },
+                encoding: {
+                    text: {
+                        type: 'nominal',
+                        field: 'R2'
+                    }
+                }
+            }
+        ]
+    };
+    return spec;
+}
+
 // generate a dictionary of visualization types and their corresponding functions
 export const vizTypeToSpec = {
     boxplot: getBoxplotStats,
@@ -459,5 +553,6 @@ export const vizTypeToSpec = {
     scatter: getScatterPlotStats,
     density: getDensityPlotStats,
     ttest: getTTestPlotStats,
-    heatmap: getHeatMapStats
+    heatmap: getHeatMapStats,
+    regression: getRegressionPlotStats
 };

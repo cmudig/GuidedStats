@@ -53,7 +53,8 @@ def multiBoxplotVizStats(*args, **kwargs):
         if isinstance(X, pd.DataFrame):
             X = X.iloc[:, 0]
         if isinstance(X, pd.Series):
-            X.name = groups[i] if groups is not None and isinstance(groups,list) else "group" + str(i+1)
+            X.name = groups[i] if groups is not None and isinstance(
+                groups, list) else "group" + str(i+1)
             stats.append(boxplotVizStats(X, **kwargs))
     return stats
 
@@ -118,11 +119,26 @@ def tTestVizStats(Y1, Y2, **kwargs):
     return stats
 
 
+def linearVizStats(X, Y, **kwargs):
+    import numpy as np
+    X = np.array(X).reshape(-1).tolist()
+    Y = np.array(Y).reshape(-1).tolist()
+    assert len(X) == len(Y)
+    max_point = kwargs.get("max_point", 150)
+    sample_num = min(max_point, len(X))
+    sample_index = np.random.choice(len(X), sample_num, replace=False)
+    stats = []
+    for i in sample_index:
+        stats.append({"x": X[i], "y": Y[i]})
+    del X, Y
+    return stats
+
 VIZ = {
     "boxplot": boxplotVizStats,
     "multiBoxplot": multiBoxplotVizStats,
     "density": densityVizStats,
     "heatmap": heapmapVizStats,
     "residual": residVizStats,
-    "ttest": tTestVizStats
+    "ttest": tTestVizStats,
+    "regression": linearVizStats
 }

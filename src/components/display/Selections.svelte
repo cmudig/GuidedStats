@@ -7,13 +7,11 @@
 
     const workflowInfo: Writable<Workflow> = getContext('workflowInfo');
 
-    $: presets = $workflowInfo.presets;
-
-    $: console.log(presets);
-
     export let parameters: Parameter[] = undefined;
     export let handleInputChange: Function = undefined;
     export let maxSelectedNum: number = 1;
+
+    $: presets = $workflowInfo.presets;
 </script>
 
 {#if !_.isUndefined(parameters)}
@@ -43,13 +41,13 @@
                                     event.target.value
                                 )}
                         >
-                            <option disabled value>
-                                -- option --
-                            </option>
+                            <option disabled value> -- option -- </option>
                             {#each parameter?.options as option}
-                                <option value={option.name} selected={presets.find(d => d.name == parameter.name)?.value}>
-                                    {option.name}
-                                </option>
+                                {#if presets.find(d => d.name == parameter.name)?.value == String(option.name)}
+                                    <option value={option.name} selected>{String(option.name)}</option>
+                                {:else}
+                                    <option value={option.name}>{String(option.name)}</option>
+                                {/if}
                             {/each}
                         </select>
                     {/if}
@@ -57,7 +55,7 @@
                     <input
                         class="rounded py-1 px-2 bg-white appearance-auto border-solid border border-gray-300 focus:border-blue-500"
                         type="number"
-                        value={(parameter?.default)? parameter.default : 0}
+                        value={parameter?.default ? parameter.default : 0}
                         on:input={event =>
                             handleInputChange(
                                 parameter.name,

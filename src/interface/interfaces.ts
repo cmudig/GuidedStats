@@ -113,7 +113,7 @@ export type BoxPlotStats = {
 export type ScatterPlotStats = {
     x: number;
     y: number;
-    group: string;
+    group?: string;
 };
 
 export type DensityPlotStats = {
@@ -127,11 +127,6 @@ export type HeatMapStats = {
     value: number;
 };
 
-export type Flow = {
-    sourceStepId: number;
-    targetStepId: number;
-};
-
 export type Workflow = {
     workflowName: string;
     currentStepId: number;
@@ -140,7 +135,6 @@ export type Workflow = {
     action: Action;
     presets: Preset[];
     steps: Step[];
-    flows: Flow[];
 };
 
 export type LoadDatasetStep = Step & {

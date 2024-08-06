@@ -59,7 +59,7 @@
                     {/if}
                 {/if}
             </div>
-            <Tooltip title="Apply Transformation/Skip">
+            <Tooltip title="Done">
                 <button on:click={execute}><Done /></button>
             </Tooltip>
         </div>
